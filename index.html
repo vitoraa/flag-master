@@ -239,12 +239,30 @@
     background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
     padding: 16px; margin-bottom: 22px;
   }
-  .result-strip .label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .result-strip .label, .leaderboard-card .label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
   .dots { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
   .dots .d { width: 15px; height: 15px; border-radius: 5px; }
   .dots .d.ok { background: var(--good); }
   .dots .d.no { background: var(--bad); }
   .dots .d.to { background: var(--surface-2); border: 1px solid var(--muted); }
+
+  /* ---------- leaderboard ---------- */
+  .leaderboard-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
+    padding: 16px; margin-bottom: 22px; text-align: left;
+  }
+  .lb-row { display: flex; gap: 10px; }
+  .lb-input {
+    flex: 1; min-width: 0; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: inherit;
+    font-size: 14px; outline: none; transition: border-color .15s;
+  }
+  .lb-input:focus { border-color: var(--accent); }
+  .btn.small { padding: 10px 22px; font-size: 14px; flex: none; }
+  .lb-status { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
+  .lb-result { text-align: center; }
+  .lb-result .rank-num { font-size: 34px; font-weight: 800; color: var(--gold); letter-spacing: -1px; }
+  .lb-result .rank-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
@@ -327,6 +345,21 @@
         <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
         <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
       </div>
+      <div class="leaderboard-card" id="lb-card">
+        <div id="lb-prompt">
+          <div class="label">Save your score</div>
+          <div class="lb-row">
+            <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
+            <button class="btn small" id="lb-submit">Submit</button>
+          </div>
+          <div class="lb-status" id="lb-status"></div>
+        </div>
+        <div class="lb-result" id="lb-result" style="display:none">
+          <div class="rank-num" id="lb-rank-num"></div>
+          <div class="rank-sub" id="lb-rank-sub"></div>
+        </div>
+      </div>
+
       <div class="result-strip">
         <div class="label">Your run</div>
         <div class="dots" id="dots"></div>
@@ -405,6 +438,10 @@ const COUNTRIES = [
 const ROUND_TIME = 10;
 const MAX_LIVES = 3;
 const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone" };
+
+// Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
+const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
+const NAME_KEY = "flagmaster-name";
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -603,6 +640,54 @@ function endGame() {
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
   show("end");
+  resetLeaderboardUI();
+}
+
+function resetLeaderboardUI() {
+  $("lb-prompt").style.display = "";
+  $("lb-result").style.display = "none";
+  $("lb-submit").disabled = false;
+  $("lb-submit").textContent = "Submit";
+  setLbStatus(LEADERBOARD_URL ? "" : "Leaderboard isn't set up yet.");
+  let savedName = "";
+  try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
+  $("lb-name").value = savedName;
+}
+
+function setLbStatus(msg) {
+  $("lb-status").textContent = msg;
+}
+
+async function submitScore() {
+  if (!LEADERBOARD_URL) {
+    setLbStatus("Leaderboard isn't set up yet.");
+    return;
+  }
+  const name = $("lb-name").value.trim().slice(0, 20) || "Anonymous";
+  try { localStorage.setItem(NAME_KEY, name); } catch {}
+
+  const submitBtn = $("lb-submit");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Saving…";
+  setLbStatus("");
+
+  const flagsRight = results.filter(r => r === "ok").length;
+  try {
+    const res = await fetch(LEADERBOARD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ name, score, flags: flagsRight, streak: bestStreak }),
+    });
+    const data = await res.json();
+    $("lb-prompt").style.display = "none";
+    $("lb-result").style.display = "block";
+    $("lb-rank-num").textContent = `#${data.rank}`;
+    $("lb-rank-sub").textContent = `out of ${data.total} player${data.total === 1 ? "" : "s"}`;
+  } catch {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit";
+    setLbStatus("Couldn't reach the leaderboard — try again?");
+  }
 }
 
 const RANK_EMOJI = {
@@ -654,6 +739,8 @@ $("ic-again").innerHTML = ICON.replay;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
+$("lb-submit").addEventListener("click", submitScore);
+$("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
 
 /* ---------- theme ---------- */
 const THEME_KEY = "flagmaster-theme";
