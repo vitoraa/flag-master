@@ -259,10 +259,12 @@
   }
   .lb-input:focus { border-color: var(--accent); }
   .btn.small { padding: 10px 22px; font-size: 14px; flex: none; }
+  .lb-anon-link {
+    display: block; margin: 10px auto 0; background: none; border: 0; cursor: pointer;
+    color: var(--muted); font-size: 12px; text-decoration: underline; font-family: inherit;
+  }
+  .lb-anon-link:hover { color: var(--text); }
   .lb-status { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
-  .lb-result { text-align: center; }
-  .lb-result .rank-num { font-size: 34px; font-weight: 800; color: var(--gold); letter-spacing: -1px; }
-  .lb-result .rank-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
 
   .lb-nearby { margin-bottom: 16px; }
   .lb-nearby-list { display: grid; gap: 6px; }
@@ -363,20 +365,17 @@
       </div>
       <div class="leaderboard-card" id="lb-card">
         <div class="lb-nearby" id="lb-nearby" style="display:none">
-          <div class="label">Where you'd rank</div>
+          <div class="label">Leaderboard</div>
           <div class="lb-nearby-list" id="lb-nearby-list"></div>
         </div>
         <div id="lb-prompt">
-          <div class="label">Save your score</div>
+          <div class="label">Enter your name to see the leaderboard</div>
           <div class="lb-row">
             <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
             <button class="btn small" id="lb-submit">Submit</button>
           </div>
+          <button class="lb-anon-link" id="lb-anon">Save anonymously instead</button>
           <div class="lb-status" id="lb-status"></div>
-        </div>
-        <div class="lb-result" id="lb-result" style="display:none">
-          <div class="rank-num" id="lb-rank-num"></div>
-          <div class="rank-sub" id="lb-rank-sub"></div>
         </div>
       </div>
 
@@ -663,21 +662,30 @@ function endGame() {
   resetLeaderboardUI();
 }
 
+let scoreSubmitted = false;
+
 function resetLeaderboardUI() {
+  scoreSubmitted = false;
   $("lb-prompt").style.display = "";
-  $("lb-result").style.display = "none";
+  $("lb-nearby").style.display = "none";
   $("lb-submit").disabled = false;
   $("lb-submit").textContent = "Submit";
   setLbStatus(LEADERBOARD_URL ? "" : "Leaderboard isn't set up yet.");
   let savedName = "";
   try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
   $("lb-name").value = savedName;
-  loadNearbyLeaderboard();
+  setTimeout(() => { $("lb-name").focus(); $("lb-name").select(); }, 450);
+}
+
+function ensureScoreSaved() {
+  if (scoreSubmitted || !LEADERBOARD_URL) return;
+  if (!$("screen-end").classList.contains("active")) return;
+  submitScore();
 }
 
 const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
 
-async function loadNearbyLeaderboard() {
+async function loadNearbyLeaderboard(displayName) {
   const nearby = $("lb-nearby");
   nearby.style.display = "none";
   if (!LEADERBOARD_URL) return;
@@ -686,6 +694,14 @@ async function loadNearbyLeaderboard() {
     const res = await fetch(LEADERBOARD_URL);
     const data = await res.json();
     const all = (data.all || []).slice().sort((a, b) => b.score - a.score);
+    if (!all.length) return;
+
+    const youLabel = displayName || "You";
+    if (displayName) {
+      for (let i = all.length - 1; i >= 0; i--) {
+        if (all[i].name === displayName && all[i].score === score) { all.splice(i, 1); break; }
+      }
+    }
     if (!all.length) return;
 
     const idx = all.filter(r => r.score > score).length;
@@ -701,12 +717,12 @@ async function loadNearbyLeaderboard() {
     let prev = -1;
     sortedIdx.forEach(i => {
       if (prev !== -1 && i - prev > 1) rows.push({ ellipsis: true });
-      if (!youInserted && i >= idx) { rows.push({ pos: idx + 1, name: "You", score, you: true }); youInserted = true; }
+      if (!youInserted && i >= idx) { rows.push({ pos: idx + 1, name: youLabel, score, you: true }); youInserted = true; }
       const pos = i + 1 + (i >= idx ? 1 : 0);
       rows.push({ pos, name: all[i].name, score: all[i].score, medal: MEDALS[i] });
       prev = i;
     });
-    if (!youInserted) rows.push({ pos: idx + 1, name: "You", score, you: true });
+    if (!youInserted) rows.push({ pos: idx + 1, name: youLabel, score, you: true });
 
     $("lb-nearby-list").innerHTML = rows.map(r => {
       if (r.ellipsis) return `<div class="lb-nearby-ellipsis">···</div>`;
@@ -730,15 +746,18 @@ function setLbStatus(msg) {
   $("lb-status").textContent = msg;
 }
 
-async function submitScore() {
+async function submitScore(nameOverride) {
   if (!LEADERBOARD_URL) {
     setLbStatus("Leaderboard isn't set up yet.");
     return;
   }
-  const name = $("lb-name").value.trim().slice(0, 20) || "Anonymous";
+  const submitBtn = $("lb-submit");
+  if (submitBtn.disabled) return;
+
+  const name = (nameOverride ?? $("lb-name").value).trim().slice(0, 20) || "Anonymous";
   try { localStorage.setItem(NAME_KEY, name); } catch {}
 
-  const submitBtn = $("lb-submit");
+  scoreSubmitted = true;
   submitBtn.disabled = true;
   submitBtn.textContent = "Saving…";
   setLbStatus("");
@@ -750,12 +769,11 @@ async function submitScore() {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ name, score, flags: flagsRight, streak: bestStreak }),
     });
-    const data = await res.json();
+    await res.json();
     $("lb-prompt").style.display = "none";
-    $("lb-result").style.display = "block";
-    $("lb-rank-num").textContent = `#${data.rank}`;
-    $("lb-rank-sub").textContent = `out of ${data.total} player${data.total === 1 ? "" : "s"}`;
+    loadNearbyLeaderboard(name);
   } catch {
+    scoreSubmitted = false;
     submitBtn.disabled = false;
     submitBtn.textContent = "Submit";
     setLbStatus("Couldn't reach the leaderboard — try again?");
@@ -811,8 +829,9 @@ $("ic-again").innerHTML = ICON.replay;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
-$("lb-submit").addEventListener("click", submitScore);
+$("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
+$("lb-anon").addEventListener("click", () => submitScore("Anonymous"));
 
 /* ---------- theme ---------- */
 const THEME_KEY = "flagmaster-theme";
@@ -832,8 +851,9 @@ $("theme-toggle").addEventListener("click", () => {
 buildBackground();
 
 $("btn-start").addEventListener("click", startGame);
-$("btn-again").addEventListener("click", startGame);
+$("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
 $("btn-share").addEventListener("click", async () => {
+  ensureScoreSaved();
   if (navigator.share) {
     try { await navigator.share({ text: shareText() }); return; } catch {}
   }
