@@ -31,12 +31,11 @@ function doPost(e) {
 function doGet(e) {
   const sheet = getSheet_();
   const rows = sheet.getDataRange().getValues().slice(1);
-  const top = rows
+  const all = rows
     .map(r => ({ name: r[1], score: Number(r[2]) || 0 }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+    .sort((a, b) => b.score - a.score);
 
   return ContentService
-    .createTextOutput(JSON.stringify({ top: top, total: rows.length }))
+    .createTextOutput(JSON.stringify({ top: all.slice(0, 10), all: all, total: rows.length }))
     .setMimeType(ContentService.MimeType.JSON);
 }
