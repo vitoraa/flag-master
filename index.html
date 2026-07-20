@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flag Master — how many flags do you know?</title>
+<style>
+  :root {
+    --bg: #06070d;
+    --surface: #12141f;
+    --surface-2: #191c2b;
+    --line: rgba(255,255,255,.08);
+    --accent: #6c8cff;
+    --accent-2: #a06bff;
+    --good: #2fe0a0;
+    --bad: #ff5470;
+    --gold: #ffd166;
+    --text: #f2f4ff;
+    --muted: #8890ac;
+    --radius: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* ambient background glow */
+  body::before, body::after {
+    content: ""; position: fixed; border-radius: 50%;
+    filter: blur(120px); opacity: .5; z-index: 0; pointer-events: none;
+  }
+  body::before { width: 480px; height: 480px; background: #2a3aff; top: -180px; left: -120px; }
+  body::after  { width: 420px; height: 420px; background: #7a2aff; bottom: -160px; right: -120px; opacity: .4; }
+
+  #app { width: 100%; max-width: 500px; position: relative; z-index: 1; }
+  svg { display: block; }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: rise .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 0; cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff; font-size: 17px; font-weight: 600;
+    padding: 15px 40px; border-radius: 999px;
+    transition: transform .15s cubic-bezier(.2,.8,.2,1), box-shadow .15s ease, opacity .15s;
+    box-shadow: 0 10px 30px -8px rgba(108,140,255,.6);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(108,140,255,.7); }
+  .btn:active { transform: translateY(0); }
+  .btn.ghost {
+    background: var(--surface-2); box-shadow: none;
+    border: 1px solid var(--line); color: var(--text); font-weight: 500;
+  }
+  .btn.ghost:hover { background: #222641; box-shadow: none; }
+
+  /* ---------- start ---------- */
+  .hero { text-align: center; padding: 30px 4px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: .5px;
+    padding: 7px 14px; border-radius: 999px; margin-bottom: 26px;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 10px var(--good); }
+  .hero h1 {
+    font-size: 46px; line-height: 1.05; letter-spacing: -1.5px; font-weight: 700;
+    background: linear-gradient(180deg, #fff, #b9c0e6);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .tag { color: var(--muted); font-size: 16px; margin: 14px auto 30px; max-width: 300px; line-height: 1.55; }
+  .rules { display: grid; gap: 10px; margin: 0 auto 32px; max-width: 340px; }
+  .rule {
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px;
+  }
+  .rule .ic {
+    flex: none; width: 38px; height: 38px; border-radius: 11px;
+    display: grid; place-items: center; background: var(--surface-2); color: var(--accent);
+  }
+  .rule .txt { font-size: 14px; color: var(--muted); line-height: 1.4; }
+  .rule .txt b { color: var(--text); font-weight: 600; }
+
+  /* ---------- game ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .lives { display: flex; gap: 6px; }
+  .lives .heart { color: var(--bad); transition: opacity .35s, transform .35s; }
+  .lives .heart.lost { opacity: .18; transform: scale(.8); }
+  .lives .heart.lost path { fill: var(--muted); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--line);
+    padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted);
+  }
+  .chip .lvldot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .score-wrap { display: flex; align-items: baseline; gap: 5px; font-variant-numeric: tabular-nums; }
+  .score-wrap .num { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .score-wrap .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+  .timerbar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-bottom: 24px; }
+  .timerbar i {
+    display: block; height: 100%; width: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--good), var(--accent));
+    transition: width .1s linear;
+  }
+  .timerbar i.danger { background: linear-gradient(90deg, var(--bad), #ff8a5c); }
+
+  .question { text-align: center; margin-bottom: 22px; }
+  .question .prompt { color: var(--muted); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .question h2 { font-size: 32px; letter-spacing: -.8px; font-weight: 700; line-height: 1.1; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+  .flag-btn {
+    border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
+    background: var(--surface); cursor: pointer; padding: 0;
+    aspect-ratio: 4 / 2.7; position: relative;
+    transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
+  }
+  .flag-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .flag-btn::after {
+    content: ""; position: absolute; inset: 0; border-radius: 14px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.25); pointer-events: none;
+  }
+  .flag-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
+  .flag-btn .mark {
+    position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; opacity: 0; transform: scale(.5);
+    transition: opacity .2s, transform .2s; z-index: 2;
+  }
+  .flag-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
+  .flag-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
+  .flag-btn.wrong { border-color: var(--bad); animation: shake .4s; }
+  .flag-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
+  .flag-btn:disabled { cursor: default; }
+  .flag-btn.dim { opacity: .3; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 80%{transform:translateX(-4px)} }
+
+  .feedback {
+    text-align: center; height: 26px; margin-top: 20px;
+    font-weight: 600; font-size: 16px; opacity: 0; transition: opacity .2s;
+  }
+  .feedback.show { opacity: 1; }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+
+  /* ---------- end ---------- */
+  .end { text-align: center; padding: 10px 4px; }
+  .medal {
+    width: 92px; height: 92px; margin: 0 auto 18px; border-radius: 26px;
+    display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 20px 50px -12px rgba(108,140,255,.6);
+  }
+  .end h2 { font-size: 30px; letter-spacing: -.6px; font-weight: 700; }
+  .end .subtitle { color: var(--muted); margin: 6px 0 24px; font-size: 15px; }
+  .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 11px; margin-bottom: 22px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 15px; padding: 16px 8px; }
+  .stat b { display: block; font-size: 26px; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  .result-strip {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
+    padding: 16px; margin-bottom: 22px;
+  }
+  .result-strip .label { font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .dots { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+  .dots .d { width: 15px; height: 15px; border-radius: 5px; }
+  .dots .d.ok { background: var(--good); }
+  .dots .d.no { background: var(--bad); }
+  .dots .d.to { background: var(--surface-2); border: 1px solid var(--muted); }
+
+  .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: var(--good); color: #04241a; font-weight: 600; font-size: 14px;
+    padding: 12px 22px; border-radius: 999px; z-index: 20;
+    display: flex; align-items: center; gap: 8px;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+    box-shadow: 0 14px 40px -10px rgba(47,224,160,.6);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 420px) {
+    .hero h1 { font-size: 38px; }
+    .question h2 { font-size: 26px; }
+    .btn { padding: 14px 32px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <section id="screen-start" class="screen active">
+    <div class="hero">
+      <span class="badge"><span class="dot"></span>195 countries · one shot</span>
+      <h1>Flag&nbsp;Master</h1>
+      <p class="tag">How many flags of the world do you actually know? Prove it.</p>
+      <div class="rules">
+        <div class="rule">
+          <span class="ic" id="ic-slot-1"></span>
+          <span class="txt">Spot the right flag out of <b>4 options</b></span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-2"></span>
+          <span class="txt"><b>10 seconds</b> on the clock each round</span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-3"></span>
+          <span class="txt">Only <b>3 mistakes</b> and you're out</span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-4"></span>
+          <span class="txt">Starts easy, ends <b>brutal</b></span>
+        </div>
+      </div>
+      <button class="btn" id="btn-start">Start playing</button>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+    <div class="topbar">
+      <div class="lives" id="lives"></div>
+      <div class="chip" id="level"><span class="lvldot"></span><span id="level-txt"></span></div>
+      <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
+    </div>
+    <div class="timerbar"><i id="timerfill"></i></div>
+    <div class="question">
+      <div class="prompt" id="qnum"></div>
+      <h2 id="country-name"></h2>
+    </div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="end">
+      <div class="medal" id="end-medal"></div>
+      <h2 id="end-title"></h2>
+      <p class="subtitle" id="end-subtitle"></p>
+      <div class="stats">
+        <div class="stat"><b id="stat-score">0</b><span>Score</span></div>
+        <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
+      </div>
+      <div class="result-strip">
+        <div class="label">Your run</div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="share-row">
+        <button class="btn" id="btn-share"><span id="ic-share"></span>Share result</button>
+        <button class="btn ghost" id="btn-again"><span id="ic-again"></span>Play again</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
+
+<script>
+/* ---------- icon set (inline SVG, stroke-based) ---------- */
+const ICON = {
+  flag: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
+  heartSmall: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/></svg>',
+  trend: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>',
+  heart: '<svg class="heart" width="22" height="22" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z" fill="currentColor"/></svg>',
+  check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>',
+  replay: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/></svg>',
+  globe: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>',
+  crown: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 12h-15z"/></svg>',
+  medal: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 2h4l2 4 2-4h4l-2.5 7.5"/><path d="M12 13l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2L9.1 15l2-.3z"/></svg>',
+  compass: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10.5 10.5 8 16 13.5 13.5"/></svg>',
+  plane: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15l-9-4V4a2 2 0 0 0-4 0v7l-5 2v2l5-1v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/></svg>',
+};
+
+// [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard
+const COUNTRIES = [
+  ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
+  ["it","Italy",1],["es","Spain",1],["gb","United Kingdom",1],["jp","Japan",1],
+  ["cn","China",1],["ca","Canada",1],["mx","Mexico",1],["ar","Argentina",1],
+  ["pt","Portugal",1],["au","Australia",1],["in","India",1],["ru","Russia",1],
+  ["kr","South Korea",1],["nl","Netherlands",1],["ch","Switzerland",1],["se","Sweden",1],
+  ["no","Norway",1],["gr","Greece",1],["tr","Turkey",1],["eg","Egypt",1],
+  ["za","South Africa",1],["ie","Ireland",1],["dk","Denmark",1],["be","Belgium",1],
+  ["pl","Poland",2],["at","Austria",2],["fi","Finland",2],["ua","Ukraine",2],
+  ["cl","Chile",2],["co","Colombia",2],["pe","Peru",2],["uy","Uruguay",2],
+  ["ve","Venezuela",2],["cu","Cuba",2],["th","Thailand",2],["vn","Vietnam",2],
+  ["ph","Philippines",2],["id","Indonesia",2],["my","Malaysia",2],["sg","Singapore",2],
+  ["nz","New Zealand",2],["il","Israel",2],["sa","Saudi Arabia",2],["ae","United Arab Emirates",2],
+  ["ma","Morocco",2],["ng","Nigeria",2],["ke","Kenya",2],["cz","Czechia",2],
+  ["hu","Hungary",2],["ro","Romania",2],["hr","Croatia",2],["is","Iceland",2],
+  ["pk","Pakistan",2],["bd","Bangladesh",2],["ec","Ecuador",2],["bo","Bolivia",2],
+  ["py","Paraguay",2],["pa","Panama",2],["cr","Costa Rica",2],["jm","Jamaica",2],
+  ["qa","Qatar",2],["ir","Iran",2],["iq","Iraq",2],["dz","Algeria",2],
+  ["si","Slovenia",3],["sk","Slovakia",3],["rs","Serbia",3],["bg","Bulgaria",3],
+  ["lt","Lithuania",3],["lv","Latvia",3],["ee","Estonia",3],["md","Moldova",3],
+  ["al","Albania",3],["mk","North Macedonia",3],["ba","Bosnia and Herzegovina",3],["me","Montenegro",3],
+  ["lu","Luxembourg",3],["mt","Malta",3],["cy","Cyprus",3],["am","Armenia",3],
+  ["ge","Georgia",3],["az","Azerbaijan",3],["kz","Kazakhstan",3],["uz","Uzbekistan",3],
+  ["kg","Kyrgyzstan",3],["tj","Tajikistan",3],["tm","Turkmenistan",3],["mn","Mongolia",3],
+  ["np","Nepal",3],["lk","Sri Lanka",3],["mm","Myanmar",3],["kh","Cambodia",3],
+  ["la","Laos",3],["bt","Bhutan",3],["bn","Brunei",3],["om","Oman",3],
+  ["kw","Kuwait",3],["bh","Bahrain",3],["jo","Jordan",3],["lb","Lebanon",3],
+  ["tn","Tunisia",3],["ly","Libya",3],["sd","Sudan",3],["et","Ethiopia",3],
+  ["gh","Ghana",3],["ci","Ivory Coast",3],["sn","Senegal",3],["cm","Cameroon",3],
+  ["tz","Tanzania",3],["ug","Uganda",3],["zm","Zambia",3],["zw","Zimbabwe",3],
+  ["mz","Mozambique",3],["ao","Angola",3],["na","Namibia",3],["bw","Botswana",3],
+  ["mg","Madagascar",3],["mu","Mauritius",3],["fj","Fiji",3],["pg","Papua New Guinea",3],
+  ["gt","Guatemala",3],["hn","Honduras",3],["sv","El Salvador",3],["ni","Nicaragua",3],
+  ["do","Dominican Republic",3],["ht","Haiti",3],["tt","Trinidad and Tobago",3],["gy","Guyana",3],
+  ["sr","Suriname",3],["bz","Belize",3],["mv","Maldives",3],["mc","Monaco",3],
+  ["li","Liechtenstein",3],["ad","Andorra",3],["sm","San Marino",3],["va","Vatican City",3],
+];
+
+const ROUND_TIME = 10;
+const MAX_LIVES = 3;
+const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone" };
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const flagUrl = code => `https://flagcdn.com/w320/${code}.png`;
+
+let queue = [], round = 0, lives = MAX_LIVES, score = 0;
+let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
+
+function buildQueue() {
+  const t1 = shuffle(COUNTRIES.filter(c => c[2] === 1));
+  const t2 = shuffle(COUNTRIES.filter(c => c[2] === 2));
+  const t3 = shuffle(COUNTRIES.filter(c => c[2] === 3));
+  return [...t1, ...t2, ...t3];
+}
+
+function show(name) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $("screen-" + name).classList.add("active");
+}
+
+function startGame() {
+  queue = buildQueue();
+  round = 0; lives = MAX_LIVES; score = 0; streak = 0; bestStreak = 0; results = [];
+  show("game");
+  nextRound();
+}
+
+function renderHud(answer) {
+  $("lives").innerHTML = Array.from({length: MAX_LIVES}, (_, i) =>
+    ICON.heart.replace('class="heart"', `class="heart ${i >= lives ? "lost" : ""}"`)).join("");
+  $("score").textContent = score;
+  $("level-txt").textContent = LEVELS[answer[2]];
+}
+
+function pickDistractors(answer) {
+  const sameTier = COUNTRIES.filter(c => c !== answer && c[2] === answer[2]);
+  const rest = COUNTRIES.filter(c => c !== answer && c[2] !== answer[2]);
+  return shuffle(sameTier).slice(0, 3).concat(shuffle(rest)).slice(0, 3);
+}
+
+function nextRound() {
+  if (lives <= 0 || round >= queue.length) return endGame();
+  locked = false;
+  const answer = queue[round];
+  renderHud(answer);
+  $("qnum").textContent = `Flag ${round + 1}`;
+  $("country-name").textContent = answer[1];
+  $("feedback").textContent = "";
+  $("feedback").className = "feedback";
+
+  const options = shuffle([answer, ...pickDistractors(answer)]);
+  $("options").innerHTML = options.map(c =>
+    `<button class="flag-btn" data-code="${c[0]}" aria-label="Guess ${c[1]}">
+       <img src="${flagUrl(c[0])}" alt="" draggable="false">
+       <span class="mark"></span>
+     </button>`).join("");
+  document.querySelectorAll(".flag-btn").forEach(b =>
+    b.addEventListener("click", () => answerWith(b, answer)));
+
+  timeLeft = ROUND_TIME;
+  updateTimerBar();
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    timeLeft -= 0.1;
+    updateTimerBar();
+    if (timeLeft <= 0) timeUp(answer);
+  }, 100);
+}
+
+function updateTimerBar() {
+  const pct = Math.max(0, timeLeft / ROUND_TIME * 100);
+  const fill = $("timerfill");
+  fill.style.width = pct + "%";
+  fill.classList.toggle("danger", timeLeft <= 3);
+}
+
+function lockRound(answer) {
+  locked = true;
+  clearInterval(timerId);
+  document.querySelectorAll(".flag-btn").forEach(b => {
+    b.disabled = true;
+    if (b.dataset.code === answer[0]) {
+      b.classList.add("correct");
+      b.querySelector(".mark").innerHTML = ICON.check;
+    } else {
+      b.classList.add("dim");
+    }
+  });
+}
+
+function setFeedback(text, kind) {
+  const f = $("feedback");
+  f.textContent = text;
+  f.className = `feedback show ${kind}`;
+}
+
+function answerWith(btn, answer) {
+  if (locked) return;
+  const correct = btn.dataset.code === answer[0];
+  lockRound(answer);
+  if (correct) {
+    const bonus = Math.ceil(timeLeft) * 10;
+    const tierPts = answer[2] * 100;
+    score += tierPts + bonus;
+    streak++; bestStreak = Math.max(bestStreak, streak);
+    results.push("ok");
+    setFeedback(`+${tierPts + bonus}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
+  } else {
+    btn.classList.remove("dim");
+    btn.classList.add("wrong");
+    btn.querySelector(".mark").innerHTML = ICON.x;
+    lives--; streak = 0;
+    results.push("no");
+    setFeedback(`That flag is ${nameOf(btn.dataset.code)}`, "bad");
+  }
+  renderHud(answer);
+  round++;
+  setTimeout(nextRound, correct ? 850 : 1550);
+}
+
+function timeUp(answer) {
+  if (locked) return;
+  lockRound(answer);
+  lives--; streak = 0;
+  results.push("to");
+  setFeedback("Out of time", "bad");
+  renderHud(answer);
+  round++;
+  setTimeout(nextRound, 1350);
+}
+
+function nameOf(code) {
+  const c = COUNTRIES.find(c => c[0] === code);
+  return c ? c[1] : code;
+}
+
+function rank(flags) {
+  if (flags >= 60) return [ICON.globe, "World Legend", "Do you work at the UN?"];
+  if (flags >= 40) return [ICON.crown, "Flag Master", "Genuinely elite. Respect."];
+  if (flags >= 25) return [ICON.medal, "Globetrotter", "You know your way around a map."];
+  if (flags >= 15) return [ICON.medal, "Traveler", "Solid geography instincts."];
+  if (flags >= 8)  return [ICON.plane, "Tourist", "Not bad — the world is big."];
+  return [ICON.compass, "Lost Tourist", "Time to spin the globe some more."];
+}
+
+function endGame() {
+  clearInterval(timerId);
+  const flagsRight = results.filter(r => r === "ok").length;
+  const [icon, title, sub] = rank(flagsRight);
+  $("end-medal").innerHTML = icon;
+  $("end-title").textContent = title;
+  $("end-subtitle").textContent = sub;
+  $("stat-score").textContent = score;
+  $("stat-flags").textContent = flagsRight;
+  $("stat-streak").textContent = bestStreak;
+  $("dots").innerHTML = results.map(r =>
+    `<span class="d ${r}"></span>`).join("");
+  show("end");
+}
+
+const RANK_EMOJI = {
+  "World Legend": "🌍", "Flag Master": "🏆", "Globetrotter": "🥇",
+  "Traveler": "🥈", "Tourist": "🧳", "Lost Tourist": "🧭",
+};
+
+function shareText() {
+  const flagsRight = results.filter(r => r === "ok").length;
+  const total = results.length;
+  const [, title] = rank(flagsRight);
+  const squares = results.map(r => r === "ok" ? "🟩" : r === "no" ? "🟥" : "⬛");
+  // group into rows of 10 so the grid reads cleanly in a comment
+  const grid = [];
+  for (let i = 0; i < squares.length; i += 10) grid.push(squares.slice(i, i + 10).join(""));
+  return [
+    `${RANK_EMOJI[title]} Flag Master — ${title}`,
+    ``,
+    `🎯 ${flagsRight}/${total} flags correct`,
+    `⭐ ${score.toLocaleString()} points`,
+    `🔥 Best streak: ${bestStreak}`,
+    ``,
+    grid.join("\n"),
+    ``,
+    `How well do you know the world's flags? 👇`,
+  ].join("\n");
+}
+
+async function copyResult() {
+  try {
+    await navigator.clipboard.writeText(shareText());
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = shareText(); document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  const t = $("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* wire up static icons */
+$("ic-slot-1").innerHTML = ICON.flag;
+$("ic-slot-2").innerHTML = ICON.clock;
+$("ic-slot-3").innerHTML = ICON.heartSmall;
+$("ic-slot-4").innerHTML = ICON.trend;
+$("ic-share").innerHTML = ICON.share;
+$("ic-again").innerHTML = ICON.replay;
+$("ic-check").innerHTML = ICON.check;
+
+$("btn-start").addEventListener("click", startGame);
+$("btn-again").addEventListener("click", startGame);
+$("btn-share").addEventListener("click", async () => {
+  if (navigator.share) {
+    try { await navigator.share({ text: shareText() }); return; } catch {}
+  }
+  copyResult();
+});
+</script>
+</body>
+</html>
