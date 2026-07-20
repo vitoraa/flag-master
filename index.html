@@ -270,7 +270,8 @@
     display: flex; align-items: center; gap: 10px;
     padding: 8px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px;
   }
-  .lb-nearby-row .pos { width: 18px; flex: none; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .lb-nearby-row .pos { width: 22px; flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; text-align: center; }
+  .lb-nearby-ellipsis { text-align: center; color: var(--muted); font-size: 13px; letter-spacing: 2px; padding: 2px 0; }
   .lb-nearby-row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-nearby-row .s { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
   .lb-nearby-row.you {
@@ -674,6 +675,8 @@ function resetLeaderboardUI() {
   loadNearbyLeaderboard();
 }
 
+const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
+
 async function loadNearbyLeaderboard() {
   const nearby = $("lb-nearby");
   nearby.style.display = "none";
@@ -686,20 +689,33 @@ async function loadNearbyLeaderboard() {
     if (!all.length) return;
 
     const idx = all.filter(r => r.score > score).length;
-    const above = all.slice(Math.max(0, idx - 2), idx);
-    const below = all.slice(idx, idx + 2);
+
+    const keepIdx = new Set();
+    for (let i = 0; i < Math.min(3, all.length); i++) keepIdx.add(i);
+    for (let i = Math.max(0, idx - 2); i < idx; i++) keepIdx.add(i);
+    for (let i = idx; i < Math.min(all.length, idx + 2); i++) keepIdx.add(i);
+    const sortedIdx = [...keepIdx].sort((a, b) => a - b);
 
     const rows = [];
-    above.forEach((r, i) => rows.push({ pos: Math.max(0, idx - 2) + i + 1, name: r.name, score: r.score, you: false }));
-    rows.push({ pos: idx + 1, name: "You", score, you: true });
-    below.forEach((r, i) => rows.push({ pos: idx + i + 2, name: r.name, score: r.score, you: false }));
+    let youInserted = false;
+    let prev = -1;
+    sortedIdx.forEach(i => {
+      if (prev !== -1 && i - prev > 1) rows.push({ ellipsis: true });
+      if (!youInserted && i >= idx) { rows.push({ pos: idx + 1, name: "You", score, you: true }); youInserted = true; }
+      const pos = i + 1 + (i >= idx ? 1 : 0);
+      rows.push({ pos, name: all[i].name, score: all[i].score, medal: MEDALS[i] });
+      prev = i;
+    });
+    if (!youInserted) rows.push({ pos: idx + 1, name: "You", score, you: true });
 
-    $("lb-nearby-list").innerHTML = rows.map(r =>
-      `<div class="lb-nearby-row ${r.you ? "you" : ""}">
-         <span class="pos">#${r.pos}</span>
+    $("lb-nearby-list").innerHTML = rows.map(r => {
+      if (r.ellipsis) return `<div class="lb-nearby-ellipsis">···</div>`;
+      return `<div class="lb-nearby-row ${r.you ? "you" : ""}">
+         <span class="pos">${r.medal || "#" + r.pos}</span>
          <span class="n">${escapeHtml(r.name)}</span>
          <span class="s">${r.score}</span>
-       </div>`).join("");
+       </div>`;
+    }).join("");
     nearby.style.display = "";
   } catch {
     nearby.style.display = "none";
