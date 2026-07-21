@@ -313,6 +313,19 @@
   .lb-nearby-row.you .pos { color: rgba(255,255,255,.85); }
   .lb-nearby-row.you .pts { color: rgba(255,255,255,.85); }
   .lb-nearby-empty { font-size: 12px; color: var(--muted); }
+  .lb-nearby-row.skeleton { position: relative; overflow: hidden; }
+  .lb-nearby-row.skeleton .pos,
+  .lb-nearby-row.skeleton .n,
+  .lb-nearby-row.skeleton .metrics { visibility: hidden; }
+  .lb-nearby-row.skeleton::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(127,127,127,.18), transparent);
+    transform: translateX(-100%);
+    animation: lb-shimmer 1.3s ease-in-out infinite;
+  }
+  @keyframes lb-shimmer { to { transform: translateX(100%); } }
+  .lb-nearby-error { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; }
+  .lb-nearby-error a { color: var(--accent); text-decoration: underline; }
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
@@ -759,16 +772,29 @@ function ensureScoreSaved() {
 
 const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
 
+function skeletonRow() {
+  return `<div class="lb-nearby-row skeleton">
+     <span class="pos">#0</span>
+     <span class="n">Loading</span>
+     <span class="metrics"><span class="f">00<span class="unit">flags</span></span><span class="pts">000 pts</span></span>
+   </div>`;
+}
+
 async function loadNearbyLeaderboard(displayName, flagsCount) {
   const nearby = $("lb-nearby");
-  nearby.style.display = "none";
-  if (!LEADERBOARD_URL) return;
+  if (!LEADERBOARD_URL) { nearby.style.display = "none"; return; }
+
+  $("lb-nearby-list").innerHTML = skeletonRow().repeat(4);
+  nearby.style.display = "";
 
   try {
     const res = await fetch(LEADERBOARD_URL);
     const data = await res.json();
     const all = (data.all || []).slice().sort((a, b) => b.score - a.score);
-    if (!all.length) return;
+    if (!all.length) {
+      $("lb-nearby-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
+      return;
+    }
 
     const youLabel = displayName || "You";
     if (displayName) {
@@ -816,7 +842,8 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
     }).join("");
     nearby.style.display = "";
   } catch {
-    nearby.style.display = "none";
+    $("lb-nearby-list").innerHTML = `<div class="lb-nearby-error">Couldn't load the leaderboard — <a href="#" id="lb-retry">retry</a></div>`;
+    $("lb-retry").addEventListener("click", e => { e.preventDefault(); loadNearbyLeaderboard(displayName, flagsCount); });
   }
 }
 
