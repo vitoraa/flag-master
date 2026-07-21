@@ -771,7 +771,6 @@ async function loadNearbyLeaderboard(displayName) {
         if (all[i].name === displayName && all[i].score === score) { all.splice(i, 1); break; }
       }
     }
-    if (!all.length) return;
 
     // idx = how many real entries outrank you; inserting "You" there gives a
     // combined ranking (length all.length + 1) where position p (0-based) is:
