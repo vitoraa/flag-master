@@ -181,9 +181,23 @@
     padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--muted);
   }
   .chip .lvldot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .score-cluster { display: flex; align-items: center; gap: 7px; }
   .score-wrap { display: flex; align-items: baseline; gap: 5px; font-variant-numeric: tabular-nums; }
-  .score-wrap .num { font-size: 22px; font-weight: 700; color: var(--gold); }
+  .score-wrap .num { font-size: 22px; font-weight: 700; color: var(--gold); display: inline-block; }
+  .score-wrap .num.bump { animation: scorebump .45s cubic-bezier(.2,1.4,.35,1); }
+  @keyframes scorebump {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.32); color: #ffe38a; }
+    100% { transform: scale(1); }
+  }
   .score-wrap .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+  .streak {
+    display: none; align-items: center; gap: 2px; align-self: center;
+    font-size: 13px; font-weight: 800; color: #ff8a3c;
+  }
+  .streak .flame { filter: drop-shadow(0 0 5px rgba(255,120,40,.7)); }
+  .streak.pop { animation: streakpop .5s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes streakpop { 0% { transform: scale(.3); } 55% { transform: scale(1.35); } 100% { transform: scale(1); } }
 
   .timerbar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-bottom: 24px; }
   .timerbar i {
@@ -355,7 +369,10 @@
       <button class="topbar-quit" id="quit-btn" aria-label="Quit to start screen"></button>
       <div class="lives" id="lives"></div>
       <div class="chip" id="level"><span class="lvldot"></span><span id="level-txt"></span></div>
-      <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
+      <div class="score-cluster">
+        <span class="streak" id="streak"><span class="flame" id="streak-flame"></span><span id="streak-num"></span></span>
+        <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
+      </div>
     </div>
     <div class="timerbar"><i id="timerfill"></i></div>
     <div class="question">
@@ -427,6 +444,7 @@ const ICON = {
   moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
   close: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
   plane: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15l-9-4V4a2 2 0 0 0-4 0v7l-5 2v2l5-1v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/></svg>',
+  flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4.5-3 8a3 3 0 0 0 6 0c0-1.2-.5-2-1-2.7.9.2 3 1.6 3 5.2a5 5 0 0 1-10 0C7 8 12 6 12 2z"/></svg>',
 };
 
 // [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard
@@ -532,6 +550,9 @@ function buildBackground() {
 function startGame() {
   queue = buildQueue();
   round = 0; lives = MAX_LIVES; score = 0; streak = 0; bestStreak = 0; results = [];
+  displayedScore = 0;
+  $("score").textContent = "0";
+  $("streak").style.display = "none";
   show("game");
   nextRound();
 }
@@ -542,11 +563,45 @@ function quitToStart() {
   show("start");
 }
 
+let displayedScore = 0;
+
 function renderHud(answer) {
   $("lives").innerHTML = Array.from({length: MAX_LIVES}, (_, i) =>
     ICON.heart.replace('class="heart"', `class="heart ${i >= lives ? "lost" : ""}"`)).join("");
-  $("score").textContent = score;
   $("level-txt").textContent = LEVELS[answer[2]];
+
+  if (score !== displayedScore) {
+    animateScore($("score"), displayedScore, score);
+    displayedScore = score;
+  }
+
+  const streakEl = $("streak");
+  if (streak >= 2) {
+    $("streak-num").textContent = streak;
+    streakEl.style.display = "inline-flex";
+    streakEl.classList.remove("pop");
+    void streakEl.offsetWidth;
+    streakEl.classList.add("pop");
+  } else {
+    streakEl.style.display = "none";
+    streakEl.classList.remove("pop");
+  }
+}
+
+function animateScore(el, from, to) {
+  const duration = 450;
+  const start = performance.now();
+  el.classList.remove("bump");
+  void el.offsetWidth;
+  el.classList.add("bump");
+  function step(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = to;
+  }
+  requestAnimationFrame(step);
 }
 
 function pickDistractors(answer) {
@@ -718,25 +773,31 @@ async function loadNearbyLeaderboard(displayName) {
     }
     if (!all.length) return;
 
+    // idx = how many real entries outrank you; inserting "You" there gives a
+    // combined ranking (length all.length + 1) where position p (0-based) is:
+    // You if p === idx, all[p] if p < idx, all[p - 1] if p > idx.
     const idx = all.filter(r => r.score > score).length;
+    const total = all.length + 1;
 
-    const keepIdx = new Set();
-    for (let i = 0; i < Math.min(3, all.length); i++) keepIdx.add(i);
-    for (let i = Math.max(0, idx - 2); i < idx; i++) keepIdx.add(i);
-    for (let i = idx; i < Math.min(all.length, idx + 2); i++) keepIdx.add(i);
-    const sortedIdx = [...keepIdx].sort((a, b) => a - b);
+    const keepPos = new Set();
+    for (let p = 0; p < Math.min(3, total); p++) keepPos.add(p);
+    for (let p = Math.max(0, idx - 2); p <= Math.min(total - 1, idx + 2); p++) keepPos.add(p);
+    const sortedPos = [...keepPos].sort((a, b) => a - b);
 
     const rows = [];
-    let youInserted = false;
     let prev = -1;
-    sortedIdx.forEach(i => {
-      if (prev !== -1 && i - prev > 1) rows.push({ ellipsis: true });
-      if (!youInserted && i >= idx) { rows.push({ pos: idx + 1, name: youLabel, score, you: true }); youInserted = true; }
-      const pos = i + 1 + (i >= idx ? 1 : 0);
-      rows.push({ pos, name: all[i].name, score: all[i].score, medal: MEDALS[i] });
-      prev = i;
+    sortedPos.forEach(p => {
+      if (prev !== -1 && p - prev > 1) rows.push({ ellipsis: true });
+      const rank = p + 1;
+      const medal = MEDALS[rank - 1];
+      if (p === idx) {
+        rows.push({ pos: rank, name: youLabel, score, you: true, medal });
+      } else {
+        const r = all[p < idx ? p : p - 1];
+        rows.push({ pos: rank, name: r.name, score: r.score, medal });
+      }
+      prev = p;
     });
-    if (!youInserted) rows.push({ pos: idx + 1, name: youLabel, score, you: true });
 
     $("lb-nearby-list").innerHTML = rows.map(r => {
       if (r.ellipsis) return `<div class="lb-nearby-ellipsis">···</div>`;
@@ -838,6 +899,7 @@ $("ic-slot-1").innerHTML = ICON.flag;
 $("ic-slot-2").innerHTML = ICON.clock;
 $("ic-slot-3").innerHTML = ICON.heartSmall;
 $("ic-slot-4").innerHTML = ICON.trend;
+$("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
 $("ic-check").innerHTML = ICON.check;
