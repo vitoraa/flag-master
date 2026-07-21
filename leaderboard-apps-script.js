@@ -32,7 +32,7 @@ function doGet(e) {
   const sheet = getSheet_();
   const rows = sheet.getDataRange().getValues().slice(1);
   const all = rows
-    .map(r => ({ name: r[1], score: Number(r[2]) || 0 }))
+    .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
     .sort((a, b) => b.score - a.score);
 
   return ContentService

@@ -303,11 +303,15 @@
   .lb-nearby-row .pos { width: 22px; flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; text-align: center; }
   .lb-nearby-ellipsis { text-align: center; color: var(--muted); font-size: 13px; letter-spacing: 2px; padding: 2px 0; }
   .lb-nearby-row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lb-nearby-row .s { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .lb-nearby-row .metrics { flex: none; text-align: right; line-height: 1.25; }
+  .lb-nearby-row .f { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .lb-nearby-row .f .unit { font-weight: 500; font-size: 11px; opacity: .75; margin-left: 3px; }
+  .lb-nearby-row .pts { display: block; font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
   .lb-nearby-row.you {
     background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-weight: 700;
   }
   .lb-nearby-row.you .pos { color: rgba(255,255,255,.85); }
+  .lb-nearby-row.you .pts { color: rgba(255,255,255,.85); }
   .lb-nearby-empty { font-size: 12px; color: var(--muted); }
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -754,7 +758,7 @@ function ensureScoreSaved() {
 
 const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
 
-async function loadNearbyLeaderboard(displayName) {
+async function loadNearbyLeaderboard(displayName, flagsCount) {
   const nearby = $("lb-nearby");
   nearby.style.display = "none";
   if (!LEADERBOARD_URL) return;
@@ -768,7 +772,7 @@ async function loadNearbyLeaderboard(displayName) {
     const youLabel = displayName || "You";
     if (displayName) {
       for (let i = all.length - 1; i >= 0; i--) {
-        if (all[i].name === displayName && all[i].score === score) { all.splice(i, 1); break; }
+        if (all[i].name === displayName && all[i].score === score && all[i].flags === flagsCount) { all.splice(i, 1); break; }
       }
     }
 
@@ -790,10 +794,10 @@ async function loadNearbyLeaderboard(displayName) {
       const rank = p + 1;
       const medal = MEDALS[rank - 1];
       if (p === idx) {
-        rows.push({ pos: rank, name: youLabel, score, you: true, medal });
+        rows.push({ pos: rank, name: youLabel, score, flags: flagsCount, you: true, medal });
       } else {
         const r = all[p < idx ? p : p - 1];
-        rows.push({ pos: rank, name: r.name, score: r.score, medal });
+        rows.push({ pos: rank, name: r.name, score: r.score, flags: r.flags, medal });
       }
       prev = p;
     });
@@ -803,7 +807,10 @@ async function loadNearbyLeaderboard(displayName) {
       return `<div class="lb-nearby-row ${r.you ? "you" : ""}">
          <span class="pos">${r.medal || "#" + r.pos}</span>
          <span class="n">${escapeHtml(r.name)}</span>
-         <span class="s">${r.score}</span>
+         <span class="metrics">
+           <span class="f">${r.flags}<span class="unit">flags</span></span>
+           <span class="pts">${r.score} pts</span>
+         </span>
        </div>`;
     }).join("");
     nearby.style.display = "";
@@ -845,7 +852,7 @@ async function submitScore(nameOverride) {
     });
     await res.json();
     $("lb-prompt").style.display = "none";
-    loadNearbyLeaderboard(name);
+    loadNearbyLeaderboard(name, flagsRight);
   } catch {
     scoreSubmitted = false;
     submitBtn.disabled = false;
