@@ -497,6 +497,7 @@ const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone" };
 // Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
 const NAME_KEY = "flagmaster-name";
+const GAME_URL = "https://flag-master-game.netlify.app";
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -884,6 +885,7 @@ function shareText() {
     grid.join("\n"),
     ``,
     `How well do you know the world's flags? 👇`,
+    GAME_URL,
   ].join("\n");
 }
 
