@@ -514,7 +514,7 @@ const GAME_URL = "https://flag-master-game.netlify.app";
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const flagUrl = code => `https://flagcdn.com/w320/${code}.png`;
+const flagUrl = code => `flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
