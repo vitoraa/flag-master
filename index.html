@@ -142,15 +142,40 @@
   .btn.ghost:hover { background: #222641; box-shadow: none; }
 
   /* ---------- start ---------- */
-  .hero { text-align: center; padding: 30px 4px 130px; }
-  #screen-start #btn-start {
+  .hero { text-align: center; padding: 30px 4px 150px; }
+  #screen-start .start-cta, #screen-practice-setup .start-cta {
     position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
     width: calc(100% - 40px); max-width: 460px; z-index: 25;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
-  #screen-start::after {
-    content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 110px;
+  #screen-start .start-cta .btn, #screen-practice-setup .start-cta .btn { width: 100%; }
+  .practice-link {
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    color: var(--muted); font-size: 13px; text-decoration: underline;
+  }
+  .practice-link:hover { color: var(--text); }
+  #screen-start::after, #screen-practice-setup::after {
+    content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 140px;
     background: linear-gradient(180deg, transparent, var(--bg) 60%);
     pointer-events: none; z-index: 24;
+  }
+  .cfg-list { display: grid; gap: 10px; margin: 0 auto 20px; max-width: 340px; }
+  .cfg-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 14px; text-align: left;
+  }
+  .cfg-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .seg { display: flex; background: var(--surface-2); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg-btn {
+    border: 0; background: none; padding: 7px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; font-family: inherit;
+    transition: background .15s, color .15s;
+  }
+  .seg-btn.active { background: var(--accent); color: #fff; }
+  .practice-note {
+    font-size: 12px; color: var(--muted); background: var(--surface-2);
+    border-radius: 12px; padding: 10px 14px; margin: 0 auto 22px; max-width: 340px; text-align: center;
   }
   .badge {
     display: inline-flex; align-items: center; gap: 7px;
@@ -443,7 +468,50 @@
         <div class="label">🏆 Top scores</div>
         <div class="podium" id="top3-list"></div>
       </div>
-      <button class="btn" id="btn-start">Start playing</button>
+      <div class="start-cta">
+        <button class="btn" id="btn-start">Start playing</button>
+        <button class="practice-link" id="btn-practice">Playing with a kid? Try Practice mode →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE SETUP -->
+  <section id="screen-practice-setup" class="screen">
+    <div class="hero">
+      <span class="badge"><span class="dot"></span>Practice mode</span>
+      <h1>Practice&nbsp;Setup</h1>
+      <p class="tag">Relaxed rules — perfect for playing with a kid.</p>
+
+      <div class="cfg-list">
+        <div class="cfg-row">
+          <span class="cfg-label">Timer</span>
+          <div class="seg" data-cfg="timer">
+            <button class="seg-btn active" data-value="off" type="button">No limit</button>
+            <button class="seg-btn" data-value="on" type="button">10s</button>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <span class="cfg-label">Mistakes allowed</span>
+          <div class="seg" data-cfg="lives">
+            <button class="seg-btn active" data-value="unlimited" type="button">Unlimited</button>
+            <button class="seg-btn" data-value="3" type="button">3</button>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <span class="cfg-label">Flags</span>
+          <div class="seg" data-cfg="difficulty">
+            <button class="seg-btn active" data-value="easy" type="button">Easy only</button>
+            <button class="seg-btn" data-value="all" type="button">All 195</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="practice-note">🚫 Practice runs aren't saved to the leaderboard</div>
+
+      <div class="start-cta">
+        <button class="btn" id="btn-practice-start">Start practice</button>
+        <button class="practice-link" id="btn-practice-back">← Back to standard mode</button>
+      </div>
     </div>
   </section>
 
@@ -459,7 +527,7 @@
         <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
       </div>
     </div>
-    <div class="timerbar"><i id="timerfill"></i></div>
+    <div class="timerbar" id="timerbar"><i id="timerfill"></i></div>
     <div class="question">
       <div class="prompt" id="qnum"></div>
       <h2 id="country-name"></h2>
@@ -479,6 +547,7 @@
         <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
         <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
       </div>
+      <div class="practice-note" id="practice-end-note" style="display:none">🚫 Practice run — not saved to the leaderboard</div>
       <div class="leaderboard-card" id="lb-card">
         <div class="lb-nearby" id="lb-nearby" style="display:none">
           <div class="label">Leaderboard</div>
@@ -601,7 +670,13 @@ const flagUrl = code => `flags/${code}.png`;
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
 
+let practiceMode = false;
+let practiceCfg = { timer: "off", lives: "unlimited", difficulty: "easy" };
+
 function buildQueue() {
+  if (practiceMode && practiceCfg.difficulty === "easy") {
+    return shuffle(COUNTRIES.filter(c => c[2] === 1));
+  }
   const t1 = shuffle(COUNTRIES.filter(c => c[2] === 1));
   const t2 = shuffle(COUNTRIES.filter(c => c[2] === 2));
   const t3 = shuffle(COUNTRIES.filter(c => c[2] === 3));
@@ -612,7 +687,7 @@ function buildQueue() {
 function show(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $("screen-" + name).classList.add("active");
-  $("flag-bg").style.display = name === "start" ? "" : "none";
+  $("flag-bg").style.display = (name === "start" || name === "practice-setup") ? "" : "none";
   $("theme-toggle").style.display = name === "game" ? "none" : "";
 }
 
@@ -650,7 +725,9 @@ function buildBackground() {
 
 function startGame() {
   queue = buildQueue();
-  round = 0; lives = MAX_LIVES; score = 0; streak = 0; bestStreak = 0; results = [];
+  round = 0;
+  lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
+  score = 0; streak = 0; bestStreak = 0; results = [];
   displayedScore = 0;
   $("score").textContent = "0";
   $("streak").style.display = "none";
@@ -739,14 +816,21 @@ function nextRound() {
   document.querySelectorAll(".flag-btn").forEach(b =>
     b.addEventListener("click", () => answerWith(b, answer)));
 
-  timeLeft = ROUND_TIME;
-  updateTimerBar();
   clearInterval(timerId);
-  timerId = setInterval(() => {
-    timeLeft -= 0.1;
+  const noTimer = practiceMode && practiceCfg.timer === "off";
+  if (noTimer) {
+    $("timerbar").style.display = "none";
+    timeLeft = Infinity;
+  } else {
+    $("timerbar").style.display = "";
+    timeLeft = ROUND_TIME;
     updateTimerBar();
-    if (timeLeft <= 0) timeUp(answer);
-  }, 100);
+    timerId = setInterval(() => {
+      timeLeft -= 0.1;
+      updateTimerBar();
+      if (timeLeft <= 0) timeUp(answer);
+    }, 100);
+  }
 }
 
 function updateTimerBar() {
@@ -781,7 +865,8 @@ function answerWith(btn, answer) {
   const correct = btn.dataset.code === answer[0];
   lockRound(answer);
   if (correct) {
-    const bonus = Math.ceil(timeLeft) * 10;
+    const noTimer = practiceMode && practiceCfg.timer === "off";
+    const bonus = noTimer ? 0 : Math.ceil(timeLeft) * 10;
     const tierPts = answer[2] * 100;
     score += tierPts + bonus;
     streak++; bestStreak = Math.max(bestStreak, streak);
@@ -843,7 +928,14 @@ function endGame() {
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
   show("end");
-  resetLeaderboardUI();
+  if (practiceMode) {
+    $("lb-card").style.display = "none";
+    $("practice-end-note").style.display = "";
+  } else {
+    $("lb-card").style.display = "";
+    $("practice-end-note").style.display = "none";
+    resetLeaderboardUI();
+  }
 }
 
 let scoreSubmitted = false;
@@ -862,7 +954,7 @@ function resetLeaderboardUI() {
 }
 
 function ensureScoreSaved() {
-  if (scoreSubmitted || !LEADERBOARD_URL) return;
+  if (practiceMode || scoreSubmitted || !LEADERBOARD_URL) return;
   if (!$("screen-end").classList.contains("active")) return;
   submitScore();
 }
@@ -1065,7 +1157,20 @@ $("theme-toggle").addEventListener("click", () => {
 buildBackground();
 loadStartTop3();
 
-$("btn-start").addEventListener("click", startGame);
+$("btn-start").addEventListener("click", () => { practiceMode = false; startGame(); });
+$("btn-practice").addEventListener("click", () => show("practice-setup"));
+$("btn-practice-back").addEventListener("click", () => show("start"));
+$("btn-practice-start").addEventListener("click", () => { practiceMode = true; startGame(); });
+
+document.querySelectorAll(".seg").forEach(seg => {
+  seg.querySelectorAll(".seg-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      seg.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      practiceCfg[seg.dataset.cfg] = btn.dataset.value;
+    });
+  });
+});
 $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
 $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
