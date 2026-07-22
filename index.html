@@ -207,6 +207,24 @@
   .streak .flame { filter: drop-shadow(0 0 5px rgba(255,120,40,.7)); }
   .streak.pop { animation: streakpop .5s cubic-bezier(.2,1.5,.4,1); }
   @keyframes streakpop { 0% { transform: scale(.3); } 55% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .streak.milestone { animation: streakmilestone .9s cubic-bezier(.2,1.6,.3,1); }
+  @keyframes streakmilestone {
+    0% { transform: scale(.3) rotate(-10deg); }
+    35% { transform: scale(1.8) rotate(8deg); text-shadow: 0 0 20px rgba(255,138,60,.95); }
+    60% { transform: scale(1.15) rotate(-4deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .milestone-flash {
+    position: fixed; inset: 0; z-index: 15; pointer-events: none; opacity: 0;
+    background: radial-gradient(circle at 50% 22%, rgba(255,150,60,.55), transparent 60%);
+  }
+  .milestone-flash.show { animation: milestoneflash .8s ease-out; }
+  @keyframes milestoneflash {
+    0% { opacity: 0; }
+    22% { opacity: 1; }
+    100% { opacity: 0; }
+  }
 
   .timerbar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-bottom: 24px; }
   .timerbar i {
@@ -258,6 +276,10 @@
   .feedback.show { opacity: 1; transform: translateY(0) scale(1); }
   .feedback.good { color: var(--good); background: rgba(47,224,160,.14); }
   .feedback.bad { color: var(--bad); background: rgba(255,84,112,.14); }
+  .feedback.milestone {
+    color: var(--gold); background: rgba(255,209,102,.2); font-size: 19px;
+    box-shadow: 0 0 0 1px rgba(255,209,102,.4), 0 10px 26px -8px rgba(255,209,102,.55);
+  }
 
   /* ---------- end ---------- */
   .end { text-align: center; padding: 10px 4px; }
@@ -427,6 +449,7 @@
 
   <!-- GAME -->
   <section id="screen-game" class="screen">
+    <div class="milestone-flash" id="milestone-flash"></div>
     <div class="topbar">
       <button class="topbar-quit" id="quit-btn" aria-label="Quit to start screen"></button>
       <div class="lives" id="lives"></div>
@@ -655,15 +678,24 @@ function renderHud(answer) {
 
   const streakEl = $("streak");
   if (streak >= 2) {
+    const milestone = streak > 0 && streak % 10 === 0;
     $("streak-num").textContent = streak;
     streakEl.style.display = "inline-flex";
-    streakEl.classList.remove("pop");
+    streakEl.classList.remove("pop", "milestone");
     void streakEl.offsetWidth;
-    streakEl.classList.add("pop");
+    streakEl.classList.add(milestone ? "milestone" : "pop");
+    if (milestone) triggerMilestoneFlash();
   } else {
     streakEl.style.display = "none";
-    streakEl.classList.remove("pop");
+    streakEl.classList.remove("pop", "milestone");
   }
+}
+
+function triggerMilestoneFlash() {
+  const flash = $("milestone-flash");
+  flash.classList.remove("show");
+  void flash.offsetWidth;
+  flash.classList.add("show");
 }
 
 function animateScore(el, from, to) {
@@ -754,7 +786,12 @@ function answerWith(btn, answer) {
     score += tierPts + bonus;
     streak++; bestStreak = Math.max(bestStreak, streak);
     results.push("ok");
-    setFeedback(`+${tierPts + bonus}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
+    const milestone = streak % 10 === 0;
+    if (milestone) {
+      setFeedback(`+${tierPts + bonus}   ·   🔥 ${streak} STREAK!`, "good milestone");
+    } else {
+      setFeedback(`+${tierPts + bonus}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
+    }
   } else {
     btn.classList.remove("dim");
     btn.classList.add("wrong");
