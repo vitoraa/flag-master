@@ -28,14 +28,65 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Builds the combined ranking rows (top 3 + a window around "you"), the same
+// shape the client used to build itself from the full list. Position p
+// (0-based) in the combined ranking is: "you" if p === idx, else all[p] if
+// p < idx, else all[p - 1].
+function buildNearbyRows_(all, idx, youName, youScore, youFlags) {
+  const total = all.length + 1;
+  const keepPos = {};
+  for (let p = 0; p < Math.min(3, total); p++) keepPos[p] = true;
+  for (let p = Math.max(0, idx - 2); p <= Math.min(total - 1, idx + 2); p++) keepPos[p] = true;
+  const sortedPos = Object.keys(keepPos).map(Number).sort(function (a, b) { return a - b; });
+
+  const rows = [];
+  let prev = -1;
+  sortedPos.forEach(function (p) {
+    if (prev !== -1 && p - prev > 1) rows.push({ ellipsis: true });
+    const rank = p + 1;
+    if (p === idx) {
+      rows.push({ pos: rank, name: youName, score: youScore, flags: youFlags, you: true });
+    } else {
+      const r = all[p < idx ? p : p - 1];
+      rows.push({ pos: rank, name: r.name, score: r.score, flags: r.flags });
+    }
+    prev = p;
+  });
+  return rows;
+}
+
 function doGet(e) {
   const sheet = getSheet_();
   const rows = sheet.getDataRange().getValues().slice(1);
-  const all = rows
+  let all = rows
     .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
     .sort((a, b) => b.score - a.score);
 
+  const total = all.length;
+  const top = all.slice(0, 3);
+  const result = { top: top, total: total };
+
+  const p = (e && e.parameter) || {};
+  if (p.score !== undefined) {
+    const youScore = Number(p.score) || 0;
+    const youFlags = Number(p.flags) || 0;
+    const youName = p.name || "You";
+
+    if (p.name) {
+      for (let i = all.length - 1; i >= 0; i--) {
+        if (all[i].name === p.name && all[i].score === youScore && all[i].flags === youFlags) {
+          all.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    const idx = all.filter(r => r.score > youScore).length;
+    result.rows = buildNearbyRows_(all, idx, youName, youScore, youFlags);
+    result.total = all.length + 1;
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ top: all.slice(0, 10), all: all, total: rows.length }))
+    .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }

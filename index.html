@@ -849,12 +849,12 @@ async function loadStartTop3() {
   try {
     const res = await fetch(LEADERBOARD_URL);
     const data = await res.json();
-    const all = (data.all || []).slice().sort((a, b) => b.score - a.score);
-    if (!all.length) {
+    const top = data.top || [];
+    if (!top.length) {
       $("top3-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
       return;
     }
-    $("top3-list").innerHTML = all.slice(0, 3).map((r, i) => podiumSpot(i + 1, r.name, r.flags, r.score)).join("");
+    $("top3-list").innerHTML = top.map((r, i) => podiumSpot(i + 1, r.name, r.flags, r.score)).join("");
   } catch {
     $("top3-list").innerHTML = `<div class="lb-nearby-error">Couldn't load the leaderboard — <a href="#" id="top3-retry">retry</a></div>`;
     $("top3-retry").addEventListener("click", e => { e.preventDefault(); loadStartTop3(); });
@@ -869,51 +869,21 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
   nearby.style.display = "";
 
   try {
-    const res = await fetch(LEADERBOARD_URL);
+    const youName = displayName || "You";
+    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}`;
+    const res = await fetch(url);
     const data = await res.json();
-    const all = (data.all || []).slice().sort((a, b) => b.score - a.score);
-    if (!all.length) {
+    const rows = data.rows || [];
+    if (!rows.length) {
       $("lb-nearby-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
       return;
     }
 
-    const youLabel = displayName || "You";
-    if (displayName) {
-      for (let i = all.length - 1; i >= 0; i--) {
-        if (all[i].name === displayName && all[i].score === score && all[i].flags === flagsCount) { all.splice(i, 1); break; }
-      }
-    }
-
-    // idx = how many real entries outrank you; inserting "You" there gives a
-    // combined ranking (length all.length + 1) where position p (0-based) is:
-    // You if p === idx, all[p] if p < idx, all[p - 1] if p > idx.
-    const idx = all.filter(r => r.score > score).length;
-    const total = all.length + 1;
-
-    const keepPos = new Set();
-    for (let p = 0; p < Math.min(3, total); p++) keepPos.add(p);
-    for (let p = Math.max(0, idx - 2); p <= Math.min(total - 1, idx + 2); p++) keepPos.add(p);
-    const sortedPos = [...keepPos].sort((a, b) => a - b);
-
-    const rows = [];
-    let prev = -1;
-    sortedPos.forEach(p => {
-      if (prev !== -1 && p - prev > 1) rows.push({ ellipsis: true });
-      const rank = p + 1;
-      const medal = MEDALS[rank - 1];
-      if (p === idx) {
-        rows.push({ pos: rank, name: youLabel, score, flags: flagsCount, you: true, medal });
-      } else {
-        const r = all[p < idx ? p : p - 1];
-        rows.push({ pos: rank, name: r.name, score: r.score, flags: r.flags, medal });
-      }
-      prev = p;
-    });
-
     $("lb-nearby-list").innerHTML = rows.map(r => {
       if (r.ellipsis) return `<div class="lb-nearby-ellipsis">···</div>`;
+      const medal = MEDALS[r.pos - 1];
       return `<div class="lb-nearby-row ${r.you ? "you" : ""}">
-         <span class="pos">${r.medal || "#" + r.pos}</span>
+         <span class="pos">${medal || "#" + r.pos}</span>
          <span class="n">${escapeHtml(r.name)}</span>
          <span class="metrics">
            <span class="f">${r.flags}<span class="unit">flags</span></span>
