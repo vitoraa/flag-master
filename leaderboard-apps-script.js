@@ -1,4 +1,6 @@
 const SHEET_NAME = "Scores";
+const CACHE_KEY = "leaderboard_sorted_v1";
+const CACHE_TTL_SECONDS = 300;
 
 function getSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -10,6 +12,24 @@ function getSheet_() {
   return sheet;
 }
 
+// Returns the full leaderboard (name/score/flags only, sorted desc) from
+// CacheService when available, so most requests skip reading+sorting the
+// whole sheet. Cache is invalidated on every new submission.
+function getSortedAll_() {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get(CACHE_KEY);
+  if (cached) return JSON.parse(cached);
+
+  const sheet = getSheet_();
+  const rows = sheet.getDataRange().getValues().slice(1);
+  const all = rows
+    .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
+    .sort((a, b) => b.score - a.score);
+
+  cache.put(CACHE_KEY, JSON.stringify(all), CACHE_TTL_SECONDS);
+  return all;
+}
+
 function doPost(e) {
   const sheet = getSheet_();
   const data = JSON.parse(e.postData.contents);
@@ -19,6 +39,7 @@ function doPost(e) {
   const streak = Number(data.streak) || 0;
 
   sheet.appendRow([new Date(), name, score, flags, streak]);
+  CacheService.getScriptCache().remove(CACHE_KEY);
 
   const scores = sheet.getDataRange().getValues().slice(1).map(r => Number(r[2]) || 0);
   const rank = scores.filter(s => s > score).length + 1;
@@ -56,11 +77,7 @@ function buildNearbyRows_(all, idx, youName, youScore, youFlags) {
 }
 
 function doGet(e) {
-  const sheet = getSheet_();
-  const rows = sheet.getDataRange().getValues().slice(1);
-  let all = rows
-    .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
-    .sort((a, b) => b.score - a.score);
+  let all = getSortedAll_();
 
   const total = all.length;
   const top = all.slice(0, 3);
