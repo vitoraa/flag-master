@@ -142,7 +142,16 @@
   .btn.ghost:hover { background: #222641; box-shadow: none; }
 
   /* ---------- start ---------- */
-  .hero { text-align: center; padding: 30px 4px; }
+  .hero { text-align: center; padding: 30px 4px 130px; }
+  #screen-start #btn-start {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    width: calc(100% - 40px); max-width: 460px; z-index: 25;
+  }
+  #screen-start::after {
+    content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 110px;
+    background: linear-gradient(180deg, transparent, var(--bg) 60%);
+    pointer-events: none; z-index: 24;
+  }
   .badge {
     display: inline-flex; align-items: center; gap: 7px;
     background: var(--surface); border: 1px solid var(--line);
@@ -328,6 +337,36 @@
   @keyframes lb-shimmer { to { transform: translateX(100%); } }
   .lb-nearby-error { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; }
   .lb-nearby-error a { color: var(--accent); text-decoration: underline; }
+  .top3-card { max-width: 340px; margin: 0 auto 28px; }
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding-top: 6px; }
+  .podium-spot { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .podium-spot.rank-1 { order: 2; }
+  .podium-spot.rank-2 { order: 1; }
+  .podium-spot.rank-3 { order: 3; }
+  .podium-medal { font-size: 24px; margin-bottom: 6px; }
+  .podium-spot.rank-1 .podium-medal { font-size: 30px; }
+  .podium-name {
+    font-size: 12px; font-weight: 700; max-width: 100%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+  }
+  .podium-stats { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .podium-stats b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .podium-pts { display: block; font-variant-numeric: tabular-nums; }
+  .podium-bar {
+    width: 100%; border-radius: 10px 10px 4px 4px;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding-top: 8px; font-weight: 800; font-size: 18px; color: #fff;
+  }
+  .rank-1 .podium-bar { height: 76px; background: linear-gradient(160deg, #ffdd8a, #d99a1f); }
+  .rank-2 .podium-bar { height: 54px; background: linear-gradient(160deg, #dfe4f0, #a3adc2); }
+  .rank-3 .podium-bar { height: 40px; background: linear-gradient(160deg, #e6b892, #b9793f); }
+  .podium-skel { position: relative; overflow: hidden; background: var(--surface-2); }
+  .podium-skel::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(127,127,127,.18), transparent);
+    transform: translateX(-100%);
+    animation: lb-shimmer 1.3s ease-in-out infinite;
+  }
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
@@ -377,6 +416,10 @@
           <span class="ic" id="ic-slot-4"></span>
           <span class="txt">Starts easy, ends <b>brutal</b></span>
         </div>
+      </div>
+      <div class="leaderboard-card top3-card" id="top3-card">
+        <div class="label">🏆 Top scores</div>
+        <div class="podium" id="top3-list"></div>
       </div>
       <button class="btn" id="btn-start">Start playing</button>
     </div>
@@ -782,6 +825,42 @@ function skeletonRow() {
    </div>`;
 }
 
+function podiumSpot(rank, name, flags, score) {
+  return `<div class="podium-spot rank-${rank}">
+     <div class="podium-medal">${MEDALS[rank - 1]}</div>
+     <div class="podium-name">${escapeHtml(name)}</div>
+     <div class="podium-stats"><b>${flags}</b> flags<span class="podium-pts">${score} pts</span></div>
+     <div class="podium-bar">${rank}</div>
+   </div>`;
+}
+
+function podiumSkeletonSpot(rank) {
+  return `<div class="podium-spot rank-${rank}">
+     <div class="podium-medal">${MEDALS[rank - 1]}</div>
+     <div class="podium-bar podium-skel"></div>
+   </div>`;
+}
+
+async function loadStartTop3() {
+  const card = $("top3-card");
+  if (!LEADERBOARD_URL) { card.style.display = "none"; return; }
+
+  $("top3-list").innerHTML = [1, 2, 3].map(podiumSkeletonSpot).join("");
+  try {
+    const res = await fetch(LEADERBOARD_URL);
+    const data = await res.json();
+    const all = (data.all || []).slice().sort((a, b) => b.score - a.score);
+    if (!all.length) {
+      $("top3-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
+      return;
+    }
+    $("top3-list").innerHTML = all.slice(0, 3).map((r, i) => podiumSpot(i + 1, r.name, r.flags, r.score)).join("");
+  } catch {
+    $("top3-list").innerHTML = `<div class="lb-nearby-error">Couldn't load the leaderboard — <a href="#" id="top3-retry">retry</a></div>`;
+    $("top3-retry").addEventListener("click", e => { e.preventDefault(); loadStartTop3(); });
+  }
+}
+
 async function loadNearbyLeaderboard(displayName, flagsCount) {
   const nearby = $("lb-nearby");
   if (!LEADERBOARD_URL) { nearby.style.display = "none"; return; }
@@ -962,6 +1041,7 @@ $("theme-toggle").addEventListener("click", () => {
 });
 
 buildBackground();
+loadStartTop3();
 
 $("btn-start").addEventListener("click", startGame);
 $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
