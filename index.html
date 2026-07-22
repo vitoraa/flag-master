@@ -239,7 +239,9 @@
 
   .feedback {
     width: fit-content; max-width: 100%; margin: 18px auto 0;
+    min-height: 64px; box-sizing: border-box;
     padding: 11px 22px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
     text-align: center; font-weight: 700; font-size: 17px;
     opacity: 0; transform: translateY(6px) scale(.96);
     transition: opacity .22s ease, transform .22s ease;
