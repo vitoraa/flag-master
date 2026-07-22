@@ -396,7 +396,7 @@
   <!-- START -->
   <section id="screen-start" class="screen active">
     <div class="hero">
-      <span class="badge"><span class="dot"></span>140 countries · one shot</span>
+      <span class="badge"><span class="dot"></span>195 countries · one shot</span>
       <h1>Flag&nbsp;Master</h1>
       <p class="tag">How many flags of the world do you actually know? Prove it.</p>
       <div class="rules">
@@ -509,7 +509,7 @@ const ICON = {
   flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4.5-3 8a3 3 0 0 0 6 0c0-1.2-.5-2-1-2.7.9.2 3 1.6 3 5.2a5 5 0 0 1-10 0C7 8 12 6 12 2z"/></svg>',
 };
 
-// [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard
+// [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
 const COUNTRIES = [
   ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
   ["it","Italy",1],["es","Spain",1],["gb","United Kingdom",1],["jp","Japan",1],
@@ -546,11 +546,25 @@ const COUNTRIES = [
   ["do","Dominican Republic",3],["ht","Haiti",3],["tt","Trinidad and Tobago",3],["gy","Guyana",3],
   ["sr","Suriname",3],["bz","Belize",3],["mv","Maldives",3],["mc","Monaco",3],
   ["li","Liechtenstein",3],["ad","Andorra",3],["sm","San Marino",3],["va","Vatican City",3],
+  ["af","Afghanistan",4],["ag","Antigua and Barbuda",4],["bb","Barbados",4],["bf","Burkina Faso",4],
+  ["bi","Burundi",4],["bj","Benin",4],["bs","Bahamas",4],["by","Belarus",4],
+  ["cd","DR Congo",4],["cf","Central African Republic",4],["cg","Republic of the Congo",4],["cv","Cabo Verde",4],
+  ["dj","Djibouti",4],["dm","Dominica",4],["er","Eritrea",4],["fm","Micronesia",4],
+  ["ga","Gabon",4],["gd","Grenada",4],["gm","Gambia",4],["gn","Guinea",4],
+  ["gq","Equatorial Guinea",4],["gw","Guinea-Bissau",4],["ki","Kiribati",4],["km","Comoros",4],
+  ["kn","Saint Kitts and Nevis",4],["kp","North Korea",4],["lc","Saint Lucia",4],["lr","Liberia",4],
+  ["ls","Lesotho",4],["mh","Marshall Islands",4],["ml","Mali",4],["mr","Mauritania",4],
+  ["mw","Malawi",4],["ne","Niger",4],["nr","Nauru",4],["ps","Palestine",4],
+  ["pw","Palau",4],["rw","Rwanda",4],["sb","Solomon Islands",4],["sc","Seychelles",4],
+  ["sl","Sierra Leone",4],["so","Somalia",4],["ss","South Sudan",4],["st","Sao Tome and Principe",4],
+  ["sy","Syria",4],["sz","Eswatini",4],["td","Chad",4],["tg","Togo",4],
+  ["tl","Timor-Leste",4],["to","Tonga",4],["tv","Tuvalu",4],["vc","Saint Vincent and the Grenadines",4],
+  ["vu","Vanuatu",4],["ws","Samoa",4],["ye","Yemen",4],
 ];
 
 const ROUND_TIME = 10;
 const MAX_LIVES = 3;
-const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone" };
+const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
 
 // Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
@@ -568,7 +582,8 @@ function buildQueue() {
   const t1 = shuffle(COUNTRIES.filter(c => c[2] === 1));
   const t2 = shuffle(COUNTRIES.filter(c => c[2] === 2));
   const t3 = shuffle(COUNTRIES.filter(c => c[2] === 3));
-  return [...t1, ...t2, ...t3];
+  const t4 = shuffle(COUNTRIES.filter(c => c[2] === 4));
+  return [...t1, ...t2, ...t3, ...t4];
 }
 
 function show(name) {
