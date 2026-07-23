@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Flag Master — how many flags do you know?</title>
+<title>Capital Master — how many capitals do you know?</title>
 <style>
   :root {
     --bg: #06070d;
@@ -474,15 +474,15 @@
   <section id="screen-start" class="screen active">
     <div class="hero">
       <span class="badge"><span class="dot"></span>195 countries · one shot</span>
-      <h1>Flag&nbsp;Master</h1>
-      <p class="tag">How many flags of the world do you actually know? Prove it.</p>
+      <h1>Capital&nbsp;Master</h1>
+      <p class="tag">How many capital cities of the world do you actually know? Prove it.</p>
       <div class="personal-best" id="personal-best" style="display:none">
-        🏆 Your best: <b id="pb-flags">0</b> flags · <b id="pb-score">0</b> pts
+        🏆 Your best: <b id="pb-flags">0</b> capitals · <b id="pb-score">0</b> pts
       </div>
       <div class="rules">
         <div class="rule">
           <span class="ic" id="ic-slot-1"></span>
-          <span class="txt">Spot the right flag out of <b>4 options</b></span>
+          <span class="txt">Spot the right capital out of <b>4 options</b></span>
         </div>
         <div class="rule">
           <span class="ic" id="ic-slot-2"></span>
@@ -531,7 +531,7 @@
           </div>
         </div>
         <div class="cfg-row">
-          <span class="cfg-label">Flags</span>
+          <span class="cfg-label">Countries</span>
           <div class="seg" data-cfg="difficulty">
             <button class="seg-btn active" data-value="easy" type="button">Easy only</button>
             <button class="seg-btn" data-value="all" type="button">All 195</button>
@@ -580,7 +580,7 @@
       <div class="new-best-badge" id="new-best-badge" style="display:none">🏆 New personal best!</div>
       <div class="stats">
         <div class="stat"><b id="stat-score">0</b><span>Score</span></div>
-        <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
+        <div class="stat"><b id="stat-flags">0</b><span>Capitals</span></div>
         <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
       </div>
       <div class="practice-note" id="practice-end-note" style="display:none">🚫 Practice run — not saved to the leaderboard</div>
@@ -838,13 +838,13 @@ const COUNTRIES = [
 
 const ROUND_TIME = 10;
 const MAX_LIVES = 3;
-const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
+const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Capital nerd zone", 4: "Very hard" };
 
 // Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
-const NAME_KEY = "flagmaster-name";
-const BEST_KEY = "flagmaster-best";
-const GAME_URL = "https://vitoraa.github.io/flag-master/";
+const NAME_KEY = "capitalmaster-name";
+const BEST_KEY = "capitalmaster-best";
+const GAME_URL = "https://vitoraa.github.io/flag-master/capital-master/";
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -1150,7 +1150,7 @@ function nameOf(code) {
 
 function rank(flags) {
   if (flags >= 60) return [ICON.globe, "World Legend", "Do you work at the UN?"];
-  if (flags >= 40) return [ICON.crown, "Flag Master", "Genuinely elite. Respect."];
+  if (flags >= 40) return [ICON.crown, "Capital Master", "Genuinely elite. Respect."];
   if (flags >= 25) return [ICON.medal, "Globetrotter", "You know your way around a map."];
   if (flags >= 15) return [ICON.medal, "Traveler", "Solid geography instincts."];
   if (flags >= 8)  return [ICON.plane, "Tourist", "Not bad — the world is big."];
@@ -1194,6 +1194,7 @@ function logPlay() {
       type: "play",
       name: savedName,
       practice: practiceMode,
+      game: "capitals",
     }),
   }).catch(() => {});
 }
@@ -1251,7 +1252,7 @@ async function loadStartTop3() {
 
   $("top3-list").innerHTML = [1, 2, 3].map(podiumSkeletonSpot).join("");
   try {
-    const res = await fetch(LEADERBOARD_URL);
+    const res = await fetch(`${LEADERBOARD_URL}?game=capitals`);
     const data = await res.json();
     const top = data.top || [];
     if (!top.length) {
@@ -1274,7 +1275,7 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
 
   try {
     const youName = displayName || "You";
-    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}`;
+    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}&game=capitals`;
     const res = await fetch(url);
     const data = await res.json();
     const rows = data.rows || [];
@@ -1331,7 +1332,7 @@ async function submitScore(nameOverride) {
     const res = await fetch(LEADERBOARD_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ name, score, flags: flagsRight, streak: bestStreak }),
+      body: JSON.stringify({ name, score, flags: flagsRight, streak: bestStreak, game: "capitals" }),
     });
     await res.json();
     $("lb-prompt").style.display = "none";
@@ -1353,7 +1354,7 @@ async function submitScore(nameOverride) {
 }
 
 const RANK_EMOJI = {
-  "World Legend": "🌍", "Flag Master": "🏆", "Globetrotter": "🥇",
+  "World Legend": "🌍", "Capital Master": "🏆", "Globetrotter": "🥇",
   "Traveler": "🥈", "Tourist": "🧳", "Lost Tourist": "🧭",
 };
 
@@ -1366,9 +1367,9 @@ function shareText() {
   const grid = [];
   for (let i = 0; i < squares.length; i += 10) grid.push(squares.slice(i, i + 10).join(""));
   return [
-    `${RANK_EMOJI[title]} Flag Master — ${title}`,
+    `${RANK_EMOJI[title]} Capital Master — ${title}`,
     ``,
-    `🎯 ${flagsRight}/${total} flags correct`,
+    `🎯 ${flagsRight}/${total} capitals correct`,
     `⭐ ${score.toLocaleString()} points`,
     `🔥 Best streak: ${bestStreak}`,
     ``,
@@ -1408,7 +1409,7 @@ $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitSco
 $("lb-anon").addEventListener("click", () => submitScore("Anonymous"));
 
 /* ---------- theme ---------- */
-const THEME_KEY = "flagmaster-theme";
+const THEME_KEY = "capitalmaster-theme";
 function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("theme-toggle").innerHTML = t === "light" ? ICON.moon : ICON.sun;
