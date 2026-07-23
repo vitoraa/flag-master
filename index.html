@@ -180,6 +180,12 @@
     font-size: 12px; color: var(--muted); background: var(--surface-2);
     border-radius: 12px; padding: 10px 14px; margin: 0 auto 22px; max-width: 340px; text-align: center;
   }
+  .new-best-badge {
+    display: inline-block; font-size: 13px; font-weight: 800; color: #3a2200;
+    background: linear-gradient(135deg, var(--gold), #ffb020);
+    border-radius: 999px; padding: 8px 18px; margin: 4px 0 18px;
+    box-shadow: 0 10px 26px -8px rgba(255,209,102,.6);
+  }
   .badge {
     display: inline-flex; align-items: center; gap: 7px;
     background: var(--surface); border: 1px solid var(--line);
@@ -193,6 +199,12 @@
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .hero .tag { color: var(--muted); font-size: 16px; margin: 14px auto 30px; max-width: 300px; line-height: 1.55; }
+  .personal-best {
+    display: inline-block; background: var(--surface); border: 1px solid var(--line);
+    color: var(--muted); font-size: 13px; padding: 8px 16px; border-radius: 999px;
+    margin: -14px 0 26px;
+  }
+  .personal-best b { color: var(--gold); font-variant-numeric: tabular-nums; }
   .rules { display: grid; gap: 10px; margin: 0 auto 32px; max-width: 340px; }
   .rule {
     display: flex; align-items: center; gap: 14px; text-align: left;
@@ -253,6 +265,17 @@
     22% { opacity: 1; }
     100% { opacity: 0; }
   }
+
+  .new-best-banner {
+    position: fixed; top: 16px; left: 50%; z-index: 30;
+    transform: translateX(-50%) translateY(-140%);
+    background: linear-gradient(135deg, var(--gold), #ffb020); color: #3a2200;
+    font-weight: 800; font-size: 14px; padding: 10px 20px; border-radius: 999px;
+    box-shadow: 0 10px 30px -8px rgba(255,209,102,.6);
+    transition: transform .4s cubic-bezier(.2,.9,.3,1.2);
+    pointer-events: none; white-space: nowrap;
+  }
+  .new-best-banner.show { transform: translateX(-50%) translateY(0); }
 
   .timerbar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-bottom: 24px; }
   .timerbar i {
@@ -449,6 +472,9 @@
       <span class="badge"><span class="dot"></span>195 countries · one shot</span>
       <h1>Flag&nbsp;Master</h1>
       <p class="tag">How many flags of the world do you actually know? Prove it.</p>
+      <div class="personal-best" id="personal-best" style="display:none">
+        🏆 Your best: <b id="pb-flags">0</b> flags · <b id="pb-score">0</b> pts
+      </div>
       <div class="rules">
         <div class="rule">
           <span class="ic" id="ic-slot-1"></span>
@@ -521,6 +547,7 @@
   <!-- GAME -->
   <section id="screen-game" class="screen">
     <div class="milestone-flash" id="milestone-flash"></div>
+    <div class="new-best-banner" id="new-best-banner">🏆 New Personal Best!</div>
     <div class="topbar">
       <button class="topbar-quit" id="quit-btn" aria-label="Quit to start screen"></button>
       <div class="lives" id="lives"></div>
@@ -545,6 +572,7 @@
       <div class="medal" id="end-medal"></div>
       <h2 id="end-title"></h2>
       <p class="subtitle" id="end-subtitle"></p>
+      <div class="new-best-badge" id="new-best-badge" style="display:none">🏆 New personal best!</div>
       <div class="stats">
         <div class="stat"><b id="stat-score">0</b><span>Score</span></div>
         <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
@@ -664,6 +692,7 @@ const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "
 // Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
 const NAME_KEY = "flagmaster-name";
+const BEST_KEY = "flagmaster-best";
 const GAME_URL = "https://flag-master-game.netlify.app";
 
 const $ = id => document.getElementById(id);
@@ -672,6 +701,7 @@ const flagUrl = code => `flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
+let newBestAnnounced = false;
 
 let practiceMode = false;
 let practiceCfg = { timer: "off", lives: "unlimited", difficulty: "easy" };
@@ -687,11 +717,32 @@ function buildQueue() {
   return [...t1, ...t2, ...t3, ...t4];
 }
 
+function getPersonalBest() {
+  try {
+    const raw = localStorage.getItem(BEST_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function savePersonalBest(bestScore, bestFlags) {
+  try { localStorage.setItem(BEST_KEY, JSON.stringify({ score: bestScore, flags: bestFlags })); } catch {}
+}
+
+function renderPersonalBest() {
+  const el = $("personal-best");
+  const best = getPersonalBest();
+  if (!best) { el.style.display = "none"; return; }
+  $("pb-flags").textContent = best.flags;
+  $("pb-score").textContent = best.score.toLocaleString();
+  el.style.display = "";
+}
+
 function show(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   $("screen-" + name).classList.add("active");
   $("flag-bg").style.display = (name === "start" || name === "practice-setup") ? "" : "none";
   $("theme-toggle").style.display = name === "game" ? "none" : "";
+  if (name === "start") renderPersonalBest();
 }
 
 const rnd = (min, max) => min + Math.random() * (max - min);
@@ -730,7 +781,7 @@ function startGame() {
   queue = buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
-  score = 0; streak = 0; bestStreak = 0; results = [];
+  score = 0; streak = 0; bestStreak = 0; results = []; newBestAnnounced = false;
   displayedScore = 0;
   $("score").textContent = "0";
   $("streak").style.display = "none";
@@ -776,6 +827,13 @@ function triggerMilestoneFlash() {
   flash.classList.remove("show");
   void flash.offsetWidth;
   flash.classList.add("show");
+}
+
+function triggerNewBestBanner() {
+  const banner = $("new-best-banner");
+  banner.classList.add("show");
+  clearTimeout(banner.__hideTimer);
+  banner.__hideTimer = setTimeout(() => banner.classList.remove("show"), 2200);
 }
 
 function animateScore(el, from, to) {
@@ -874,6 +932,15 @@ function answerWith(btn, answer) {
     score += tierPts + bonus;
     streak++; bestStreak = Math.max(bestStreak, streak);
     results.push("ok");
+
+    if (!practiceMode && !newBestAnnounced) {
+      const best = getPersonalBest();
+      if (best && score > best.score) {
+        newBestAnnounced = true;
+        triggerNewBestBanner();
+      }
+    }
+
     const milestone = streak % 10 === 0;
     if (milestone) {
       setFeedback(`+${tierPts + bonus}   ·   🔥 ${streak} STREAK!`, "good milestone");
@@ -934,10 +1001,19 @@ function endGame() {
   if (practiceMode) {
     $("lb-card").style.display = "none";
     $("practice-end-note").style.display = "";
+    $("new-best-badge").style.display = "none";
   } else {
     $("lb-card").style.display = "";
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
+
+    const best = getPersonalBest();
+    if (!best || score > best.score) {
+      savePersonalBest(score, flagsRight);
+      $("new-best-badge").style.display = "";
+    } else {
+      $("new-best-badge").style.display = "none";
+    }
   }
 }
 
@@ -1159,6 +1235,7 @@ $("theme-toggle").addEventListener("click", () => {
 
 buildBackground();
 loadStartTop3();
+renderPersonalBest();
 
 $("btn-start").addEventListener("click", () => { practiceMode = false; startGame(); });
 $("btn-practice").addEventListener("click", () => show("practice-setup"));
