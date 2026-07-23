@@ -998,22 +998,14 @@ function endGame() {
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
   show("end");
+  $("new-best-badge").style.display = "none";
   if (practiceMode) {
     $("lb-card").style.display = "none";
     $("practice-end-note").style.display = "";
-    $("new-best-badge").style.display = "none";
   } else {
     $("lb-card").style.display = "";
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
-
-    const best = getPersonalBest();
-    if (!best || score > best.score) {
-      savePersonalBest(score, flagsRight);
-      $("new-best-badge").style.display = "";
-    } else {
-      $("new-best-badge").style.display = "none";
-    }
   }
 }
 
@@ -1155,6 +1147,14 @@ async function submitScore(nameOverride) {
     await res.json();
     $("lb-prompt").style.display = "none";
     loadNearbyLeaderboard(name, flagsRight);
+
+    if (!practiceMode) {
+      const best = getPersonalBest();
+      if (!best || score > best.score) {
+        savePersonalBest(score, flagsRight);
+        $("new-best-badge").style.display = "";
+      }
+    }
   } catch {
     scoreSubmitted = false;
     submitBtn.disabled = false;
