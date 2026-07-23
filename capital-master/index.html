@@ -293,30 +293,31 @@
   .question .prompt { color: var(--muted); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
   .question h2 { font-size: 32px; letter-spacing: -.8px; font-weight: 700; line-height: 1.1; }
 
+  .prompt-flag {
+    width: 96px; aspect-ratio: 4 / 2.7; object-fit: cover; border-radius: 10px;
+    box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); margin: 0 auto 12px; display: block;
+  }
   .options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
-  .flag-btn {
+  .capital-btn {
     border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
-    background: var(--surface); cursor: pointer; padding: 0;
-    aspect-ratio: 4 / 2.7; position: relative;
+    background: var(--surface); cursor: pointer; padding: 18px 12px;
+    min-height: 64px; position: relative;
+    display: flex; align-items: center; justify-content: center;
     transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
   }
-  .flag-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .flag-btn::after {
-    content: ""; position: absolute; inset: 0; border-radius: 14px;
-    box-shadow: inset 0 0 40px rgba(0,0,0,.25); pointer-events: none;
-  }
-  .flag-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
-  .flag-btn .mark {
+  .capital-btn .capital-name { font-size: 16px; font-weight: 600; text-align: center; line-height: 1.25; }
+  .capital-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
+  .capital-btn .mark {
     position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
     display: grid; place-items: center; opacity: 0; transform: scale(.5);
     transition: opacity .2s, transform .2s; z-index: 2;
   }
-  .flag-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
-  .flag-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
-  .flag-btn.wrong { border-color: var(--bad); animation: shake .4s; }
-  .flag-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
-  .flag-btn:disabled { cursor: default; }
-  .flag-btn.dim { opacity: .3; }
+  .capital-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
+  .capital-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
+  .capital-btn.wrong { border-color: var(--bad); animation: shake .4s; }
+  .capital-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
+  .capital-btn:disabled { cursor: default; }
+  .capital-btn.dim { opacity: .3; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 80%{transform:translateX(-4px)} }
 
   .feedback {
@@ -564,6 +565,7 @@
     <div class="timerbar" id="timerbar"><i id="timerfill"></i></div>
     <div class="question">
       <div class="prompt" id="qnum"></div>
+      <img class="prompt-flag" id="prompt-flag" src="" alt="" draggable="false">
       <h2 id="country-name"></h2>
     </div>
     <div class="options" id="options"></div>
@@ -884,18 +886,19 @@ function nextRound() {
   locked = false;
   const answer = queue[round];
   renderHud(answer);
-  $("qnum").textContent = `Flag ${round + 1}`;
+  $("qnum").textContent = `Country ${round + 1}`;
+  $("prompt-flag").src = flagUrl(answer[0]);
   $("country-name").textContent = answer[1];
   $("feedback").textContent = "";
   $("feedback").className = "feedback";
 
   const options = shuffle([answer, ...pickDistractors(answer)]);
   $("options").innerHTML = options.map(c =>
-    `<button class="flag-btn" data-code="${c[0]}" aria-label="Guess ${c[1]}">
-       <img src="${flagUrl(c[0])}" alt="" draggable="false">
+    `<button class="capital-btn" data-capital="${c[3]}" aria-label="Guess ${c[3]}">
+       <span class="capital-name">${c[3]}</span>
        <span class="mark"></span>
      </button>`).join("");
-  document.querySelectorAll(".flag-btn").forEach(b =>
+  document.querySelectorAll(".capital-btn").forEach(b =>
     b.addEventListener("click", () => answerWith(b, answer)));
 
   clearInterval(timerId);
@@ -925,9 +928,9 @@ function updateTimerBar() {
 function lockRound(answer) {
   locked = true;
   clearInterval(timerId);
-  document.querySelectorAll(".flag-btn").forEach(b => {
+  document.querySelectorAll(".capital-btn").forEach(b => {
     b.disabled = true;
-    if (b.dataset.code === answer[0]) {
+    if (b.dataset.capital === answer[3]) {
       b.classList.add("correct");
       b.querySelector(".mark").innerHTML = ICON.check;
     } else {
@@ -944,7 +947,7 @@ function setFeedback(text, kind) {
 
 function answerWith(btn, answer) {
   if (locked) return;
-  const correct = btn.dataset.code === answer[0];
+  const correct = btn.dataset.capital === answer[3];
   lockRound(answer);
   if (correct) {
     const noTimer = practiceMode && practiceCfg.timer === "off";
@@ -977,7 +980,7 @@ function answerWith(btn, answer) {
     btn.querySelector(".mark").innerHTML = ICON.x;
     lives--; streak = 0;
     results.push("no");
-    setFeedback(`That flag is ${nameOf(btn.dataset.code)}`, "bad");
+    setFeedback(`The capital is ${answer[3]}`, "bad");
   }
   renderHud(answer);
   round++;
