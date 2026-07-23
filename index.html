@@ -1021,6 +1021,7 @@ function endGame() {
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
   show("end");
+  logPlay(flagsRight);
   $("new-best-badge").style.display = "none";
   if (practiceMode) {
     $("lb-card").style.display = "none";
@@ -1030,6 +1031,24 @@ function endGame() {
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
   }
+}
+
+// Fire-and-forget: logs every finished game, even ones where the player
+// never types a name and submits to the real leaderboard.
+function logPlay(flagsRight) {
+  if (!LEADERBOARD_URL) return;
+  let savedName = "";
+  try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
+  fetch(LEADERBOARD_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      type: "play",
+      name: savedName,
+      score, flags: flagsRight, streak: bestStreak,
+      practice: practiceMode,
+    }),
+  }).catch(() => {});
 }
 
 let scoreSubmitted = false;

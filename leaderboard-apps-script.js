@@ -1,4 +1,5 @@
 const SHEET_NAME = "Scores";
+const PLAY_LOG_SHEET_NAME = "PlayLog";
 const CACHE_KEY = "leaderboard_sorted_v1";
 const CACHE_TTL_SECONDS = 300;
 
@@ -8,6 +9,18 @@ function getSheet_() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(["Timestamp", "Name", "Score", "Flags", "Streak"]);
+  }
+  return sheet;
+}
+
+// Log-only sheet: every finished game lands here (even ones that never got
+// a name typed in and submitted to the real leaderboard).
+function getPlayLogSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(PLAY_LOG_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(PLAY_LOG_SHEET_NAME);
+    sheet.appendRow(["Timestamp", "Name", "Score", "Flags", "Streak", "Practice"]);
   }
   return sheet;
 }
@@ -31,13 +44,21 @@ function getSortedAll_() {
 }
 
 function doPost(e) {
-  const sheet = getSheet_();
   const data = JSON.parse(e.postData.contents);
   const name = String(data.name || "Anonymous").slice(0, 24);
   const score = Number(data.score) || 0;
   const flags = Number(data.flags) || 0;
   const streak = Number(data.streak) || 0;
 
+  if (data.type === "play") {
+    const logSheet = getPlayLogSheet_();
+    logSheet.appendRow([new Date(), name, score, flags, streak, !!data.practice]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const sheet = getSheet_();
   sheet.appendRow([new Date(), name, score, flags, streak]);
   CacheService.getScriptCache().remove(CACHE_KEY);
 
