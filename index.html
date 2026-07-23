@@ -245,6 +245,10 @@
     font-size: 13px; font-weight: 800; color: #ff8a3c;
   }
   .streak .flame { filter: drop-shadow(0 0 5px rgba(255,120,40,.7)); }
+  .streak-mult {
+    font-size: 10px; font-weight: 800; color: #fff; background: #ff8a3c;
+    border-radius: 999px; padding: 1px 5px; margin-left: 3px;
+  }
   .streak.pop { animation: streakpop .5s cubic-bezier(.2,1.5,.4,1); }
   @keyframes streakpop { 0% { transform: scale(.3); } 55% { transform: scale(1.35); } 100% { transform: scale(1); } }
   .streak.milestone { animation: streakmilestone .9s cubic-bezier(.2,1.6,.3,1); }
@@ -553,7 +557,7 @@
       <div class="lives" id="lives"></div>
       <div class="chip" id="level"><span class="lvldot"></span><span id="level-txt"></span></div>
       <div class="score-cluster">
-        <span class="streak" id="streak"><span class="flame" id="streak-flame"></span><span id="streak-num"></span></span>
+        <span class="streak" id="streak"><span class="flame" id="streak-flame"></span><span id="streak-num"></span><span class="streak-mult" id="streak-mult"></span></span>
         <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
       </div>
     </div>
@@ -810,7 +814,10 @@ function renderHud(answer) {
   const streakEl = $("streak");
   if (streak >= 2) {
     const milestone = streak > 0 && streak % 10 === 0;
+    const multiplier = streakMultiplier(streak);
     $("streak-num").textContent = streak;
+    $("streak-mult").textContent = multiplier > 1 ? `×${multiplier}` : "";
+    $("streak-mult").style.display = multiplier > 1 ? "" : "none";
     streakEl.style.display = "inline-flex";
     streakEl.classList.remove("pop", "milestone");
     void streakEl.offsetWidth;
@@ -850,6 +857,13 @@ function animateScore(el, from, to) {
     else el.textContent = to;
   }
   requestAnimationFrame(step);
+}
+
+function streakMultiplier(s) {
+  if (s >= 20) return 3;
+  if (s >= 10) return 2;
+  if (s >= 5) return 1.5;
+  return 1;
 }
 
 function pickDistractors(answer) {
@@ -929,8 +943,10 @@ function answerWith(btn, answer) {
     const noTimer = practiceMode && practiceCfg.timer === "off";
     const bonus = noTimer ? 0 : Math.ceil(timeLeft) * 10;
     const tierPts = answer[2] * 100;
-    score += tierPts + bonus;
     streak++; bestStreak = Math.max(bestStreak, streak);
+    const multiplier = streakMultiplier(streak);
+    const pts = Math.round((tierPts + bonus) * multiplier);
+    score += pts;
     results.push("ok");
 
     if (!practiceMode && !newBestAnnounced) {
@@ -941,11 +957,12 @@ function answerWith(btn, answer) {
       }
     }
 
+    const multTag = multiplier > 1 ? ` ×${multiplier}` : "";
     const milestone = streak % 10 === 0;
     if (milestone) {
-      setFeedback(`+${tierPts + bonus}   ·   🔥 ${streak} STREAK!`, "good milestone");
+      setFeedback(`+${pts}${multTag}   ·   🔥 ${streak} STREAK!`, "good milestone");
     } else {
-      setFeedback(`+${tierPts + bonus}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
+      setFeedback(`+${pts}${multTag}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
     }
   } else {
     btn.classList.remove("dim");
