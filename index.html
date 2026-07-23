@@ -782,6 +782,7 @@ function buildBackground() {
 }
 
 function startGame() {
+  logPlay();
   queue = buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
@@ -1021,7 +1022,6 @@ function endGame() {
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
   show("end");
-  logPlay(flagsRight);
   $("new-best-badge").style.display = "none";
   if (practiceMode) {
     $("lb-card").style.display = "none";
@@ -1033,9 +1033,9 @@ function endGame() {
   }
 }
 
-// Fire-and-forget: logs every finished game, even ones where the player
-// never types a name and submits to the real leaderboard.
-function logPlay(flagsRight) {
+// Fire-and-forget: logs every game as soon as it starts, even ones that
+// get closed or abandoned before reaching the end screen.
+function logPlay() {
   if (!LEADERBOARD_URL) return;
   let savedName = "";
   try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
@@ -1045,7 +1045,6 @@ function logPlay(flagsRight) {
     body: JSON.stringify({
       type: "play",
       name: savedName,
-      score, flags: flagsRight, streak: bestStreak,
       practice: practiceMode,
     }),
   }).catch(() => {});
