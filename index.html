@@ -604,7 +604,7 @@
         <div class="dots" id="dots"></div>
       </div>
       <div class="share-row">
-        <button class="btn" id="btn-share"><span id="ic-share"></span>Share result</button>
+        <button class="btn" id="btn-share"><span id="ic-share"></span>Challenge a friend</button>
         <button class="btn ghost" id="btn-again"><span id="ic-again"></span>Play again</button>
       </div>
     </div>
@@ -697,7 +697,7 @@ const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
 const NAME_KEY = "flagmaster-name";
 const BEST_KEY = "flagmaster-best";
-const GAME_URL = "https://flag-master-game.netlify.app";
+const GAME_URL = "https://vitoraa.github.io/flag-master/";
 
 const $ = id => document.getElementById(id);
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -1226,7 +1226,7 @@ function shareText() {
     ``,
     grid.join("\n"),
     ``,
-    `How well do you know the world's flags? 👇`,
+    `Think you can beat my score of ${score.toLocaleString()}? →`,
     GAME_URL,
   ].join("\n");
 }
