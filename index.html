@@ -787,6 +787,7 @@ function startGame() {
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
   score = 0; streak = 0; bestStreak = 0; results = []; newBestAnnounced = false;
   displayedScore = 0;
+  lastAnimatedStreak = -1;
   $("score").textContent = "0";
   $("streak").style.display = "none";
   show("game");
@@ -800,6 +801,7 @@ function quitToStart() {
 }
 
 let displayedScore = 0;
+let lastAnimatedStreak = -1;
 
 function renderHud(answer) {
   $("lives").innerHTML = Array.from({length: MAX_LIVES}, (_, i) =>
@@ -819,13 +821,17 @@ function renderHud(answer) {
     $("streak-mult").textContent = multiplier > 1 ? `×${multiplier}` : "";
     $("streak-mult").style.display = multiplier > 1 ? "" : "none";
     streakEl.style.display = "inline-flex";
-    streakEl.classList.remove("pop", "milestone");
-    void streakEl.offsetWidth;
-    streakEl.classList.add(milestone ? "milestone" : "pop");
-    if (milestone) triggerMilestoneFlash();
+    if (streak !== lastAnimatedStreak) {
+      streakEl.classList.remove("pop", "milestone");
+      void streakEl.offsetWidth;
+      streakEl.classList.add(milestone ? "milestone" : "pop");
+      if (milestone) triggerMilestoneFlash();
+    }
+    lastAnimatedStreak = streak;
   } else {
     streakEl.style.display = "none";
     streakEl.classList.remove("pop", "milestone");
+    lastAnimatedStreak = -1;
   }
 }
 
