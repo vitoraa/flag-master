@@ -1113,6 +1113,15 @@ function updateTimerBar() {
   fill.classList.toggle("danger", timeLeft <= 3);
 }
 
+// Chrome's UA stylesheet forces disabled-button text to a translucent
+// gray with a specificity our own CSS can't beat, even with !important.
+// Set the text color inline (also !important) so the correct answer
+// stays fully readable/bold and only the wrong ones look grayed out.
+function setDisabledTextColor(btn, color) {
+  btn.style.setProperty("color", color, "important");
+  btn.style.setProperty("-webkit-text-fill-color", color, "important");
+}
+
 function lockRound(answer) {
   locked = true;
   clearInterval(timerId);
@@ -1121,8 +1130,10 @@ function lockRound(answer) {
     if (b.dataset.capital === answer[3]) {
       b.classList.add("correct");
       b.querySelector(".mark").innerHTML = ICON.check;
+      setDisabledTextColor(b, "var(--text)");
     } else {
       b.classList.add("dim");
+      setDisabledTextColor(b, "var(--muted)");
     }
   });
 }
