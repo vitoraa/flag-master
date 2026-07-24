@@ -715,6 +715,7 @@ const BEST_KEY = "flagmaster-best";
 const GAME_URL = "https://vitoraa.github.io/flag-master/";
 
 const $ = id => document.getElementById(id);
+const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const flagUrl = code => `flags/${code}.png`;
 
@@ -798,6 +799,9 @@ function buildBackground() {
 
 function startGame() {
   logPlay();
+  track("game_started", practiceMode
+    ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
+    : { mode: "standard" });
   queue = buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
@@ -994,6 +998,7 @@ function answerWith(btn, answer) {
     results.push("no");
     setFeedback(`That flag is ${nameOf(btn.dataset.code)}`, "bad");
   }
+  track("flag_answered", { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   setTimeout(nextRound, correct ? 850 : 1550);
@@ -1005,6 +1010,7 @@ function timeUp(answer) {
   lives--; streak = 0;
   results.push("to");
   setFeedback("Out of time", "bad");
+  track("flag_answered", { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   setTimeout(nextRound, 1350);
@@ -1028,6 +1034,7 @@ function endGame() {
   clearInterval(timerId);
   const flagsRight = results.filter(r => r === "ok").length;
   const [icon, title, sub] = rank(flagsRight);
+  track("game_over", { mode: practiceMode ? "practice" : "standard", score, flags_right: flagsRight, best_streak: bestStreak, rounds_played: results.length, rank: title });
   $("end-medal").innerHTML = icon;
   $("end-title").textContent = title;
   $("end-subtitle").textContent = sub;
@@ -1328,8 +1335,13 @@ $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame()
 $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
-    try { await navigator.share({ text: shareText() }); return; } catch {}
+    try {
+      await navigator.share({ text: shareText() });
+      track("share_clicked", { method: "native_share", score, flags: results.filter(r => r === "ok").length });
+      return;
+    } catch {}
   }
+  track("share_clicked", { method: "clipboard", score, flags: results.filter(r => r === "ok").length });
   copyResult();
 });
 </script>
