@@ -423,30 +423,37 @@
   .lb-nearby-error { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; }
   .lb-nearby-error a { color: var(--accent); text-decoration: underline; }
   .top3-card { max-width: 340px; margin: 0 auto 28px; }
-  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding-top: 6px; }
-  .podium-spot { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .podium-spot.rank-1 { order: 2; }
-  .podium-spot.rank-2 { order: 1; }
-  .podium-spot.rank-3 { order: 3; }
-  .podium-medal { font-size: 24px; margin-bottom: 6px; }
-  .podium-spot.rank-1 .podium-medal { font-size: 30px; }
-  .podium-name {
-    font-size: 12px; font-weight: 700; max-width: 100%;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+  .top3-hero {
+    position: relative; text-align: center; overflow: hidden;
+    background: radial-gradient(circle at 50% 0%, rgba(255,209,102,.20), transparent 72%);
+    border-radius: 16px; padding: 20px 12px 16px; margin-bottom: 12px;
   }
-  .podium-stats { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-  .podium-stats b { color: var(--text); font-variant-numeric: tabular-nums; }
-  .podium-pts { display: block; font-variant-numeric: tabular-nums; }
-  .podium-bar {
-    width: 100%; border-radius: 10px 10px 4px 4px;
-    display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 8px; font-weight: 800; font-size: 18px; color: #fff;
+  .top3-hero-medal {
+    font-size: 44px; display: block; margin-bottom: 6px;
+    filter: drop-shadow(0 0 14px rgba(255,209,102,.5));
+    animation: top3-bob 2.4s ease-in-out infinite;
   }
-  .rank-1 .podium-bar { height: 76px; background: linear-gradient(160deg, #ffdd8a, #d99a1f); }
-  .rank-2 .podium-bar { height: 54px; background: linear-gradient(160deg, #dfe4f0, #a3adc2); }
-  .rank-3 .podium-bar { height: 40px; background: linear-gradient(160deg, #e6b892, #b9793f); }
-  .podium-skel { position: relative; overflow: hidden; background: var(--surface-2); }
-  .podium-skel::after {
+  @keyframes top3-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .top3-hero-name {
+    font-size: 17px; font-weight: 800; margin-bottom: 3px; padding: 0 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top3-hero-stats { font-size: 12px; color: var(--muted); }
+  .top3-hero-stats b { color: var(--gold); font-variant-numeric: tabular-nums; }
+  .top3-runners { display: flex; gap: 8px; }
+  .top3-runner {
+    flex: 1; min-width: 0; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 8px; text-align: center;
+  }
+  .top3-runner-medal { font-size: 26px; margin-bottom: 5px; }
+  .top3-runner-name {
+    font-size: 13px; font-weight: 700; margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top3-runner-stats { font-size: 11px; color: var(--muted); }
+  .top3-runner-stats b { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .top3-skel { position: relative; overflow: hidden; color: transparent !important; background: var(--surface-2) !important; }
+  .top3-skel::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, rgba(127,127,127,.18), transparent);
     transform: translateX(-100%);
@@ -507,7 +514,7 @@
       </div>
       <div class="leaderboard-card top3-card" id="top3-card">
         <div class="label">🏆 Top scores</div>
-        <div class="podium" id="top3-list"></div>
+        <div id="top3-list"></div>
       </div>
       <div class="start-cta">
         <button class="btn" id="btn-start">Start playing</button>
@@ -1089,19 +1096,33 @@ function skeletonRow() {
    </div>`;
 }
 
-function podiumSpot(rank, name, flags, score) {
-  return `<div class="podium-spot rank-${rank}">
-     <div class="podium-medal">${MEDALS[rank - 1]}</div>
-     <div class="podium-name">${escapeHtml(name)}</div>
-     <div class="podium-stats"><b>${flags}</b> flags<span class="podium-pts">${score} pts</span></div>
-     <div class="podium-bar">${rank}</div>
+function top3Hero(name, flags, score) {
+  return `<div class="top3-hero">
+     <span class="top3-hero-medal">${MEDALS[0]}</span>
+     <div class="top3-hero-name">${escapeHtml(name)}</div>
+     <div class="top3-hero-stats"><b>${score} pts</b> · ${flags} flags</div>
    </div>`;
 }
 
-function podiumSkeletonSpot(rank) {
-  return `<div class="podium-spot rank-${rank}">
-     <div class="podium-medal">${MEDALS[rank - 1]}</div>
-     <div class="podium-bar podium-skel"></div>
+function top3HeroSkeleton() {
+  return `<div class="top3-hero">
+     <span class="top3-hero-medal top3-skel" style="display:inline-block;width:44px;height:44px;border-radius:50%;">${MEDALS[0]}</span>
+     <div class="top3-hero-name top3-skel" style="height:17px;border-radius:6px;width:70%;margin:6px auto 4px;">&nbsp;</div>
+     <div class="top3-hero-stats top3-skel" style="height:12px;border-radius:6px;width:50%;margin:0 auto;">&nbsp;</div>
+   </div>`;
+}
+
+function top3Runner(rank, name, flags, score) {
+  return `<div class="top3-runner">
+     <div class="top3-runner-medal">${MEDALS[rank - 1]}</div>
+     <div class="top3-runner-name">${escapeHtml(name)}</div>
+     <div class="top3-runner-stats"><b>${score}</b> pts</div>
+   </div>`;
+}
+
+function top3RunnerSkeleton(rank) {
+  return `<div class="top3-runner top3-skel" style="height:76px;">
+     <div class="top3-runner-medal">${MEDALS[rank - 1]}</div>
    </div>`;
 }
 
@@ -1109,7 +1130,7 @@ async function loadStartTop3() {
   const card = $("top3-card");
   if (!LEADERBOARD_URL) { card.style.display = "none"; return; }
 
-  $("top3-list").innerHTML = [1, 2, 3].map(podiumSkeletonSpot).join("");
+  $("top3-list").innerHTML = top3HeroSkeleton() + `<div class="top3-runners">${[2, 3].map(top3RunnerSkeleton).join("")}</div>`;
   try {
     const res = await fetch(LEADERBOARD_URL);
     const data = await res.json();
@@ -1118,7 +1139,10 @@ async function loadStartTop3() {
       $("top3-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
       return;
     }
-    $("top3-list").innerHTML = top.map((r, i) => podiumSpot(i + 1, r.name, r.flags, r.score)).join("");
+    const [first, ...rest] = top;
+    const runners = rest.slice(0, 2).map((r, i) => top3Runner(i + 2, r.name, r.flags, r.score)).join("");
+    $("top3-list").innerHTML = top3Hero(first.name, first.flags, first.score)
+      + (runners ? `<div class="top3-runners">${runners}</div>` : "");
   } catch {
     $("top3-list").innerHTML = `<div class="lb-nearby-error">Couldn't load the leaderboard — <a href="#" id="top3-retry">retry</a></div>`;
     $("top3-retry").addEventListener("click", e => { e.preventDefault(); loadStartTop3(); });
