@@ -4,6 +4,14 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Flag Master — how many flags do you know?</title>
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.uid=t.uid||[],t.uid.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify createPersonProfile group resetGroups setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSurveyResponse".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  const isProdHost = (location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/'))
+    || location.hostname === 'flag-master-game.netlify.app';
+  if (isProdHost) {
+    posthog.init('phc_HmmUlFmsobnkDBi3HhWQdG4D5137kLdSyTomkppw9Ic', { api_host: 'https://eu.i.posthog.com', person_profiles: 'identified_only' });
+  }
+</script>
 <style>
   :root {
     --bg: #06070d;
@@ -388,7 +396,7 @@
     display: flex; align-items: center; gap: 10px;
     padding: 8px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px;
   }
-  .lb-nearby-row .pos { width: 22px; flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; text-align: center; }
+  .lb-nearby-row .pos { min-width: 22px; flex: none; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; text-align: center; }
   .lb-nearby-ellipsis { text-align: center; color: var(--muted); font-size: 13px; letter-spacing: 2px; padding: 2px 0; }
   .lb-nearby-row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lb-nearby-row .metrics { flex: none; text-align: right; line-height: 1.25; }
@@ -415,30 +423,37 @@
   .lb-nearby-error { font-size: 12px; color: var(--muted); text-align: center; padding: 6px 0; }
   .lb-nearby-error a { color: var(--accent); text-decoration: underline; }
   .top3-card { max-width: 340px; margin: 0 auto 28px; }
-  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding-top: 6px; }
-  .podium-spot { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
-  .podium-spot.rank-1 { order: 2; }
-  .podium-spot.rank-2 { order: 1; }
-  .podium-spot.rank-3 { order: 3; }
-  .podium-medal { font-size: 24px; margin-bottom: 6px; }
-  .podium-spot.rank-1 .podium-medal { font-size: 30px; }
-  .podium-name {
-    font-size: 12px; font-weight: 700; max-width: 100%;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+  .top3-hero {
+    position: relative; text-align: center; overflow: hidden;
+    background: radial-gradient(circle at 50% 0%, rgba(255,209,102,.20), transparent 72%);
+    border-radius: 16px; padding: 20px 12px 16px; margin-bottom: 12px;
   }
-  .podium-stats { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-  .podium-stats b { color: var(--text); font-variant-numeric: tabular-nums; }
-  .podium-pts { display: block; font-variant-numeric: tabular-nums; }
-  .podium-bar {
-    width: 100%; border-radius: 10px 10px 4px 4px;
-    display: flex; align-items: flex-start; justify-content: center;
-    padding-top: 8px; font-weight: 800; font-size: 18px; color: #fff;
+  .top3-hero-medal {
+    font-size: 44px; display: block; margin-bottom: 6px;
+    filter: drop-shadow(0 0 14px rgba(255,209,102,.5));
+    animation: top3-bob 2.4s ease-in-out infinite;
   }
-  .rank-1 .podium-bar { height: 76px; background: linear-gradient(160deg, #ffdd8a, #d99a1f); }
-  .rank-2 .podium-bar { height: 54px; background: linear-gradient(160deg, #dfe4f0, #a3adc2); }
-  .rank-3 .podium-bar { height: 40px; background: linear-gradient(160deg, #e6b892, #b9793f); }
-  .podium-skel { position: relative; overflow: hidden; background: var(--surface-2); }
-  .podium-skel::after {
+  @keyframes top3-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .top3-hero-name {
+    font-size: 17px; font-weight: 800; margin-bottom: 3px; padding: 0 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top3-hero-stats { font-size: 12px; color: var(--muted); }
+  .top3-hero-stats b { color: var(--gold); font-variant-numeric: tabular-nums; }
+  .top3-runners { display: flex; gap: 8px; }
+  .top3-runner {
+    flex: 1; min-width: 0; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 8px; text-align: center;
+  }
+  .top3-runner-medal { font-size: 26px; margin-bottom: 5px; }
+  .top3-runner-name {
+    font-size: 13px; font-weight: 700; margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .top3-runner-stats { font-size: 11px; color: var(--muted); }
+  .top3-runner-stats b { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .top3-skel { position: relative; overflow: hidden; color: transparent !important; background: var(--surface-2) !important; }
+  .top3-skel::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, rgba(127,127,127,.18), transparent);
     transform: translateX(-100%);
@@ -499,7 +514,7 @@
       </div>
       <div class="leaderboard-card top3-card" id="top3-card">
         <div class="label">🏆 Top scores</div>
-        <div class="podium" id="top3-list"></div>
+        <div id="top3-list"></div>
       </div>
       <div class="start-cta">
         <button class="btn" id="btn-start">Start playing</button>
@@ -700,6 +715,7 @@ const BEST_KEY = "flagmaster-best";
 const GAME_URL = "https://vitoraa.github.io/flag-master/";
 
 const $ = id => document.getElementById(id);
+const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const flagUrl = code => `flags/${code}.png`;
 
@@ -783,6 +799,9 @@ function buildBackground() {
 
 function startGame() {
   logPlay();
+  track("game_started", practiceMode
+    ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
+    : { mode: "standard" });
   queue = buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
@@ -979,6 +998,7 @@ function answerWith(btn, answer) {
     results.push("no");
     setFeedback(`That flag is ${nameOf(btn.dataset.code)}`, "bad");
   }
+  track("flag_answered", { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   setTimeout(nextRound, correct ? 850 : 1550);
@@ -990,6 +1010,7 @@ function timeUp(answer) {
   lives--; streak = 0;
   results.push("to");
   setFeedback("Out of time", "bad");
+  track("flag_answered", { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   setTimeout(nextRound, 1350);
@@ -1013,6 +1034,7 @@ function endGame() {
   clearInterval(timerId);
   const flagsRight = results.filter(r => r === "ok").length;
   const [icon, title, sub] = rank(flagsRight);
+  track("game_over", { mode: practiceMode ? "practice" : "standard", score, flags_right: flagsRight, best_streak: bestStreak, rounds_played: results.length, rank: title });
   $("end-medal").innerHTML = icon;
   $("end-title").textContent = title;
   $("end-subtitle").textContent = sub;
@@ -1081,19 +1103,33 @@ function skeletonRow() {
    </div>`;
 }
 
-function podiumSpot(rank, name, flags, score) {
-  return `<div class="podium-spot rank-${rank}">
-     <div class="podium-medal">${MEDALS[rank - 1]}</div>
-     <div class="podium-name">${escapeHtml(name)}</div>
-     <div class="podium-stats"><b>${flags}</b> flags<span class="podium-pts">${score} pts</span></div>
-     <div class="podium-bar">${rank}</div>
+function top3Hero(name, flags, score) {
+  return `<div class="top3-hero">
+     <span class="top3-hero-medal">${MEDALS[0]}</span>
+     <div class="top3-hero-name">${escapeHtml(name)}</div>
+     <div class="top3-hero-stats"><b>${score} pts</b> · ${flags} flags</div>
    </div>`;
 }
 
-function podiumSkeletonSpot(rank) {
-  return `<div class="podium-spot rank-${rank}">
-     <div class="podium-medal">${MEDALS[rank - 1]}</div>
-     <div class="podium-bar podium-skel"></div>
+function top3HeroSkeleton() {
+  return `<div class="top3-hero">
+     <span class="top3-hero-medal top3-skel" style="display:inline-block;width:44px;height:44px;border-radius:50%;">${MEDALS[0]}</span>
+     <div class="top3-hero-name top3-skel" style="height:17px;border-radius:6px;width:70%;margin:6px auto 4px;">&nbsp;</div>
+     <div class="top3-hero-stats top3-skel" style="height:12px;border-radius:6px;width:50%;margin:0 auto;">&nbsp;</div>
+   </div>`;
+}
+
+function top3Runner(rank, name, flags, score) {
+  return `<div class="top3-runner">
+     <div class="top3-runner-medal">${MEDALS[rank - 1]}</div>
+     <div class="top3-runner-name">${escapeHtml(name)}</div>
+     <div class="top3-runner-stats"><b>${score}</b> pts</div>
+   </div>`;
+}
+
+function top3RunnerSkeleton(rank) {
+  return `<div class="top3-runner top3-skel" style="height:76px;">
+     <div class="top3-runner-medal">${MEDALS[rank - 1]}</div>
    </div>`;
 }
 
@@ -1101,7 +1137,7 @@ async function loadStartTop3() {
   const card = $("top3-card");
   if (!LEADERBOARD_URL) { card.style.display = "none"; return; }
 
-  $("top3-list").innerHTML = [1, 2, 3].map(podiumSkeletonSpot).join("");
+  $("top3-list").innerHTML = top3HeroSkeleton() + `<div class="top3-runners">${[2, 3].map(top3RunnerSkeleton).join("")}</div>`;
   try {
     const res = await fetch(LEADERBOARD_URL);
     const data = await res.json();
@@ -1110,7 +1146,10 @@ async function loadStartTop3() {
       $("top3-list").innerHTML = `<div class="lb-nearby-error">No scores yet — be the first!</div>`;
       return;
     }
-    $("top3-list").innerHTML = top.map((r, i) => podiumSpot(i + 1, r.name, r.flags, r.score)).join("");
+    const [first, ...rest] = top;
+    const runners = rest.slice(0, 2).map((r, i) => top3Runner(i + 2, r.name, r.flags, r.score)).join("");
+    $("top3-list").innerHTML = top3Hero(first.name, first.flags, first.score)
+      + (runners ? `<div class="top3-runners">${runners}</div>` : "");
   } catch {
     $("top3-list").innerHTML = `<div class="lb-nearby-error">Couldn't load the leaderboard — <a href="#" id="top3-retry">retry</a></div>`;
     $("top3-retry").addEventListener("click", e => { e.preventDefault(); loadStartTop3(); });
@@ -1296,8 +1335,13 @@ $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame()
 $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
-    try { await navigator.share({ text: shareText() }); return; } catch {}
+    try {
+      await navigator.share({ text: shareText() });
+      track("share_clicked", { method: "native_share", score, flags: results.filter(r => r === "ok").length });
+      return;
+    } catch {}
   }
+  track("share_clicked", { method: "clipboard", score, flags: results.filter(r => r === "ok").length });
   copyResult();
 });
 </script>
