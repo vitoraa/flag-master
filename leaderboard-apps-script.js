@@ -3,11 +3,23 @@ const PLAY_LOG_SHEET_NAME = "PlayLog";
 const CACHE_KEY = "leaderboard_sorted_v1";
 const CACHE_TTL_SECONDS = 300;
 
-function getSheet_() {
+// Maps a `game` value ("capitals" or anything else, including undefined)
+// to the sheet tabs and cache key it should use. Defaulting anything
+// other than "capitals" to the original flags names keeps the deployed
+// flag-master client (which never sends `game`) working unchanged.
+function sheetNamesFor_(game) {
+  if (game === "capitals") {
+    return { scores: "CapitalScores", log: "CapitalPlayLog", cacheKey: CACHE_KEY + ":capitals" };
+  }
+  return { scores: SHEET_NAME, log: PLAY_LOG_SHEET_NAME, cacheKey: CACHE_KEY + ":flags" };
+}
+
+function getSheet_(game) {
+  const names = sheetNamesFor_(game);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+  let sheet = ss.getSheetByName(names.scores);
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+    sheet = ss.insertSheet(names.scores);
     sheet.appendRow(["Timestamp", "Name", "Score", "Flags", "Streak"]);
   }
   return sheet;
@@ -15,11 +27,12 @@ function getSheet_() {
 
 // Log-only sheet: every finished game lands here (even ones that never got
 // a name typed in and submitted to the real leaderboard).
-function getPlayLogSheet_() {
+function getPlayLogSheet_(game) {
+  const names = sheetNamesFor_(game);
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(PLAY_LOG_SHEET_NAME);
+  let sheet = ss.getSheetByName(names.log);
   if (!sheet) {
-    sheet = ss.insertSheet(PLAY_LOG_SHEET_NAME);
+    sheet = ss.insertSheet(names.log);
     sheet.appendRow(["Timestamp", "Name", "Score", "Flags", "Streak", "Practice"]);
   }
   return sheet;
@@ -28,39 +41,41 @@ function getPlayLogSheet_() {
 // Returns the full leaderboard (name/score/flags only, sorted desc) from
 // CacheService when available, so most requests skip reading+sorting the
 // whole sheet. Cache is invalidated on every new submission.
-function getSortedAll_() {
+function getSortedAll_(game) {
   const cache = CacheService.getScriptCache();
-  const cached = cache.get(CACHE_KEY);
+  const names = sheetNamesFor_(game);
+  const cached = cache.get(names.cacheKey);
   if (cached) return JSON.parse(cached);
 
-  const sheet = getSheet_();
+  const sheet = getSheet_(game);
   const rows = sheet.getDataRange().getValues().slice(1);
   const all = rows
     .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
     .sort((a, b) => b.score - a.score);
 
-  cache.put(CACHE_KEY, JSON.stringify(all), CACHE_TTL_SECONDS);
+  cache.put(names.cacheKey, JSON.stringify(all), CACHE_TTL_SECONDS);
   return all;
 }
 
 function doPost(e) {
   const data = JSON.parse(e.postData.contents);
+  const game = data.game === "capitals" ? "capitals" : "flags";
   const name = String(data.name || "Anonymous").slice(0, 24);
   const score = Number(data.score) || 0;
   const flags = Number(data.flags) || 0;
   const streak = Number(data.streak) || 0;
 
   if (data.type === "play") {
-    const logSheet = getPlayLogSheet_();
+    const logSheet = getPlayLogSheet_(game);
     logSheet.appendRow([new Date(), name, score, flags, streak, !!data.practice]);
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  const sheet = getSheet_();
+  const sheet = getSheet_(game);
   sheet.appendRow([new Date(), name, score, flags, streak]);
-  CacheService.getScriptCache().remove(CACHE_KEY);
+  CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
 
   const scores = sheet.getDataRange().getValues().slice(1).map(r => Number(r[2]) || 0);
   const rank = scores.filter(s => s > score).length + 1;
@@ -98,13 +113,14 @@ function buildNearbyRows_(all, idx, youName, youScore, youFlags) {
 }
 
 function doGet(e) {
-  let all = getSortedAll_();
+  const p = (e && e.parameter) || {};
+  const game = p.game === "capitals" ? "capitals" : "flags";
+  let all = getSortedAll_(game);
 
   const total = all.length;
   const top = all.slice(0, 3);
   const result = { top: top, total: total };
 
-  const p = (e && e.parameter) || {};
   if (p.score !== undefined) {
     const youScore = Number(p.score) || 0;
     const youFlags = Number(p.flags) || 0;
@@ -127,4 +143,10 @@ function doGet(e) {
   return ContentService
     .createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Exposed for leaderboard-apps-script.test.js only. Apps Script's runtime
+// has no `module` global, so this is a no-op when deployed.
+if (typeof module !== "undefined") {
+  module.exports = { sheetNamesFor_ };
 }
