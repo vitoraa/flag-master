@@ -458,6 +458,25 @@
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
+  .promo-card {
+    display: flex; align-items: center; gap: 12px; text-align: left;
+    background: linear-gradient(135deg, rgba(160,107,255,.14), rgba(108,140,255,.09));
+    border: 1px solid rgba(160,107,255,.35);
+    border-radius: 15px; padding: 14px 16px; margin-bottom: 22px;
+    cursor: pointer; transition: transform .15s, border-color .15s;
+  }
+  .promo-card:hover { transform: translateY(-1px); border-color: rgba(160,107,255,.55); }
+  .promo-card .promo-ic {
+    flex: none; width: 40px; height: 40px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-2); color: var(--accent-2);
+  }
+  .promo-card .promo-ic svg { width: 22px; height: 22px; }
+  .promo-card .promo-body { flex: 1; min-width: 0; }
+  .promo-card .promo-h { font-size: 13.5px; font-weight: 700; }
+  .promo-card .promo-s { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .promo-card .promo-arrow { flex: none; font-size: 17px; color: var(--accent-2); }
+
   .toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(-50%) translateY(calc(100% + 40px));
@@ -610,6 +629,14 @@
         <div class="label">Your run</div>
         <div class="dots" id="dots"></div>
       </div>
+      <div class="promo-card" id="cross-promo" style="display:none">
+        <div class="promo-ic" id="promo-ic"></div>
+        <div class="promo-body">
+          <div class="promo-h">Know your capitals too?</div>
+          <div class="promo-s">Try Capital Master — same streaks, new map</div>
+        </div>
+        <div class="promo-arrow">→</div>
+      </div>
       <div class="share-row">
         <button class="btn" id="btn-share"><span id="ic-share"></span>Challenge a friend</button>
         <button class="btn ghost" id="btn-again"><span id="ic-again"></span>Play again</button>
@@ -705,6 +732,8 @@ const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6
 const NAME_KEY = "flagmaster-name";
 const BEST_KEY = "flagmaster-best";
 const GAME_URL = "https://vitoraa.github.io/flag-master/";
+const PLAYS_KEY = "flagmaster-games-played";
+const CROSS_PROMO_URL = "capital-master/";
 
 const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
@@ -1045,6 +1074,14 @@ function endGame() {
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
   }
+  updateCrossPromo();
+}
+
+// Only pitch the sibling game once a player has finished a couple of runs here first.
+function updateCrossPromo() {
+  let plays = 0;
+  try { plays = parseInt(localStorage.getItem(PLAYS_KEY) || "0", 10) + 1; localStorage.setItem(PLAYS_KEY, plays); } catch {}
+  $("cross-promo").style.display = plays >= 2 ? "" : "none";
 }
 
 // Fire-and-forget: logs every game as soon as it starts, even ones that
@@ -1303,6 +1340,7 @@ $("ic-slot-4").innerHTML = ICON.trend;
 $("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
+$("promo-ic").innerHTML = ICON.globe;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
@@ -1343,6 +1381,10 @@ document.querySelectorAll(".seg").forEach(seg => {
   });
 });
 $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
+$("cross-promo").addEventListener("click", () => {
+  track("cross_promo_clicked", { from: "flags", to: "capital-master" });
+  location.href = CROSS_PROMO_URL;
+});
 $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
