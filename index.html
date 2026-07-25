@@ -97,6 +97,47 @@
   }
   .theme-toggle:hover { transform: translateY(-2px) rotate(-12deg); }
 
+  /* ---------- arcade menu (more games) ---------- */
+  .arcade-trigger {
+    position: fixed; top: 16px; left: 16px; z-index: 30;
+    width: 42px; height: 42px; border-radius: 50%;
+    display: grid; place-items: center; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); color: var(--muted);
+    box-shadow: 0 6px 20px -8px rgba(0,0,0,.5);
+    transition: transform .15s ease, background .15s, color .15s;
+  }
+  .arcade-trigger:hover { transform: translateY(-2px); color: var(--text); background: var(--surface-2); }
+  .arcade-backdrop {
+    position: fixed; inset: 0; z-index: 45;
+    background: rgba(6,7,13,.55);
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .arcade-backdrop.show { opacity: 1; pointer-events: auto; }
+  .arcade-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 46;
+    max-width: 480px; margin: 0 auto;
+    background: var(--surface); border: 1px solid var(--line); border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    padding: 14px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(100%);
+    transition: transform .28s cubic-bezier(.2,.9,.3,1.1);
+    box-shadow: 0 -24px 60px -24px rgba(0,0,0,.6);
+  }
+  .arcade-sheet.show { transform: translateY(0); }
+  .arcade-grip { width: 34px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 14px; }
+  .arcade-sheet-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  .arcade-card {
+    display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 14px; transition: transform .15s ease, border-color .15s;
+  }
+  .arcade-card:hover { transform: translateY(-1px); border-color: var(--accent); }
+  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; }
+  .arcade-card .arcade-body { flex: 1; min-width: 0; }
+  .arcade-card .arcade-h { font-size: 14px; font-weight: 700; }
+  .arcade-card .arcade-s { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .arcade-card .arcade-go { flex: none; font-size: 16px; color: var(--accent-2); }
+
   /* ---------- quit button (in-game topbar) ---------- */
   .topbar-quit {
     flex: none; width: 34px; height: 34px; border-radius: 50%;
@@ -497,6 +538,20 @@
 </head>
 <body>
 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light or dark theme"></button>
+<button id="arcade-trigger" class="arcade-trigger" aria-label="More games" title="More games"></button>
+<div id="arcade-backdrop" class="arcade-backdrop"></div>
+<div id="arcade-sheet" class="arcade-sheet">
+  <div class="arcade-grip"></div>
+  <div class="arcade-sheet-title">More games</div>
+  <a class="arcade-card" id="arcade-card" href="capital-master/">
+    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%); color:#fff;">🌍</span>
+    <span class="arcade-body">
+      <span class="arcade-h">Capital Master</span>
+      <span class="arcade-s" id="arcade-card-sub">Not played yet</span>
+    </span>
+    <span class="arcade-go">→</span>
+  </a>
+</div>
 <div id="flag-bg" aria-hidden="true"></div>
 <div id="app">
 
@@ -666,6 +721,7 @@ const ICON = {
   sun: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg>',
   moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
   close: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  grid: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
   plane: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15l-9-4V4a2 2 0 0 0-4 0v7l-5 2v2l5-1v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/></svg>',
   flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4.5-3 8a3 3 0 0 0 6 0c0-1.2-.5-2-1-2.7.9.2 3 1.6 3 5.2a5 5 0 0 1-10 0C7 8 12 6 12 2z"/></svg>',
 };
@@ -783,6 +839,8 @@ function show(name) {
   $("screen-" + name).classList.add("active");
   $("flag-bg").style.display = (name === "start" || name === "practice-setup") ? "" : "none";
   $("theme-toggle").style.display = name === "game" ? "none" : "";
+  $("arcade-trigger").style.display = name === "game" ? "none" : "";
+  closeArcadeSheet();
   if (name === "start") renderPersonalBest();
 }
 
@@ -1361,6 +1419,25 @@ $("theme-toggle").addEventListener("click", () => {
   try { localStorage.setItem(THEME_KEY, theme); } catch {}
   applyTheme(theme);
 });
+
+/* ---------- arcade menu (more games) ---------- */
+$("arcade-trigger").innerHTML = ICON.grid;
+function openArcadeSheet() {
+  let best = null;
+  try { const raw = localStorage.getItem("capitalmaster-best"); best = raw ? JSON.parse(raw) : null; } catch {}
+  $("arcade-card-sub").textContent = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
+  $("arcade-backdrop").classList.add("show");
+  $("arcade-sheet").classList.add("show");
+  track("arcade_menu_opened", { from: "flags" });
+}
+function closeArcadeSheet() {
+  $("arcade-backdrop").classList.remove("show");
+  $("arcade-sheet").classList.remove("show");
+}
+$("arcade-trigger").addEventListener("click", openArcadeSheet);
+$("arcade-backdrop").addEventListener("click", closeArcadeSheet);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeArcadeSheet(); });
+$("arcade-card").addEventListener("click", () => track("arcade_menu_clicked", { from: "flags", to: "capital-master" }));
 
 buildBackground();
 loadStartTop3();
