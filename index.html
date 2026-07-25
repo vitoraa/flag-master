@@ -151,6 +151,7 @@
     border: 1px solid var(--line); color: var(--text); font-weight: 500;
   }
   .btn.ghost:hover { background: #222641; box-shadow: none; }
+  :root[data-theme="light"] .btn.ghost:hover { background: #dde1f0; }
 
   /* ---------- start ---------- */
   .hero { text-align: center; padding: 30px 4px 150px; }
@@ -383,11 +384,6 @@
   }
   .lb-input:focus { border-color: var(--accent); }
   .btn.small { padding: 10px 22px; font-size: 14px; flex: none; }
-  .lb-anon-link {
-    display: block; margin: 10px auto 0; background: none; border: 0; cursor: pointer;
-    color: var(--muted); font-size: 12px; text-decoration: underline; font-family: inherit;
-  }
-  .lb-anon-link:hover { color: var(--text); }
   .lb-status { font-size: 12px; color: var(--muted); margin-top: 8px; min-height: 16px; }
 
   .lb-nearby { margin-bottom: 16px; }
@@ -603,15 +599,11 @@
           <div class="label">Leaderboard</div>
           <div class="lb-nearby-list" id="lb-nearby-list"></div>
         </div>
-        <div id="lb-prompt">
-          <div class="label">Enter your name to see the leaderboard</div>
-          <div class="lb-row">
-            <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
-            <button class="btn small" id="lb-submit">Submit</button>
-          </div>
-          <button class="lb-anon-link" id="lb-anon">Save anonymously instead</button>
-          <div class="lb-status" id="lb-status"></div>
+        <div class="lb-row" id="lb-row" style="display:none">
+          <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
+          <button class="btn small" id="lb-submit">Edit name</button>
         </div>
+        <div class="lb-status" id="lb-status"></div>
       </div>
 
       <div class="result-strip">
@@ -1073,24 +1065,31 @@ function logPlay() {
 }
 
 let scoreSubmitted = false;
+let lastSubmitId = null;
 
 function resetLeaderboardUI() {
   scoreSubmitted = false;
-  $("lb-prompt").style.display = "";
-  $("lb-nearby").style.display = "none";
+  lastSubmitId = null;
+  $("lb-row").style.display = "none";
   $("lb-submit").disabled = false;
-  $("lb-submit").textContent = "Submit";
+  $("lb-submit").textContent = "Edit name";
   setLbStatus(LEADERBOARD_URL ? "" : "Leaderboard isn't set up yet.");
   let savedName = "";
   try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
   $("lb-name").value = savedName;
-  setTimeout(() => { $("lb-name").focus(); $("lb-name").select(); }, 450);
+  if (LEADERBOARD_URL) {
+    $("lb-nearby-list").innerHTML = skeletonRow().repeat(4);
+    $("lb-nearby").style.display = "";
+  } else {
+    $("lb-nearby").style.display = "none";
+  }
+  submitScore(undefined, { silent: true });
 }
 
 function ensureScoreSaved() {
   if (practiceMode || scoreSubmitted || !LEADERBOARD_URL) return;
   if (!$("screen-end").classList.contains("active")) return;
-  submitScore();
+  submitScore(undefined, { silent: true });
 }
 
 const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
@@ -1162,6 +1161,7 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
 
   $("lb-nearby-list").innerHTML = skeletonRow().repeat(4);
   nearby.style.display = "";
+  $("lb-row").style.display = "";
 
   try {
     const youName = displayName || "You";
@@ -1201,31 +1201,41 @@ function setLbStatus(msg) {
   $("lb-status").textContent = msg;
 }
 
-async function submitScore(nameOverride) {
+async function submitScore(nameOverride, { silent = false } = {}) {
   if (!LEADERBOARD_URL) {
     setLbStatus("Leaderboard isn't set up yet.");
     return;
   }
   const submitBtn = $("lb-submit");
-  if (submitBtn.disabled) return;
+  if (!silent && submitBtn.disabled) return;
 
   const name = (nameOverride ?? $("lb-name").value).trim().slice(0, 20) || "Anonymous";
   try { localStorage.setItem(NAME_KEY, name); } catch {}
 
-  scoreSubmitted = true;
-  submitBtn.disabled = true;
-  submitBtn.textContent = "Saving…";
+  const isRename = scoreSubmitted && lastSubmitId;
   setLbStatus("");
+  if (!silent) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving…";
+  }
 
   const flagsRight = results.filter(r => r === "ok").length;
   try {
     const res = await fetch(LEADERBOARD_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ name, score, flags: flagsRight, streak: bestStreak }),
+      body: JSON.stringify(isRename
+        ? { type: "rename", id: lastSubmitId, name }
+        : { name, score, flags: flagsRight, streak: bestStreak }),
     });
-    await res.json();
-    $("lb-prompt").style.display = "none";
+    const data = await res.json();
+    if (!isRename && data && data.id) lastSubmitId = data.id;
+    scoreSubmitted = true;
+    $("lb-name").value = name;
+    if (!silent) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Edit name";
+    }
     loadNearbyLeaderboard(name, flagsRight);
 
     if (!practiceMode) {
@@ -1236,9 +1246,11 @@ async function submitScore(nameOverride) {
       }
     }
   } catch {
-    scoreSubmitted = false;
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Submit";
+    if (!isRename) scoreSubmitted = false;
+    if (!silent) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Edit name";
+    }
     setLbStatus("Couldn't reach the leaderboard — try again?");
   }
 }
@@ -1296,7 +1308,6 @@ $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
 $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
-$("lb-anon").addEventListener("click", () => submitScore("Anonymous"));
 
 /* ---------- theme ---------- */
 const THEME_KEY = "flagmaster-theme";

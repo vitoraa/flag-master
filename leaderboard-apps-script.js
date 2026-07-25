@@ -73,15 +73,28 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  if (data.type === "rename") {
+    const sheet = getSheet_(game);
+    const rowId = Number(data.id);
+    if (rowId >= 2 && rowId <= sheet.getLastRow()) {
+      sheet.getRange(rowId, 2).setValue(name);
+      CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const sheet = getSheet_(game);
   sheet.appendRow([new Date(), name, score, flags, streak]);
+  const rowId = sheet.getLastRow();
   CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
 
   const scores = sheet.getDataRange().getValues().slice(1).map(r => Number(r[2]) || 0);
   const rank = scores.filter(s => s > score).length + 1;
 
   return ContentService
-    .createTextOutput(JSON.stringify({ rank: rank, total: scores.length }))
+    .createTextOutput(JSON.stringify({ rank: rank, total: scores.length, id: rowId }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
