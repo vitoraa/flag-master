@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -172,6 +172,7 @@
     border: 1px solid var(--line); color: var(--text); font-weight: 500;
   }
   .btn.ghost:hover { background: #222641; box-shadow: none; }
+  :root[data-theme="light"] .btn.ghost:hover { background: #dde1f0; }
 
   /* ---------- start ---------- */
   .hero { text-align: center; padding: 30px 4px 150px; }
@@ -326,7 +327,7 @@
   .question h2 { font-size: 32px; letter-spacing: -.8px; font-weight: 700; line-height: 1.1; }
 
   .prompt-flag {
-    width: 96px; aspect-ratio: 4 / 2.7; object-fit: cover; border-radius: 10px;
+    width: 100%; max-width: 190px; aspect-ratio: 4 / 2.7; object-fit: cover; border-radius: 14px;
     box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); margin: 0 auto 12px; display: block;
   }
   .options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
@@ -632,7 +633,7 @@
         <div id="lb-prompt">
           <div class="label">Enter your name to see the leaderboard</div>
           <div class="lb-row">
-            <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
+            <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="new-password">
             <button class="btn small" id="lb-submit">Submit</button>
           </div>
           <button class="lb-anon-link" id="lb-anon">Save anonymously instead</button>
@@ -1399,9 +1400,9 @@ function resetLeaderboardUI() {
 }
 
 function ensureScoreSaved() {
-  if (practiceMode || scoreSubmitted || !LEADERBOARD_URL) return;
-  if (!$("screen-end").classList.contains("active")) return;
-  submitScore();
+  if (practiceMode || scoreSubmitted || !LEADERBOARD_URL) return Promise.resolve();
+  if (!$("screen-end").classList.contains("active")) return Promise.resolve();
+  return submitScore();
 }
 
 const MEDALS = { 0: "🥇", 1: "🥈", 2: "🥉" };
@@ -1615,8 +1616,8 @@ function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("theme-toggle").innerHTML = t === "light" ? ICON.moon : ICON.sun;
 }
-let theme = "light";
-try { theme = localStorage.getItem(THEME_KEY) || "light"; } catch {}
+let theme = "dark";
+try { theme = localStorage.getItem(THEME_KEY) || "dark"; } catch {}
 applyTheme(theme);
 $("theme-toggle").addEventListener("click", () => {
   theme = theme === "light" ? "dark" : "light";
