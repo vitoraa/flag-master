@@ -871,6 +871,15 @@ let locale = "en";
 const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 try { const n = localStorage.getItem(NAME_KEY); if (n) posthog.register({ player_name: n }); } catch {}
+try {
+  if (navigator.language && navigator.language.toLowerCase().startsWith("pt")) {
+    posthog.onFeatureFlags(() => {
+      try {
+        if (posthog.getFeatureFlag("flag-master-pt-localization") === "test") locale = "pt";
+      } catch {}
+    });
+  }
+} catch {}
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const flagUrl = code => `flags/${code}.png`;
 
