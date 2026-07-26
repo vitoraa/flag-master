@@ -159,6 +159,25 @@
   .arcade-card .arcade-h { font-size: 14px; font-weight: 700; }
   .arcade-card .arcade-s { font-size: 12px; color: var(--muted); margin-top: 1px; }
   .arcade-card .arcade-go { flex: none; font-size: 16px; color: var(--accent-2); }
+  .arcade-card + .arcade-card, .arcade-card + .arcade-card-disabled { margin-top: 10px; }
+  .arcade-card-disabled {
+    display: flex; align-items: center; gap: 12px; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 14px; opacity: .55; cursor: default;
+  }
+  @media (min-width: 640px) {
+    .arcade-sheet {
+      left: 50%; right: auto; bottom: auto; top: 50%;
+      width: 100%;
+      border-radius: 20px; border-bottom: 1px solid var(--line);
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+      transform: translate(-50%, -46%); opacity: 0; pointer-events: none;
+      transition: transform .22s ease, opacity .22s ease;
+      box-shadow: 0 30px 70px -20px rgba(0,0,0,.5);
+    }
+    .arcade-sheet.show { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+    .arcade-grip { display: none; }
+  }
 
   /* ---------- quit button (in-game topbar) ---------- */
   .topbar-quit {
@@ -581,6 +600,13 @@
     </span>
     <span class="arcade-go">→</span>
   </a>
+  <div class="arcade-card-disabled" aria-disabled="true">
+    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); color:#fff;">➗</span>
+    <span class="arcade-body">
+      <span class="arcade-h">Math Master</span>
+      <span class="arcade-s">Coming soon</span>
+    </span>
+  </div>
 </div>
 <div id="flag-bg" aria-hidden="true"></div>
 <div id="app">
