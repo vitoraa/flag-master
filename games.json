@@ -1,0 +1,46 @@
+[
+  {
+    "id": "flag-master",
+    "enabled": true,
+    "outputDir": ".",
+    "url": "/",
+    "icon": "🌍",
+    "title": "Flag&nbsp;Master",
+    "titlePlain": "Flag Master",
+    "tagline": "How many flags of the world do you actually know? Prove it.",
+    "storagePrefix": "flagmaster",
+    "leaderboardGame": "flags",
+    "analyticsId": "flags",
+    "gameUrl": "https://vitoraa.github.io/flag-master/",
+    "crossPromoUrl": "capital-master/",
+    "crossPromoTargetId": "capital-master",
+    "crossPromoHeading": "Know your capitals too?",
+    "crossPromoBody": "Try Capital Master — same streaks, new map"
+  },
+  {
+    "id": "capital-master",
+    "enabled": true,
+    "outputDir": "capital-master",
+    "url": "capital-master/",
+    "icon": "🏛️",
+    "title": "Capital&nbsp;Master",
+    "titlePlain": "Capital Master",
+    "tagline": "How many capital cities of the world do you actually know? Prove it.",
+    "storagePrefix": "capitalmaster",
+    "leaderboardGame": "capitals",
+    "analyticsId": "capital-master",
+    "gameUrl": "https://vitoraa.github.io/flag-master/capital-master/",
+    "crossPromoUrl": "../",
+    "crossPromoTargetId": "flags",
+    "crossPromoHeading": "Know your flags too?",
+    "crossPromoBody": "Try Flag Master — same streaks, new challenge"
+  },
+  {
+    "id": "math-master",
+    "enabled": false,
+    "icon": "🔢",
+    "title": "Math&nbsp;Master",
+    "titlePlain": "Math Master",
+    "tagline": "Coming soon"
+  }
+]
