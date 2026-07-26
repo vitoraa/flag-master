@@ -53,7 +53,12 @@ function getSortedAll_(game) {
     .map(r => ({ name: r[1], score: Number(r[2]) || 0, flags: Number(r[3]) || 0 }))
     .sort((a, b) => b.score - a.score);
 
-  cache.put(names.cacheKey, JSON.stringify(all), CACHE_TTL_SECONDS);
+  try {
+    cache.put(names.cacheKey, JSON.stringify(all), CACHE_TTL_SECONDS);
+  } catch (err) {
+    // CacheService rejects values over 100KB; once the sheet grows past that,
+    // just skip caching rather than failing every read/write on the sheet.
+  }
   return all;
 }
 
@@ -161,5 +166,5 @@ function doGet(e) {
 // Exposed for leaderboard-apps-script.test.js only. Apps Script's runtime
 // has no `module` global, so this is a no-op when deployed.
 if (typeof module !== "undefined") {
-  module.exports = { sheetNamesFor_ };
+  module.exports = { sheetNamesFor_, getSortedAll_ };
 }
