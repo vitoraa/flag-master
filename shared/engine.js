@@ -366,6 +366,7 @@ function logPlay() {
       type: "play",
       name: savedName,
       practice: practiceMode,
+      game: GAME.leaderboardGame,
     }),
   }).catch(() => {});
 }
@@ -444,7 +445,7 @@ async function loadStartTop3() {
 
   $("top3-list").innerHTML = top3HeroSkeleton() + `<div class="top3-runners">${[2, 3].map(top3RunnerSkeleton).join("")}</div>`;
   try {
-    const res = await fetch(LEADERBOARD_URL);
+    const res = await fetch(`${LEADERBOARD_URL}?game=${GAME.leaderboardGame}`);
     const data = await res.json();
     const top = data.top || [];
     if (!top.length) {
@@ -471,7 +472,7 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
 
   try {
     const youName = displayName || "You";
-    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}`;
+    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}&game=${GAME.leaderboardGame}`;
     const res = await fetch(url);
     const data = await res.json();
     const rows = data.rows || [];
@@ -532,8 +533,8 @@ async function submitScore(nameOverride, { silent = false } = {}) {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(isRename
-        ? { type: "rename", id: lastSubmitId, name }
-        : { name, score, flags: flagsRight, streak: bestStreak }),
+        ? { type: "rename", id: lastSubmitId, name, game: GAME.leaderboardGame }
+        : { name, score, flags: flagsRight, streak: bestStreak, game: GAME.leaderboardGame }),
     });
     const data = await res.json();
     if (!isRename && data && data.id) lastSubmitId = data.id;
