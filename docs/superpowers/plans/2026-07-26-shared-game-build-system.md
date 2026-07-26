@@ -49,7 +49,7 @@ capital-master/index.html           # generated
 - Create: `games.json`
 
 **Interfaces:**
-- Produces: `games.json` — an array of game registry entries, each with fields `id`, `enabled`, `outputDir`, `url`, `icon`, `title`, `tagline`, `storagePrefix`, `leaderboardGame`, `analyticsId`, `gameUrl`, `crossPromoUrl`, `crossPromoHeading`, `crossPromoBody`. Later tasks (`build.js`, `shared/arcade-menu.js`, each `game.js`) read this file.
+- Produces: `games.json` — an array of game registry entries, each with fields `id`, `enabled`, `outputDir`, `url`, `icon`, `title`, `tagline`, `storagePrefix`, `leaderboardGame`, `analyticsId`, `gameUrl`, `crossPromoUrl`, `crossPromoTargetId`, `crossPromoHeading`, `crossPromoBody`. Later tasks (`build.js`, `shared/arcade-menu.js`, each `game.js`) read this file.
 
 - [ ] **Step 1: Create and check out a feature branch**
 
@@ -75,6 +75,7 @@ git checkout -b shared-game-build-system
     "analyticsId": "flags",
     "gameUrl": "https://vitoraa.github.io/flag-master/",
     "crossPromoUrl": "capital-master/",
+    "crossPromoTargetId": "capital-master",
     "crossPromoHeading": "Know your capitals too?",
     "crossPromoBody": "Try Capital Master — same streaks, new map"
   },
@@ -92,6 +93,7 @@ git checkout -b shared-game-build-system
     "analyticsId": "capital-master",
     "gameUrl": "https://vitoraa.github.io/flag-master/capital-master/",
     "crossPromoUrl": "../",
+    "crossPromoTargetId": "flags",
     "crossPromoHeading": "Know your flags too?",
     "crossPromoBody": "Try Flag Master — same streaks, new challenge"
   },
@@ -501,7 +503,7 @@ Find and replace both occurrences of `"flag_answered"` (originally index.html:11
 
 Find and replace `track("arcade_menu_opened", { from: "flags" });` (originally index.html:1455) with `track("arcade_menu_opened", { from: GAME.analyticsId });`.
 
-Find and replace `track("cross_promo_clicked", { from: "flags", to: "capital-master" });` (originally index.html:1486) with `track("cross_promo_clicked", { from: GAME.analyticsId, to: null });` — note the `to` value is no longer knowable generically from a single game's config now that the arcade menu is data-driven (Task 5 handles the actual click tracking per-card instead); leave this line as `track("cross_promo_clicked", { from: GAME.analyticsId });` (drop `to` entirely — it will be re-added correctly in Task 5's arcade-menu.js which knows the destination).
+This specific `track("cross_promo_clicked", ...)` call (originally index.html:1486, inside the end-screen `$("cross-promo")` click handler) is handled separately in Step 14 below, using `GAME.crossPromoTargetId` — do not change it here.
 
 - [ ] **Step 10: Replace `rank()` and `RANK_EMOJI` to use `GAME.titlePlain`**
 
@@ -610,7 +612,7 @@ $("cross-promo").addEventListener("click", () => {
 Replace with:
 ```js
 $("cross-promo").addEventListener("click", () => {
-  track("cross_promo_clicked", { from: GAME.analyticsId });
+  track("cross_promo_clicked", { from: GAME.analyticsId, to: GAME.crossPromoTargetId });
   location.href = CROSS_PROMO_URL;
 });
 ```
@@ -1023,9 +1025,11 @@ git commit -m "build: generate flag-master index.html from shared engine"
 **Interfaces:**
 - Produces: the `capital-master` implementation of the same `GAME` contract Task 7 implemented for `flag-master`, including the `pickDistractors` override and `GAME_ITEM_COUNT`.
 
+**Note on line numbers in this task:** `capital-master/index.html` received a real content commit (country tier reassignments — see `git log -- capital-master/index.html`) after this plan was written, which shifts line numbers for everything after the `COUNTRIES` array. Every line reference below is a starting-point estimate, not gospel — locate each block by searching for its marker (`const OTHER_CITIES`, `const COUNTRIES`, `function pickDistractors`, `#world-map`, `.capital-btn`) in the live file rather than trusting the number alone.
+
 - [ ] **Step 1: Write `games/capital-master/game.js`**
 
-Copy the `OTHER_CITIES` object verbatim from the current `capital-master/index.html:789-900` (112 entries), and the `COUNTRIES` array (with the 4th `capital` field) verbatim from `capital-master/index.html:901-1010` (108 entries) — both unchanged data, just reference the file directly when writing this rather than retyping by hand. Then add:
+Copy the `OTHER_CITIES` object verbatim from the current `capital-master/index.html` (search for `const OTHER_CITIES`, originally around line 789-900, 112 entries), and the `COUNTRIES` array (with the 4th `capital` field, search for `const COUNTRIES`, originally around line 901-1010, 108 entries, including its current tier values — copy them exactly as they are in the live file, not from memory) — both unchanged data, just reference the file directly when writing this rather than retyping by hand. Then add:
 
 ```js
 const GAME_ITEM_COUNT = 108;
