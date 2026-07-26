@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{INITIAL_THEME}}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{DOC_TITLE}}</title>
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.uid=t.uid||[],t.uid.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify createPersonProfile group resetGroups setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSurveyResponse".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+  const isProdHost = {{PROD_HOST_CHECK}};
+  if (isProdHost) {
+    posthog.init('phc_HmmUlFmsobnkDBi3HhWQdG4D5137kLdSyTomkppw9Ic', { api_host: 'https://eu.i.posthog.com', person_profiles: 'identified_only' });
+  }
+</script>
+<style>{{GAME_CSS}}</style>
+</head>
+<body>
+<button id="theme-toggle" class="theme-toggle" aria-label="Toggle light or dark theme"></button>
+<button id="arcade-trigger" class="arcade-trigger" aria-label="More games" title="More games"></button>
+<div id="arcade-backdrop" class="arcade-backdrop"></div>
+<div id="arcade-sheet" class="arcade-sheet">
+  <div class="arcade-grip"></div>
+  <div class="arcade-sheet-title">More games</div>
+  <a class="arcade-card" id="arcade-card" href="capital-master/">
+    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%); color:#fff;">🌍</span>
+    <span class="arcade-body">
+      <span class="arcade-h">Capital Master</span>
+      <span class="arcade-s" id="arcade-card-sub">Not played yet</span>
+    </span>
+    <span class="arcade-go">→</span>
+  </a>
+  <div class="arcade-card arcade-card-disabled" aria-disabled="true">
+    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); color:#fff;">➗</span>
+    <span class="arcade-body">
+      <span class="arcade-h">Math Master</span>
+      <span class="arcade-s">Coming soon</span>
+    </span>
+  </div>
+</div>
+<div id="flag-bg" aria-hidden="true"></div>
+<div id="app">
+
+  <!-- START -->
+  <section id="screen-start" class="screen active">
+    <div class="hero">
+      <span class="badge"><span class="dot"></span>{{ITEM_COUNT}} countries · one shot</span>
+      <h1>{{TITLE_HTML}}</h1>
+      <p class="tag">{{TAGLINE}}</p>
+      <div class="personal-best" id="personal-best" style="display:none">
+        🏆 Your best: <b id="pb-flags">0</b> {{UNIT_PLURAL}} · <b id="pb-score">0</b> pts
+      </div>
+      <div class="rules">
+        <div class="rule">
+          <span class="ic" id="ic-slot-1"></span>
+          <span class="txt">Spot the right {{UNIT_SINGULAR}} out of <b>4 options</b></span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-2"></span>
+          <span class="txt"><b>10 seconds</b> on the clock each round</span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-3"></span>
+          <span class="txt">Only <b>3 mistakes</b> and you're out</span>
+        </div>
+        <div class="rule">
+          <span class="ic" id="ic-slot-4"></span>
+          <span class="txt">Starts easy, ends <b>brutal</b></span>
+        </div>
+      </div>
+      <div class="leaderboard-card top3-card" id="top3-card">
+        <div class="label">🏆 Top scores</div>
+        <div id="top3-list"></div>
+      </div>
+      <div class="start-cta">
+        <button class="btn" id="btn-start">Start playing</button>
+        <button class="practice-link" id="btn-practice">Playing with a kid? Try Practice mode →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRACTICE SETUP -->
+  <section id="screen-practice-setup" class="screen">
+    <div class="hero">
+      <span class="badge"><span class="dot"></span>Practice mode</span>
+      <h1>Practice&nbsp;Setup</h1>
+      <p class="tag">Relaxed rules — perfect for playing with a kid.</p>
+
+      <div class="cfg-list">
+        <div class="cfg-row">
+          <span class="cfg-label">Timer</span>
+          <div class="seg" data-cfg="timer">
+            <button class="seg-btn active" data-value="off" type="button">No limit</button>
+            <button class="seg-btn" data-value="on" type="button">10s</button>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <span class="cfg-label">Mistakes allowed</span>
+          <div class="seg" data-cfg="lives">
+            <button class="seg-btn active" data-value="unlimited" type="button">Unlimited</button>
+            <button class="seg-btn" data-value="3" type="button">3</button>
+          </div>
+        </div>
+        <div class="cfg-row">
+          <span class="cfg-label">{{PRACTICE_CFG_LABEL}}</span>
+          <div class="seg" data-cfg="difficulty">
+            <button class="seg-btn active" data-value="easy" type="button">Easy only</button>
+            <button class="seg-btn" data-value="all" type="button">{{TOTAL_ALL_DIFFICULTY}}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="practice-note">🚫 Practice runs aren't saved to the leaderboard</div>
+
+      <div class="start-cta">
+        <button class="btn" id="btn-practice-start">Start practice</button>
+        <button class="practice-link" id="btn-practice-back">← Back to standard mode</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="screen">
+    <div class="milestone-flash" id="milestone-flash"></div>
+    <div class="new-best-banner" id="new-best-banner">🏆 New Personal Best!</div>
+    <div class="topbar">
+      <button class="topbar-quit" id="quit-btn" aria-label="Quit to start screen"></button>
+      <div class="lives" id="lives"></div>
+      <div class="chip" id="level"><span class="lvldot"></span><span id="level-txt"></span></div>
+      <div class="score-cluster">
+        <span class="streak" id="streak"><span class="flame" id="streak-flame"></span><span id="streak-num"></span><span class="streak-mult" id="streak-mult"></span></span>
+        <div class="score-wrap"><span class="num" id="score">0</span><span class="lbl">PTS</span></div>
+      </div>
+    </div>
+    <div class="timerbar" id="timerbar"><i id="timerfill"></i></div>
+    <div class="question">
+      <div class="prompt" id="qnum"></div>
+      <h2 id="country-name"></h2>
+    </div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+  </section>
+
+  <!-- END -->
+  <section id="screen-end" class="screen">
+    <div class="end">
+      <div class="medal" id="end-medal"></div>
+      <h2 id="end-title"></h2>
+      <p class="subtitle" id="end-subtitle"></p>
+      <div class="new-best-badge" id="new-best-badge" style="display:none">🏆 New personal best!</div>
+      <div class="stats">
+        <div class="stat"><b id="stat-score">0</b><span>Score</span></div>
+        <div class="stat"><b id="stat-flags">0</b><span id="stat-flags-label"></span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
+      </div>
+      <div class="practice-note" id="practice-end-note" style="display:none">🚫 Practice run — not saved to the leaderboard</div>
+      <div class="leaderboard-card" id="lb-card">
+        <div class="lb-nearby" id="lb-nearby" style="display:none">
+          <div class="label">Leaderboard</div>
+          <div class="lb-nearby-list" id="lb-nearby-list"></div>
+        </div>
+        <div class="lb-row" id="lb-row" style="display:none">
+          <input type="text" id="lb-name" class="lb-input" placeholder="Your name" maxlength="20" autocomplete="off">
+          <button class="btn small" id="lb-submit">Edit name</button>
+        </div>
+        <div class="lb-status" id="lb-status"></div>
+      </div>
+
+      <div class="result-strip">
+        <div class="label">Your run</div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="promo-card" id="cross-promo" style="display:none">
+        <div class="promo-ic" id="promo-ic"></div>
+        <div class="promo-body">
+          <div class="promo-h">{{CROSS_PROMO_HEADING}}</div>
+          <div class="promo-s">{{CROSS_PROMO_BODY}}</div>
+        </div>
+        <div class="promo-arrow">→</div>
+      </div>
+      <div class="share-row">
+        <button class="btn" id="btn-share"><span id="ic-share"></span>Challenge a friend</button>
+        <button class="btn ghost" id="btn-again"><span id="ic-again"></span>Play again</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
+
+<script>
+<!--GAME_SCRIPT-->
+</script>
+</body>
+</html>
