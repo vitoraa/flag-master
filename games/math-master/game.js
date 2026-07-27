@@ -103,10 +103,11 @@ function pickMathDistractors(answer) {
     used.add(n);
     picks.push(n);
   }
-  let step = 1;
+  let step = 1, attempt = 0;
   while (picks.length < 3) {
-    const n = correct + step * (picks.length % 2 === 0 ? 1 : -1);
+    const n = correct + step * (attempt % 2 === 0 ? 1 : -1);
     step++;
+    attempt++;
     if (n > 0 && !used.has(n)) { used.add(n); picks.push(n); }
   }
   return picks.map(n => ({ 3: n }));

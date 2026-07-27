@@ -35,4 +35,17 @@ for (let i = 0; i < 500; i++) {
   });
 }
 
+// Regression: ensure fallback loop terminates with correct === 0 (edge case)
+const edgeCase = [
+  "edge0", "0 - 0", 1, 0, { op: "−", a: 0, b: 0 }
+];
+const edgeDistr = pickMathDistractors(edgeCase);
+assert.strictEqual(edgeDistr.length, 3, "edge case: must produce exactly 3 distractors");
+const edgeValues = edgeDistr.map(d => d[3]);
+assert.strictEqual(new Set(edgeValues).size, 3, "edge case: distractors must be unique");
+edgeValues.forEach(v => {
+  assert.ok(v > 0, "edge case: distractor must be positive");
+  assert.notStrictEqual(v, 0, "edge case: distractor must not equal correct answer");
+});
+
 console.log("All math-master game tests passed");
