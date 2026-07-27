@@ -820,7 +820,7 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
 const flagUrl = code => `flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
-let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
+let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false, lockedAt = 0, nextRoundTimer = null;
 let newBestAnnounced = false;
 
 let practiceMode = false;
@@ -1045,6 +1045,7 @@ function updateTimerBar() {
 
 function lockRound(answer) {
   locked = true;
+  lockedAt = Date.now();
   clearInterval(timerId);
   document.querySelectorAll(".flag-btn").forEach(b => {
     b.disabled = true;
@@ -1103,7 +1104,14 @@ function answerWith(btn, answer) {
   track("flag_answered", { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
-  setTimeout(nextRound, correct ? 850 : 1550);
+  nextRoundTimer = setTimeout(nextRound, correct ? 850 : 1550);
+}
+
+function skipDelay(e) {
+  if (!locked || e.target.closest("#quit-btn")) return;
+  if (Date.now() - lockedAt < 200) return;
+  clearTimeout(nextRoundTimer);
+  nextRound();
 }
 
 function timeUp(answer) {
@@ -1115,7 +1123,7 @@ function timeUp(answer) {
   track("flag_answered", { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
-  setTimeout(nextRound, 1350);
+  nextRoundTimer = setTimeout(nextRound, 1350);
 }
 
 function nameOf(code) {
@@ -1426,6 +1434,7 @@ $("promo-ic").innerHTML = ICON.globe;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
+$("screen-game").addEventListener("click", skipDelay);
 $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
 
