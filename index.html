@@ -328,6 +328,7 @@
   .question { text-align: center; margin-bottom: 22px; }
   .question .prompt { color: var(--muted); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
   .question h2 { font-size: 32px; letter-spacing: -.8px; font-weight: 700; line-height: 1.1; }
+  .prompt-flag { display: none; }
 
   .options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 80%{transform:translateX(-4px)} }
@@ -656,6 +657,7 @@
     <div class="timerbar" id="timerbar"><i id="timerfill"></i></div>
     <div class="question">
       <div class="prompt" id="qnum"></div>
+      <img class="prompt-flag" id="prompt-flag" src="" alt="" draggable="false">
       <h2 id="country-name"></h2>
     </div>
     <div class="options" id="options"></div>
@@ -1443,8 +1445,8 @@ function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("theme-toggle").innerHTML = t === "light" ? ICON.moon : ICON.sun;
 }
-let theme = "light";
-try { theme = localStorage.getItem(THEME_KEY) || "light"; } catch {}
+let theme = GAME.initialTheme;
+try { theme = localStorage.getItem(THEME_KEY) || GAME.initialTheme; } catch {}
 applyTheme(theme);
 $("theme-toggle").addEventListener("click", () => {
   theme = theme === "light" ? "dark" : "light";
