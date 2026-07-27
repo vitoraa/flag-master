@@ -1,5 +1,3 @@
-const GAME_ITEM_COUNT = 195;
-
 // [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
 GAME.items = [
   ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
@@ -111,24 +109,9 @@ function countryName(c) {
   return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
 }
 
-GAME.unitSingular = "flag";
-GAME.unitPlural = "flags";
-GAME.promptCounterLabel = "Flag";
-GAME.promptCounterLabelPt = "Bandeira";
-GAME.practiceCfgLabel = "Flags";
-GAME.initialTheme = "light";
-GAME.levels = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
-GAME.levelsPt = { 1: "A aquecer", 2: "A ficar difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
-GAME.trackAnswerEvent = "flag_answered";
-
-GAME.rankTranslationsPt = [
-  ["Lenda Mundial", "Trabalhas na ONU?"],
-  ["Mestre das Bandeiras", "Verdadeiramente de elite. Respeito."],
-  ["Globetrotter", "Sabes mesmo orientar-te num mapa."],
-  ["Viajante", "Bom instinto de geografia."],
-  ["Turista", "Nada mau — o mundo é grande."],
-  ["Turista Perdido", "Hora de rodar mais um pouco o globo."],
-];
+// unitSingular/unitPlural/promptCounterLabel/promptCounterLabelPt/practiceCfgLabel/
+// initialTheme/levels/levelsPt/trackAnswerEvent/ranks all come from games.json —
+// this file only defines data (COUNTRIES/COUNTRY_NAMES_PT above) and hooks below.
 
 GAME.detectLocale = function (setLocale) {
   try {

@@ -322,18 +322,10 @@ function timeUp(answer) {
   nextRoundTimer = setTimeout(nextRound, 1350);
 }
 
-const DEFAULT_RANKS = [
-  { min: 60, icon: ICON.globe,   emoji: "🌍", en: ["World Legend", "Do you work at the UN?"] },
-  { min: 40, icon: ICON.crown,   emoji: "🏆", en: [GAME.titlePlain, "Genuinely elite. Respect."] },
-  { min: 25, icon: ICON.medal,   emoji: "🥇", en: ["Globetrotter", "You know your way around a map."] },
-  { min: 15, icon: ICON.medal,   emoji: "🥈", en: ["Traveler", "Solid geography instincts."] },
-  { min: 8,  icon: ICON.plane,   emoji: "🧳", en: ["Tourist", "Not bad — the world is big."] },
-  { min: 0,  icon: ICON.compass, emoji: "🧭", en: ["Lost Tourist", "Time to spin the globe some more."] },
-];
-// GAME.rankTranslationsPt, if provided, is a 6-entry array of [title, sub] pairs
-// in the same order as DEFAULT_RANKS above, used only when locale === "pt".
-const RANKS = DEFAULT_RANKS.map((r, i) =>
-  GAME.rankTranslationsPt ? { ...r, pt: GAME.rankTranslationsPt[i] } : r);
+// GAME.ranks comes straight from games.json: an array of
+// { min, icon, emoji, en: [title, sub], pt?: [title, sub] } entries, sorted
+// highest min first. `icon` is a key into the ICON set above.
+const RANKS = GAME.ranks.map(r => ({ ...r, icon: ICON[r.icon] }));
 
 function rankFor(flags) {
   return RANKS.find(r => flags >= r.min) || RANKS[RANKS.length - 1];
@@ -630,7 +622,7 @@ $("ic-slot-4").innerHTML = ICON.trend;
 $("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
-$("promo-ic").innerHTML = ICON.globe;
+$("promo-ic").innerHTML = ICON[GAME.crossPromoIcon];
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);

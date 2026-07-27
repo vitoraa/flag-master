@@ -96,7 +96,8 @@
     padding: 12px 14px; transition: transform .15s ease, border-color .15s;
   }
   .arcade-card:hover { transform: translateY(-1px); border-color: var(--accent); }
-  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; }
+  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; color: #fff; }
+  .arcade-card-disabled .arcade-ic { background: radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); }
   .arcade-card .arcade-body { flex: 1; min-width: 0; }
   .arcade-card .arcade-h { font-size: 14px; font-weight: 700; }
   .arcade-card .arcade-s { font-size: 12px; color: var(--muted); margin-top: 1px; }

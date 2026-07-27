@@ -1,5 +1,3 @@
-const GAME_ITEM_COUNT = 108;
-
 const OTHER_CITIES = {
   "us": ["New York City","Los Angeles","Chicago"],
   "br": ["Rio de Janeiro","São Paulo"],
@@ -225,13 +223,9 @@ GAME.items = [
 
 const SAME_COUNTRY_DISTRACTOR_CHANCE = 0.75;
 
-GAME.unitSingular = "capital";
-GAME.unitPlural = "capitals";
-GAME.promptCounterLabel = "Country";
-GAME.practiceCfgLabel = "Countries";
-GAME.initialTheme = "dark";
-GAME.levels = { 1: "Warming up", 2: "Getting tricky", 3: "Capital nerd zone", 4: "Very hard" };
-GAME.trackAnswerEvent = "capital_answered";
+// unitSingular/unitPlural/promptCounterLabel/practiceCfgLabel/initialTheme/
+// levels/trackAnswerEvent/ranks all come from games.json — this file only
+// defines data (COUNTRIES/OTHER_CITIES above) and hooks below.
 
 GAME.renderPrompt = function (item) {
   $("prompt-flag").src = flagUrl(item[0]);
