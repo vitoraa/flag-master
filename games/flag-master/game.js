@@ -53,20 +53,101 @@ GAME.items = [
   ["vu","Vanuatu",4],["ws","Samoa",4],["ye","Yemen",4],
 ];
 
+// Portuguese A/B test: shown when the browser is set to pt-* AND the
+// "flag-master-pt-localization" PostHog feature flag resolves to "test".
+const COUNTRY_NAMES_PT = {
+  us: "Estados Unidos", br: "Brasil", fr: "França", de: "Alemanha",
+  it: "Itália", es: "Espanha", gb: "Reino Unido", jp: "Japão",
+  cn: "China", ca: "Canadá", mx: "México", ar: "Argentina",
+  pt: "Portugal", au: "Austrália", in: "Índia", ru: "Rússia",
+  kr: "Coreia do Sul", nl: "Países Baixos", ch: "Suíça", se: "Suécia",
+  no: "Noruega", gr: "Grécia", tr: "Turquia", eg: "Egito",
+  za: "África do Sul", ie: "Irlanda", dk: "Dinamarca", be: "Bélgica",
+  pl: "Polónia", at: "Áustria", fi: "Finlândia", ua: "Ucrânia",
+  cl: "Chile", co: "Colômbia", pe: "Peru", uy: "Uruguai",
+  ve: "Venezuela", cu: "Cuba", th: "Tailândia", vn: "Vietname",
+  ph: "Filipinas", id: "Indonésia", my: "Malásia", sg: "Singapura",
+  nz: "Nova Zelândia", il: "Israel", sa: "Arábia Saudita", ae: "Emirados Árabes Unidos",
+  ma: "Marrocos", ng: "Nigéria", ke: "Quénia", cz: "Chéquia",
+  hu: "Hungria", ro: "Roménia", hr: "Croácia", is: "Islândia",
+  pk: "Paquistão", bd: "Bangladeche", ec: "Equador", bo: "Bolívia",
+  py: "Paraguai", pa: "Panamá", cr: "Costa Rica", jm: "Jamaica",
+  qa: "Catar", ir: "Irão", iq: "Iraque", dz: "Argélia",
+  si: "Eslovénia", sk: "Eslováquia", rs: "Sérvia", bg: "Bulgária",
+  lt: "Lituânia", lv: "Letónia", ee: "Estónia", md: "Moldávia",
+  al: "Albânia", mk: "Macedónia do Norte", ba: "Bósnia e Herzegovina", me: "Montenegro",
+  lu: "Luxemburgo", mt: "Malta", cy: "Chipre", am: "Arménia",
+  ge: "Geórgia", az: "Azerbaijão", kz: "Cazaquistão", uz: "Usbequistão",
+  kg: "Quirguistão", tj: "Tajiquistão", tm: "Turquemenistão", mn: "Mongólia",
+  np: "Nepal", lk: "Sri Lanka", mm: "Mianmar", kh: "Camboja",
+  la: "Laos", bt: "Butão", bn: "Brunei", om: "Omã",
+  kw: "Kuwait", bh: "Barém", jo: "Jordânia", lb: "Líbano",
+  tn: "Tunísia", ly: "Líbia", sd: "Sudão", et: "Etiópia",
+  gh: "Gana", ci: "Costa do Marfim", sn: "Senegal", cm: "Camarões",
+  tz: "Tanzânia", ug: "Uganda", zm: "Zâmbia", zw: "Zimbabué",
+  mz: "Moçambique", ao: "Angola", na: "Namíbia", bw: "Botsuana",
+  mg: "Madagáscar", mu: "Maurícia", fj: "Fiji", pg: "Papua-Nova Guiné",
+  gt: "Guatemala", hn: "Honduras", sv: "El Salvador", ni: "Nicarágua",
+  do: "República Dominicana", ht: "Haiti", tt: "Trindade e Tobago", gy: "Guiana",
+  sr: "Suriname", bz: "Belize", mv: "Maldivas", mc: "Mónaco",
+  li: "Liechtenstein", ad: "Andorra", sm: "São Marino", va: "Cidade do Vaticano",
+  af: "Afeganistão", ag: "Antígua e Barbuda", bb: "Barbados", bf: "Burquina Faso",
+  bi: "Burundi", bj: "Benim", bs: "Baamas", by: "Bielorrússia",
+  cd: "RD Congo", cf: "República Centro-Africana", cg: "República do Congo", cv: "Cabo Verde",
+  dj: "Jibuti", dm: "Dominica", er: "Eritreia", fm: "Micronésia",
+  ga: "Gabão", gd: "Granada", gm: "Gâmbia", gn: "Guiné",
+  gq: "Guiné Equatorial", gw: "Guiné-Bissau", ki: "Quiribáti", km: "Comores",
+  kn: "São Cristóvão e Neves", kp: "Coreia do Norte", lc: "Santa Lúcia", lr: "Libéria",
+  ls: "Lesoto", mh: "Ilhas Marshall", ml: "Mali", mr: "Mauritânia",
+  mw: "Malaui", ne: "Níger", nr: "Nauru", ps: "Palestina",
+  pw: "Palau", rw: "Ruanda", sb: "Ilhas Salomão", sc: "Seicheles",
+  sl: "Serra Leoa", so: "Somália", ss: "Sudão do Sul", st: "São Tomé e Príncipe",
+  sy: "Síria", sz: "Essuatíni", td: "Chade", tg: "Togo",
+  tl: "Timor-Leste", to: "Tonga", tv: "Tuvalu", vc: "São Vicente e Granadinas",
+  vu: "Vanuatu", ws: "Samoa", ye: "Iémen",
+};
+
+function countryName(c) {
+  return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
+}
+
 GAME.unitSingular = "flag";
 GAME.unitPlural = "flags";
 GAME.promptCounterLabel = "Flag";
+GAME.promptCounterLabelPt = "Bandeira";
 GAME.practiceCfgLabel = "Flags";
 GAME.initialTheme = "light";
 GAME.levels = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
+GAME.levelsPt = { 1: "A aquecer", 2: "A ficar difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
 GAME.trackAnswerEvent = "flag_answered";
 
+GAME.rankTranslationsPt = [
+  ["Lenda Mundial", "Trabalhas na ONU?"],
+  ["Mestre das Bandeiras", "Verdadeiramente de elite. Respeito."],
+  ["Globetrotter", "Sabes mesmo orientar-te num mapa."],
+  ["Viajante", "Bom instinto de geografia."],
+  ["Turista", "Nada mau — o mundo é grande."],
+  ["Turista Perdido", "Hora de rodar mais um pouco o globo."],
+];
+
+GAME.detectLocale = function (setLocale) {
+  try {
+    if (navigator.language && navigator.language.toLowerCase().startsWith("pt")) {
+      posthog.onFeatureFlags(() => {
+        try {
+          if (posthog.getFeatureFlag("flag-master-pt-localization") === "test") setLocale("pt");
+        } catch {}
+      });
+    }
+  } catch {}
+};
+
 GAME.renderPrompt = function (item) {
-  $("country-name").textContent = item[1];
+  $("country-name").textContent = countryName(item);
 };
 
 GAME.renderOption = function (item) {
-  return `<button class="flag-btn" data-key="${item[0]}" aria-label="Guess ${item[1]}">
+  return `<button class="flag-btn" data-key="${item[0]}" aria-label="Guess ${countryName(item)}">
      <img src="${flagUrl(item[0])}" alt="" draggable="false">
      <span class="mark"></span>
    </button>`;
@@ -76,5 +157,6 @@ GAME.optionKey = function (item) { return item[0]; };
 
 GAME.wrongAnswerText = function (item, clickedKey) {
   const clicked = COUNTRIES.find(c => c[0] === clickedKey);
-  return `That flag is ${clicked ? clicked[1] : clickedKey}`;
+  const clickedName = clicked ? countryName(clicked) : clickedKey;
+  return locale === "pt" ? `A resposta era ${clickedName}` : `That flag is ${clickedName}`;
 };

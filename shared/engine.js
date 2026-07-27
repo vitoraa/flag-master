@@ -33,6 +33,9 @@ const CROSS_PROMO_URL = GAME.crossPromoUrl;
 const THEME_KEY = `${GAME.storagePrefix}-theme`;
 const COUNTRIES = GAME.items;
 
+let locale = "en";
+if (GAME.detectLocale) GAME.detectLocale(l => { locale = l; });
+
 const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 try { const n = localStorage.getItem(NAME_KEY); if (n) posthog.register({ player_name: n }); } catch {}
@@ -40,7 +43,7 @@ const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.f
 const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
-let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
+let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false, lockedAt = 0, nextRoundTimer = null;
 let newBestAnnounced = false;
 
 let practiceMode = false;
@@ -90,6 +93,7 @@ function show(name) {
 const rnd = (min, max) => min + Math.random() * (max - min);
 
 function startGame() {
+  clearTimeout(nextRoundTimer);
   logPlay();
   track("game_started", practiceMode
     ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
@@ -108,6 +112,7 @@ function startGame() {
 
 function quitToStart() {
   clearInterval(timerId);
+  clearTimeout(nextRoundTimer);
   locked = true;
   show("start");
 }
@@ -118,7 +123,7 @@ let lastAnimatedStreak = -1;
 function renderHud(answer) {
   $("lives").innerHTML = Array.from({length: MAX_LIVES}, (_, i) =>
     ICON.heart.replace('class="heart"', `class="heart ${i >= lives ? "lost" : ""}"`)).join("");
-  $("level-txt").textContent = LEVELS[answer[2]];
+  $("level-txt").textContent = (locale === "pt" && GAME.levelsPt) ? GAME.levelsPt[answer[2]] : LEVELS[answer[2]];
 
   if (score !== displayedScore) {
     animateScore($("score"), displayedScore, score);
@@ -196,7 +201,7 @@ function nextRound() {
   locked = false;
   const answer = queue[round];
   renderHud(answer);
-  $("qnum").textContent = `${GAME.promptCounterLabel} ${round + 1}`;
+  $("qnum").textContent = `${(locale === "pt" && GAME.promptCounterLabelPt) || GAME.promptCounterLabel} ${round + 1}`;
   GAME.renderPrompt(answer);
   $("feedback").textContent = "";
   $("feedback").className = "feedback";
@@ -232,6 +237,7 @@ function updateTimerBar() {
 
 function lockRound(answer) {
   locked = true;
+  lockedAt = Date.now();
   clearInterval(timerId);
   $("options").querySelectorAll("button").forEach(b => {
     b.disabled = true;
@@ -277,9 +283,11 @@ function answerWith(btn, answer) {
     const multTag = multiplier > 1 ? ` ×${multiplier}` : "";
     const milestone = streak % 10 === 0;
     if (milestone) {
-      setFeedback(`+${pts}${multTag}   ·   🔥 ${streak} STREAK!`, "good milestone");
+      const streakWord = locale === "pt" ? "SEQUÊNCIA!" : "STREAK!";
+      setFeedback(`+${pts}${multTag}   ·   🔥 ${streak} ${streakWord}`, "good milestone");
     } else {
-      setFeedback(`+${pts}${multTag}${streak >= 3 ? "   ·   " + streak + " in a row" : ""}`, "good");
+      const comboWord = locale === "pt" ? "seguidas" : "in a row";
+      setFeedback(`+${pts}${multTag}${streak >= 3 ? "   ·   " + streak + " " + comboWord : ""}`, "good");
     }
   } else {
     btn.classList.remove("dim");
@@ -292,7 +300,14 @@ function answerWith(btn, answer) {
   track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
-  setTimeout(nextRound, correct ? 850 : 1550);
+  nextRoundTimer = setTimeout(nextRound, correct ? 850 : 1550);
+}
+
+function skipDelay(e) {
+  if (!locked || e.target.closest("#quit-btn")) return;
+  if (Date.now() - lockedAt < 200) return;
+  clearTimeout(nextRoundTimer);
+  nextRound();
 }
 
 function timeUp(answer) {
@@ -300,30 +315,40 @@ function timeUp(answer) {
   lockRound(answer);
   lives--; streak = 0;
   results.push("to");
-  setFeedback("Out of time", "bad");
+  setFeedback(locale === "pt" ? "Tempo esgotado" : "Out of time", "bad");
   track(GAME.trackAnswerEvent, { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
-  setTimeout(nextRound, 1350);
+  nextRoundTimer = setTimeout(nextRound, 1350);
 }
 
-function rank(flags) {
-  if (flags >= 60) return [ICON.globe, "World Legend", "Do you work at the UN?"];
-  if (flags >= 40) return [ICON.crown, GAME.titlePlain, "Genuinely elite. Respect."];
-  if (flags >= 25) return [ICON.medal, "Globetrotter", "You know your way around a map."];
-  if (flags >= 15) return [ICON.medal, "Traveler", "Solid geography instincts."];
-  if (flags >= 8)  return [ICON.plane, "Tourist", "Not bad — the world is big."];
-  return [ICON.compass, "Lost Tourist", "Time to spin the globe some more."];
+const DEFAULT_RANKS = [
+  { min: 60, icon: ICON.globe,   emoji: "🌍", en: ["World Legend", "Do you work at the UN?"] },
+  { min: 40, icon: ICON.crown,   emoji: "🏆", en: [GAME.titlePlain, "Genuinely elite. Respect."] },
+  { min: 25, icon: ICON.medal,   emoji: "🥇", en: ["Globetrotter", "You know your way around a map."] },
+  { min: 15, icon: ICON.medal,   emoji: "🥈", en: ["Traveler", "Solid geography instincts."] },
+  { min: 8,  icon: ICON.plane,   emoji: "🧳", en: ["Tourist", "Not bad — the world is big."] },
+  { min: 0,  icon: ICON.compass, emoji: "🧭", en: ["Lost Tourist", "Time to spin the globe some more."] },
+];
+// GAME.rankTranslationsPt, if provided, is a 6-entry array of [title, sub] pairs
+// in the same order as DEFAULT_RANKS above, used only when locale === "pt".
+const RANKS = DEFAULT_RANKS.map((r, i) =>
+  GAME.rankTranslationsPt ? { ...r, pt: GAME.rankTranslationsPt[i] } : r);
+
+function rankFor(flags) {
+  return RANKS.find(r => flags >= r.min) || RANKS[RANKS.length - 1];
 }
 
 function endGame() {
   clearInterval(timerId);
   const flagsRight = results.filter(r => r === "ok").length;
-  const [icon, title, sub] = rank(flagsRight);
-  track("game_over", { mode: practiceMode ? "practice" : "standard", score, flags_right: flagsRight, best_streak: bestStreak, rounds_played: results.length, rank: title });
-  $("end-medal").innerHTML = icon;
+  const rk = rankFor(flagsRight);
+  const [title, sub] = (locale === "pt" && rk.pt) ? rk.pt : rk.en;
+  track("game_over", { mode: practiceMode ? "practice" : "standard", score, flags_right: flagsRight, best_streak: bestStreak, rounds_played: results.length, rank: rk.en[0] });
+  $("end-medal").innerHTML = rk.icon;
   $("end-title").textContent = title;
   $("end-subtitle").textContent = sub;
+  $("btn-share-label").textContent = locale === "pt" ? "Desafiar um amigo" : "Challenge a friend";
   $("stat-score").textContent = score;
   $("stat-flags").textContent = flagsRight;
   $("stat-flags-label").textContent = GAME.unitPlural[0].toUpperCase() + GAME.unitPlural.slice(1);
@@ -560,30 +585,27 @@ async function submitScore(nameOverride, { silent = false } = {}) {
   }
 }
 
-const RANK_EMOJI = {
-  "World Legend": "🌍", [GAME.titlePlain]: "🏆", "Globetrotter": "🥇",
-  "Traveler": "🥈", "Tourist": "🧳", "Lost Tourist": "🧭",
-};
-
-function shareText() {
+function shareText(includeUrl = true) {
   const flagsRight = results.filter(r => r === "ok").length;
   const total = results.length;
-  const [, title] = rank(flagsRight);
+  const rk = rankFor(flagsRight);
+  const isPt = locale === "pt";
+  const title = (isPt && rk.pt) ? rk.pt[0] : rk.en[0];
   const squares = results.map(r => r === "ok" ? "🟩" : r === "no" ? "🟥" : "⬛");
   // group into rows of 10 so the grid reads cleanly in a comment
   const grid = [];
   for (let i = 0; i < squares.length; i += 10) grid.push(squares.slice(i, i + 10).join(""));
   return [
-    `${RANK_EMOJI[title]} ${GAME.titlePlain} — ${title}`,
+    `${rk.emoji} ${GAME.titlePlain} — ${title}`,
     ``,
-    `🎯 ${flagsRight}/${total} ${GAME.unitPlural} correct`,
-    `⭐ ${score.toLocaleString()} points`,
-    `🔥 Best streak: ${bestStreak}`,
+    isPt ? `🎯 ${flagsRight}/${total} bandeiras corretas` : `🎯 ${flagsRight}/${total} ${GAME.unitPlural} correct`,
+    isPt ? `⭐ ${score.toLocaleString()} pontos` : `⭐ ${score.toLocaleString()} points`,
+    isPt ? `🔥 Melhor sequência: ${bestStreak}` : `🔥 Best streak: ${bestStreak}`,
     ``,
     grid.join("\n"),
     ``,
-    `Think you can beat my score of ${score.toLocaleString()}? →`,
-    GAME_URL,
+    isPt ? `Achas que consegues bater a minha pontuação de ${score.toLocaleString()}?` : `Think you can beat my score of ${score.toLocaleString()}?`,
+    ...(includeUrl ? [GAME_URL] : []),
   ].join("\n");
 }
 
@@ -612,6 +634,7 @@ $("promo-ic").innerHTML = ICON.globe;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
+$("screen-game").addEventListener("click", skipDelay);
 $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
 
@@ -672,7 +695,7 @@ $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
     try {
-      await navigator.share({ text: shareText() });
+      await navigator.share({ text: shareText(false), url: GAME_URL });
       track("share_clicked", { method: "native_share", score, flags: results.filter(r => r === "ok").length });
       return;
     } catch {}
