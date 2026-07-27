@@ -844,7 +844,7 @@ if (typeof GAME !== "undefined") {
      </button>`;
   };
 
-  GAME.optionKey = function (item) { return item[3]; };
+  GAME.optionKey = function (item) { return String(item[3]); };
 
   GAME.wrongAnswerText = function (item, clickedKey) {
     return `The answer was ${item[3]}`;
