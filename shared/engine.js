@@ -618,8 +618,8 @@ function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("theme-toggle").innerHTML = t === "light" ? ICON.moon : ICON.sun;
 }
-let theme = "light";
-try { theme = localStorage.getItem(THEME_KEY) || "light"; } catch {}
+let theme = GAME.initialTheme;
+try { theme = localStorage.getItem(THEME_KEY) || GAME.initialTheme; } catch {}
 applyTheme(theme);
 $("theme-toggle").addEventListener("click", () => {
   theme = theme === "light" ? "dark" : "light";
