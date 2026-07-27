@@ -247,8 +247,14 @@ GAME.renderOption = function (item) {
 
 GAME.optionKey = function (item) { return item[3]; };
 
-GAME.wrongAnswerText = function (item) {
+GAME.wrongAnswerText = function (item, clickedKey) {
   return `The capital is ${item[3]}`;
+};
+
+GAME.onLockButton = function (btn, isCorrect) {
+  const color = isCorrect ? "var(--text)" : "var(--muted)";
+  btn.style.setProperty("color", color, "important");
+  btn.style.setProperty("-webkit-text-fill-color", color, "important");
 };
 
 GAME.pickDistractors = function (answer, items) {

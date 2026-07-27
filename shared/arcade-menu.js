@@ -1,3 +1,8 @@
+function relativeUrl(fromGame, toGame) {
+  const dir = toGame.outputDir === "." ? "" : `${toGame.outputDir}/`;
+  return `${fromGame.assetPrefix}${dir}`;
+}
+
 function renderArcadeMenu(currentGame) {
   const others = GAMES.filter(g => g.id !== currentGame.id);
   $("arcade-sheet-cards").innerHTML = others.map(g => {
@@ -13,7 +18,7 @@ function renderArcadeMenu(currentGame) {
     let best = null;
     try { const raw = localStorage.getItem(`${g.storagePrefix}-best`); best = raw ? JSON.parse(raw) : null; } catch {}
     const sub = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
-    return `<a class="arcade-card" href="${g.url}" data-to="${g.analyticsId}">
+    return `<a class="arcade-card" href="${relativeUrl(currentGame, g)}" data-to="${g.analyticsId}">
        <span class="arcade-ic">${g.icon}</span>
        <div class="arcade-body">
          <div class="arcade-h">${g.titlePlain}</div>

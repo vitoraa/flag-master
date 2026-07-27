@@ -235,12 +235,14 @@ function lockRound(answer) {
   clearInterval(timerId);
   $("options").querySelectorAll("button").forEach(b => {
     b.disabled = true;
-    if (b.dataset.key === GAME.optionKey(answer)) {
+    const isCorrect = b.dataset.key === GAME.optionKey(answer);
+    if (isCorrect) {
       b.classList.add("correct");
       b.querySelector(".mark").innerHTML = ICON.check;
     } else {
       b.classList.add("dim");
     }
+    if (GAME.onLockButton) GAME.onLockButton(b, isCorrect);
   });
 }
 
@@ -285,7 +287,7 @@ function answerWith(btn, answer) {
     btn.querySelector(".mark").innerHTML = ICON.x;
     lives--; streak = 0;
     results.push("no");
-    setFeedback(GAME.wrongAnswerText(answer), "bad");
+    setFeedback(GAME.wrongAnswerText(answer, btn.dataset.key), "bad");
   }
   track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);

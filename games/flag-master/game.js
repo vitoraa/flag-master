@@ -74,7 +74,7 @@ GAME.renderOption = function (item) {
 
 GAME.optionKey = function (item) { return item[0]; };
 
-GAME.wrongAnswerText = function (item) {
-  const correct = COUNTRIES.find(c => c[0] === item[0]);
-  return `That flag is ${correct ? correct[1] : item[0]}`;
+GAME.wrongAnswerText = function (item, clickedKey) {
+  const clicked = COUNTRIES.find(c => c[0] === clickedKey);
+  return `That flag is ${clicked ? clicked[1] : clickedKey}`;
 };
