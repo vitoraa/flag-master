@@ -46,6 +46,9 @@
   #flag-bg .capital-dot,
   :root[data-theme="light"] #flag-bg .capital-dot { animation: none; opacity: .7; }
 }
+:root[data-theme="light"] .hero .tag {
+  text-shadow: 0 0 12px var(--bg), 0 0 6px var(--bg), 0 1px 2px var(--bg);
+}
 
 .prompt-flag {
   width: 100%; max-width: 190px; aspect-ratio: 4 / 2.7; object-fit: cover; border-radius: 14px;
