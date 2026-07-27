@@ -712,7 +712,7 @@
 <div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
 
 <script>
-const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","icon":"🌍","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map"},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","icon":"🏛️","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge"},{"id":"math-master","enabled":false,"icon":"🔢","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"Coming soon"}];
+const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🌍","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map"},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🏛️","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge"},{"id":"math-master","enabled":false,"icon":"🔢","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"Coming soon"}];
 const GAME = GAMES.find(g => g.id === "flag-master");
 const GAME_ITEM_COUNT = 195;
 
@@ -864,7 +864,7 @@ const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 try { const n = localStorage.getItem(NAME_KEY); if (n) posthog.register({ player_name: n }); } catch {}
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const flagUrl = code => `flags/${code}.png`;
+const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
