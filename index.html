@@ -1451,7 +1451,7 @@ async function submitScore(nameOverride, { silent = false } = {}) {
   }
 }
 
-function shareText() {
+function shareText(includeUrl = true) {
   const flagsRight = results.filter(r => r === "ok").length;
   const total = results.length;
   const rk = rankFor(flagsRight);
@@ -1470,8 +1470,8 @@ function shareText() {
     ``,
     grid.join("\n"),
     ``,
-    isPt ? `Achas que consegues bater a minha pontuação de ${score.toLocaleString()}? →` : `Think you can beat my score of ${score.toLocaleString()}? →`,
-    GAME_URL,
+    isPt ? `Achas que consegues bater a minha pontuação de ${score.toLocaleString()}?` : `Think you can beat my score of ${score.toLocaleString()}?`,
+    ...(includeUrl ? [GAME_URL] : []),
   ].join("\n");
 }
 
@@ -1564,7 +1564,7 @@ $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
     try {
-      await navigator.share({ text: shareText() });
+      await navigator.share({ text: shareText(false), url: GAME_URL });
       track("share_clicked", { method: "native_share", score, flags: results.filter(r => r === "ok").length });
       return;
     } catch {}

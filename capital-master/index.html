@@ -1677,7 +1677,7 @@ const RANK_EMOJI = {
   "Traveler": "🥈", "Tourist": "🧳", "Lost Tourist": "🧭",
 };
 
-function shareText() {
+function shareText(includeUrl = true) {
   const flagsRight = results.filter(r => r === "ok").length;
   const total = results.length;
   const [, title] = rank(flagsRight);
@@ -1694,8 +1694,8 @@ function shareText() {
     ``,
     grid.join("\n"),
     ``,
-    `Think you can beat my score of ${score.toLocaleString()}? →`,
-    GAME_URL,
+    `Think you can beat my score of ${score.toLocaleString()}?`,
+    ...(includeUrl ? [GAME_URL] : []),
   ].join("\n");
 }
 
@@ -1789,7 +1789,7 @@ $("btn-share").addEventListener("click", async () => {
   ensureScoreSaved();
   if (navigator.share) {
     try {
-      await navigator.share({ text: shareText() });
+      await navigator.share({ text: shareText(false), url: GAME_URL });
       track("share_clicked", { method: "native_share", score, flags: results.filter(r => r === "ok").length });
       return;
     } catch {}
