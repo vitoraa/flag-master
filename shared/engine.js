@@ -37,7 +37,7 @@ const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 try { const n = localStorage.getItem(NAME_KEY); if (n) posthog.register({ player_name: n }); } catch {}
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const flagUrl = code => `flags/${code}.png`;
+const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false;
