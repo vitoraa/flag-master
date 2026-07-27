@@ -964,6 +964,7 @@ function buildBackground() {
 }
 
 function startGame() {
+  clearTimeout(nextRoundTimer);
   logPlay();
   track("game_started", practiceMode
     ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
@@ -982,6 +983,7 @@ function startGame() {
 
 function quitToStart() {
   clearInterval(timerId);
+  clearTimeout(nextRoundTimer);
   locked = true;
   show("start");
 }
