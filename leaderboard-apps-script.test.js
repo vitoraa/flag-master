@@ -65,3 +65,41 @@ assert.strictEqual(capitals.log, "CapitalPlayLog");
 assert.notStrictEqual(flagsDefault.cacheKey, capitals.cacheKey);
 
 console.log("All leaderboard-apps-script tests passed");
+
+// --- feedback branch ---
+
+global.ContentService = {
+  MimeType: { JSON: "JSON" },
+  createTextOutput(text) {
+    return { text, setMimeType() { return this; } };
+  },
+};
+
+const feedbackRows = [["Timestamp", "Game", "Rating", "Text", "Name"]];
+global.SpreadsheetApp = {
+  getActiveSpreadsheet() {
+    return {
+      getSheetByName(name) {
+        return name === "Feedback" ? { appendRow: row => feedbackRows.push(row) } : null;
+      },
+      insertSheet() {
+        throw new Error("insertSheet should not be needed — Feedback sheet stub already exists");
+      },
+    };
+  },
+};
+
+const { doPost } = require("./leaderboard-apps-script.js");
+const feedbackResult = doPost({
+  postData: {
+    contents: JSON.stringify({ type: "feedback", game: "capitals", rating: 5, text: "Great game!", name: "Alice" }),
+  },
+});
+assert.strictEqual(feedbackRows.length, 2);
+assert.strictEqual(feedbackRows[1][1], "capitals");
+assert.strictEqual(feedbackRows[1][2], 5);
+assert.strictEqual(feedbackRows[1][3], "Great game!");
+assert.strictEqual(feedbackRows[1][4], "Alice");
+assert.deepStrictEqual(JSON.parse(feedbackResult.text), { ok: true });
+
+console.log("All feedback tests passed");

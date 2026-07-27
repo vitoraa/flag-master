@@ -38,6 +38,18 @@ function getPlayLogSheet_(game) {
   return sheet;
 }
 
+// Feedback is a single shared tab across both games (unlike Scores/PlayLog,
+// which are per-game) — rows are distinguished by the Game column.
+function getFeedbackSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("Feedback");
+  if (!sheet) {
+    sheet = ss.insertSheet("Feedback");
+    sheet.appendRow(["Timestamp", "Game", "Rating", "Text", "Name"]);
+  }
+  return sheet;
+}
+
 // Returns the full leaderboard (name/score/flags only, sorted desc) from
 // CacheService when available, so most requests skip reading+sorting the
 // whole sheet. Cache is invalidated on every new submission.
@@ -85,6 +97,20 @@ function doPost(e) {
       sheet.getRange(rowId, 2).setValue(name);
       CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
     }
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (data.type === "feedback") {
+    const sheet = getFeedbackSheet_();
+    sheet.appendRow([
+      new Date(),
+      game,
+      Number(data.rating) || 0,
+      String(data.text || "").slice(0, 1000),
+      name,
+    ]);
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -166,5 +192,5 @@ function doGet(e) {
 // Exposed for leaderboard-apps-script.test.js only. Apps Script's runtime
 // has no `module` global, so this is a no-op when deployed.
 if (typeof module !== "undefined") {
-  module.exports = { sheetNamesFor_, getSortedAll_ };
+  module.exports = { sheetNamesFor_, getSortedAll_, doPost };
 }
