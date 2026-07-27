@@ -6,14 +6,12 @@
 <title>Flag Master — how many flags do you know?</title>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.uid=t.uid||[],t.uid.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify createPersonProfile group resetGroups setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSurveyResponse".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  const isProdHost = (location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/'))
-    || location.hostname === 'flag-master-game.netlify.app';
+  const isProdHost = (location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/') && !location.pathname.startsWith('/flag-master/capital-master/')) || location.hostname === 'flag-master-game.netlify.app';
   if (isProdHost) {
     posthog.init('phc_HmmUlFmsobnkDBi3HhWQdG4D5137kLdSyTomkppw9Ic', { api_host: 'https://eu.i.posthog.com', person_profiles: 'identified_only' });
   }
 </script>
-<style>
-  :root {
+<style>  :root {
     --bg: #06070d;
     --surface: #12141f;
     --surface-2: #191c2b;
@@ -60,28 +58,7 @@
   body::before { width: 480px; height: 480px; background: #2a3aff; top: -180px; left: -120px; }
   body::after  { width: 420px; height: 420px; background: #7a2aff; bottom: -160px; right: -120px; opacity: .4; }
 
-  /* ---------- drifting flag field (start screen only) ---------- */
   #flag-bg { position: fixed; inset: -6%; z-index: 0; overflow: hidden; pointer-events: none; }
-  #flag-bg .fl {
-    position: absolute; aspect-ratio: 3 / 2; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 14px 34px -10px rgba(0,0,0,.7);
-    will-change: transform; filter: saturate(1.1);
-    animation: drift var(--d) ease-in-out var(--delay) infinite alternate;
-  }
-  #flag-bg .fl img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  #flag-bg .veil {
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(900px 620px at 50% 42%, rgba(6,7,13,.42), rgba(6,7,13,.8) 78%),
-      linear-gradient(180deg, rgba(6,7,13,.32), rgba(6,7,13,.74));
-  }
-  @keyframes drift {
-    from { transform: translate(0,0) rotate(var(--r1)); }
-    to   { transform: translate(var(--tx), var(--ty)) rotate(var(--r2)); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #flag-bg .fl { animation: none; }
-  }
 
   #app { width: 100%; max-width: 500px; position: relative; z-index: 1; }
   svg { display: block; }
@@ -132,7 +109,8 @@
     padding: 12px 14px; transition: transform .15s ease, border-color .15s;
   }
   .arcade-card:hover { transform: translateY(-1px); border-color: var(--accent); }
-  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; }
+  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; color: #fff; }
+  .arcade-card-disabled .arcade-ic { background: radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); }
   .arcade-card .arcade-body { flex: 1; min-width: 0; }
   .arcade-card .arcade-h { font-size: 14px; font-weight: 700; }
   .arcade-card .arcade-s { font-size: 12px; color: var(--muted); margin-top: 1px; }
@@ -166,12 +144,6 @@
   :root[data-theme="light"] .hero h1 { background-image: linear-gradient(180deg, #12141f, #55608c); }
   :root[data-theme="light"] body::before,
   :root[data-theme="light"] body::after { opacity: .22; }
-  :root[data-theme="light"] .flag-btn::after { box-shadow: inset 0 0 30px rgba(0,0,0,.12); }
-  :root[data-theme="light"] #flag-bg .veil {
-    background:
-      radial-gradient(900px 620px at 50% 42%, rgba(238,241,248,.4), rgba(238,241,248,.8) 78%),
-      linear-gradient(180deg, rgba(238,241,248,.28), rgba(238,241,248,.72));
-  }
   :root[data-theme="light"] .toast { color: #04241a; }
 
   .screen { display: none; }
@@ -357,31 +329,9 @@
   .question { text-align: center; margin-bottom: 22px; }
   .question .prompt { color: var(--muted); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
   .question h2 { font-size: 32px; letter-spacing: -.8px; font-weight: 700; line-height: 1.1; }
+  .prompt-flag { display: none; }
 
   .options { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
-  .flag-btn {
-    border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
-    background: var(--surface); cursor: pointer; padding: 0;
-    aspect-ratio: 4 / 2.7; position: relative;
-    transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
-  }
-  .flag-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .flag-btn::after {
-    content: ""; position: absolute; inset: 0; border-radius: 14px;
-    box-shadow: inset 0 0 40px rgba(0,0,0,.25); pointer-events: none;
-  }
-  .flag-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
-  .flag-btn .mark {
-    position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
-    display: grid; place-items: center; opacity: 0; transform: scale(.5);
-    transition: opacity .2s, transform .2s; z-index: 2;
-  }
-  .flag-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
-  .flag-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
-  .flag-btn.wrong { border-color: var(--bad); animation: shake .4s; }
-  .flag-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
-  .flag-btn:disabled { cursor: default; }
-  .flag-btn.dim { opacity: .3; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} 80%{transform:translateX(-4px)} }
 
   .feedback {
@@ -549,6 +499,57 @@
     .question h2 { font-size: 26px; }
     .btn { padding: 14px 32px; }
   }
+
+#flag-bg .fl {
+  position: absolute; aspect-ratio: 3 / 2; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 14px 34px -10px rgba(0,0,0,.7);
+  will-change: transform; filter: saturate(1.1);
+  animation: drift var(--d) ease-in-out var(--delay) infinite alternate;
+}
+#flag-bg .fl img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#flag-bg .veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(900px 620px at 50% 42%, rgba(6,7,13,.42), rgba(6,7,13,.8) 78%),
+    linear-gradient(180deg, rgba(6,7,13,.32), rgba(6,7,13,.74));
+}
+:root[data-theme="light"] #flag-bg .veil {
+  background:
+    radial-gradient(900px 620px at 50% 42%, rgba(238,241,248,.4), rgba(238,241,248,.8) 78%),
+    linear-gradient(180deg, rgba(238,241,248,.28), rgba(238,241,248,.72));
+}
+@keyframes drift {
+  from { transform: translate(0,0) rotate(var(--r1)); }
+  to   { transform: translate(var(--tx), var(--ty)) rotate(var(--r2)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #flag-bg .fl { animation: none; }
+}
+
+.flag-btn {
+  border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
+  background: var(--surface); cursor: pointer; padding: 0;
+  aspect-ratio: 4 / 2.7; position: relative;
+  transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
+}
+.flag-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.flag-btn::after {
+  content: ""; position: absolute; inset: 0; border-radius: 14px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.25); pointer-events: none;
+}
+.flag-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
+.flag-btn .mark {
+  position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; opacity: 0; transform: scale(.5);
+  transition: opacity .2s, transform .2s; z-index: 2;
+}
+.flag-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
+.flag-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
+.flag-btn.wrong { border-color: var(--bad); animation: shake .4s; }
+.flag-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
+.flag-btn:disabled { cursor: default; }
+.flag-btn.dim { opacity: .3; }
+:root[data-theme="light"] .flag-btn::after { box-shadow: inset 0 0 30px rgba(0,0,0,.12); }
 </style>
 </head>
 <body>
@@ -558,21 +559,7 @@
 <div id="arcade-sheet" class="arcade-sheet">
   <div class="arcade-grip"></div>
   <div class="arcade-sheet-title">More games</div>
-  <a class="arcade-card" id="arcade-card" href="capital-master/">
-    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%); color:#fff;">🌍</span>
-    <span class="arcade-body">
-      <span class="arcade-h">Capital Master</span>
-      <span class="arcade-s" id="arcade-card-sub">Not played yet</span>
-    </span>
-    <span class="arcade-go">→</span>
-  </a>
-  <div class="arcade-card arcade-card-disabled" aria-disabled="true">
-    <span class="arcade-ic" style="background:radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); color:#fff;">➗</span>
-    <span class="arcade-body">
-      <span class="arcade-h">Math Master</span>
-      <span class="arcade-s">Coming soon</span>
-    </span>
-  </div>
+  <div id="arcade-sheet-cards"></div>
 </div>
 <div id="flag-bg" aria-hidden="true"></div>
 <div id="app">
@@ -671,6 +658,7 @@
     <div class="timerbar" id="timerbar"><i id="timerfill"></i></div>
     <div class="question">
       <div class="prompt" id="qnum"></div>
+      <img class="prompt-flag" id="prompt-flag" src="" alt="" draggable="false">
       <h2 id="country-name"></h2>
     </div>
     <div class="options" id="options"></div>
@@ -686,7 +674,7 @@
       <div class="new-best-badge" id="new-best-badge" style="display:none">🏆 New personal best!</div>
       <div class="stats">
         <div class="stat"><b id="stat-score">0</b><span>Score</span></div>
-        <div class="stat"><b id="stat-flags">0</b><span>Flags</span></div>
+        <div class="stat"><b id="stat-flags">0</b><span id="stat-flags-label"></span></div>
         <div class="stat"><b id="stat-streak">0</b><span>Streak</span></div>
       </div>
       <div class="practice-note" id="practice-end-note" style="display:none">🚫 Practice run — not saved to the leaderboard</div>
@@ -725,31 +713,10 @@
 <div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
 
 <script>
-/* ---------- icon set (inline SVG, stroke-based) ---------- */
-const ICON = {
-  flag: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
-  clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
-  heartSmall: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/></svg>',
-  trend: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>',
-  heart: '<svg class="heart" width="22" height="22" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z" fill="currentColor"/></svg>',
-  check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-  x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>',
-  replay: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/></svg>',
-  globe: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>',
-  crown: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 12h-15z"/></svg>',
-  medal: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 2h4l2 4 2-4h4l-2.5 7.5"/><path d="M12 13l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2L9.1 15l2-.3z"/></svg>',
-  compass: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10.5 10.5 8 16 13.5 13.5"/></svg>',
-  sun: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg>',
-  moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
-  close: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-  grid: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
-  plane: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15l-9-4V4a2 2 0 0 0-4 0v7l-5 2v2l5-1v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/></svg>',
-  flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4.5-3 8a3 3 0 0 0 6 0c0-1.2-.5-2-1-2.7.9.2 3 1.6 3 5.2a5 5 0 0 1-10 0C7 8 12 6 12 2z"/></svg>',
-};
-
+const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":false,"icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"Coming soon"}];
+const GAME = GAMES.find(g => g.id === "flag-master");
 // [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
-const COUNTRIES = [
+GAME.items = [
   ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
   ["it","Italy",1],["es","Spain",1],["gb","United Kingdom",1],["jp","Japan",1],
   ["cn","China",1],["ca","Canada",1],["mx","Mexico",1],["ar","Argentina",1],
@@ -801,6 +768,8 @@ const COUNTRIES = [
   ["vu","Vanuatu",4],["ws","Samoa",4],["ye","Yemen",4],
 ];
 
+// Portuguese A/B test: shown when the browser is set to pt-* AND the
+// "flag-master-pt-localization" PostHog feature flag resolves to "test".
 const COUNTRY_NAMES_PT = {
   us: "Estados Unidos", br: "Brasil", fr: "França", de: "Alemanha",
   it: "Itália", es: "Espanha", gb: "Reino Unido", jp: "Japão",
@@ -853,35 +822,118 @@ const COUNTRY_NAMES_PT = {
   vu: "Vanuatu", ws: "Samoa", ye: "Iémen",
 };
 
+function countryName(c) {
+  return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
+}
+
+// unitSingular/unitPlural/promptCounterLabel/promptCounterLabelPt/practiceCfgLabel/
+// initialTheme/levels/levelsPt/trackAnswerEvent/ranks all come from games.json —
+// this file only defines data (COUNTRIES/COUNTRY_NAMES_PT above) and hooks below.
+
+GAME.detectLocale = function (setLocale) {
+  try {
+    if (navigator.language && navigator.language.toLowerCase().startsWith("pt")) {
+      posthog.onFeatureFlags(() => {
+        try {
+          if (posthog.getFeatureFlag("flag-master-pt-localization") === "test") setLocale("pt");
+        } catch {}
+      });
+    }
+  } catch {}
+};
+
+GAME.renderPrompt = function (item) {
+  $("country-name").textContent = countryName(item);
+};
+
+GAME.renderOption = function (item) {
+  return `<button class="flag-btn" data-key="${item[0]}" aria-label="Guess ${countryName(item)}">
+     <img src="${flagUrl(item[0])}" alt="" draggable="false">
+     <span class="mark"></span>
+   </button>`;
+};
+
+GAME.optionKey = function (item) { return item[0]; };
+
+GAME.wrongAnswerText = function (item, clickedKey) {
+  const clicked = COUNTRIES.find(c => c[0] === clickedKey);
+  const clickedName = clicked ? countryName(clicked) : clickedKey;
+  return locale === "pt" ? `A resposta era ${clickedName}` : `That flag is ${clickedName}`;
+};
+
+GAME.buildBackground = function (layer) {
+  const rnd = (min, max) => min + Math.random() * (max - min);
+  const pool = shuffle(COUNTRIES.filter(c => c[2] <= 2).map(c => c[0]));
+  const cols = 6, rows = 6;
+  let i = 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const code = pool[i % pool.length]; i++;
+      const el = document.createElement("div");
+      el.className = "fl";
+      const w = rnd(72, 128);
+      el.style.width = w + "px";
+      el.style.left = (c / cols * 100 + rnd(-4, 4)) + "%";
+      el.style.top  = (r / rows * 100 + rnd(-4, 4)) + "%";
+      el.style.opacity = rnd(0.55, 0.95).toFixed(2);
+      el.style.setProperty("--tx", rnd(-46, 46).toFixed(0) + "px");
+      el.style.setProperty("--ty", rnd(-46, 46).toFixed(0) + "px");
+      el.style.setProperty("--r1", rnd(-9, 9).toFixed(1) + "deg");
+      el.style.setProperty("--r2", rnd(-9, 9).toFixed(1) + "deg");
+      el.style.setProperty("--d", rnd(4.5, 9).toFixed(1) + "s");
+      el.style.setProperty("--delay", (-rnd(0, 9)).toFixed(1) + "s");
+      el.innerHTML = `<img src="${flagUrl(code)}" alt="" draggable="false" loading="lazy">`;
+      layer.appendChild(el);
+    }
+  }
+  const veil = document.createElement("div");
+  veil.className = "veil";
+  layer.appendChild(veil);
+};
+
+/* ---------- icon set (inline SVG, stroke-based) ---------- */
+const ICON = {
+  flag: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+  clock: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
+  heartSmall: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/></svg>',
+  trend: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>',
+  heart: '<svg class="heart" width="22" height="22" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z" fill="currentColor"/></svg>',
+  check: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>',
+  replay: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10"/></svg>',
+  globe: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>',
+  crown: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 12h-15z"/></svg>',
+  medal: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="6"/><path d="M8.5 9.5L6 2h4l2 4 2-4h4l-2.5 7.5"/><path d="M12 13l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2L9.1 15l2-.3z"/></svg>',
+  compass: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="16 8 10.5 10.5 8 16 13.5 13.5"/></svg>',
+  sun: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></svg>',
+  moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>',
+  close: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  grid: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+  plane: '<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15l-9-4V4a2 2 0 0 0-4 0v7l-5 2v2l5-1v3l-2 1.5V21l3.5-1 3.5 1v-1.5L13 18v-3l8 2z"/></svg>',
+  flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4.5-3 8a3 3 0 0 0 6 0c0-1.2-.5-2-1-2.7.9.2 3 1.6 3 5.2a5 5 0 0 1-10 0C7 8 12 6 12 2z"/></svg>',
+};
+
 const ROUND_TIME = 10;
 const MAX_LIVES = 3;
-const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
-const LEVELS_PT = { 1: "A aquecer", 2: "A ficar difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
-
-// Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
+const LEVELS = GAME.levels;
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
-const NAME_KEY = "flagmaster-name";
-const BEST_KEY = "flagmaster-best";
-const GAME_URL = "https://vitoraa.github.io/flag-master/";
-const PLAYS_KEY = "flagmaster-games-played";
-const CROSS_PROMO_URL = "capital-master/";
+const NAME_KEY = `${GAME.storagePrefix}-name`;
+const BEST_KEY = `${GAME.storagePrefix}-best`;
+const GAME_URL = GAME.gameUrl;
+const PLAYS_KEY = `${GAME.storagePrefix}-games-played`;
+const CROSS_PROMO_URL = GAME.crossPromoUrl;
+const THEME_KEY = `${GAME.storagePrefix}-theme`;
+const COUNTRIES = GAME.items;
 
 let locale = "en";
+if (GAME.detectLocale) GAME.detectLocale(l => { locale = l; });
 
 const $ = id => document.getElementById(id);
 const track = (event, props) => { try { posthog.capture(event, props); } catch {} };
 try { const n = localStorage.getItem(NAME_KEY); if (n) posthog.register({ player_name: n }); } catch {}
-try {
-  if (navigator.language && navigator.language.toLowerCase().startsWith("pt")) {
-    posthog.onFeatureFlags(() => {
-      try {
-        if (posthog.getFeatureFlag("flag-master-pt-localization") === "test") locale = "pt";
-      } catch {}
-    });
-  }
-} catch {}
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const flagUrl = code => `flags/${code}.png`;
+const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false, lockedAt = 0, nextRoundTimer = null;
@@ -933,36 +985,6 @@ function show(name) {
 
 const rnd = (min, max) => min + Math.random() * (max - min);
 
-function buildBackground() {
-  const layer = $("flag-bg");
-  const pool = shuffle(COUNTRIES.filter(c => c[2] <= 2).map(c => c[0]));
-  const cols = 6, rows = 6;
-  let i = 0;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const code = pool[i % pool.length]; i++;
-      const el = document.createElement("div");
-      el.className = "fl";
-      const w = rnd(72, 128);
-      el.style.width = w + "px";
-      el.style.left = (c / cols * 100 + rnd(-4, 4)) + "%";
-      el.style.top  = (r / rows * 100 + rnd(-4, 4)) + "%";
-      el.style.opacity = rnd(0.55, 0.95).toFixed(2);
-      el.style.setProperty("--tx", rnd(-46, 46).toFixed(0) + "px");
-      el.style.setProperty("--ty", rnd(-46, 46).toFixed(0) + "px");
-      el.style.setProperty("--r1", rnd(-9, 9).toFixed(1) + "deg");
-      el.style.setProperty("--r2", rnd(-9, 9).toFixed(1) + "deg");
-      el.style.setProperty("--d", rnd(4.5, 9).toFixed(1) + "s");
-      el.style.setProperty("--delay", (-rnd(0, 9)).toFixed(1) + "s");
-      el.innerHTML = `<img src="${flagUrl(code)}" alt="" draggable="false" loading="lazy">`;
-      layer.appendChild(el);
-    }
-  }
-  const veil = document.createElement("div");
-  veil.className = "veil";
-  layer.appendChild(veil);
-}
-
 function startGame() {
   clearTimeout(nextRoundTimer);
   logPlay();
@@ -994,7 +1016,7 @@ let lastAnimatedStreak = -1;
 function renderHud(answer) {
   $("lives").innerHTML = Array.from({length: MAX_LIVES}, (_, i) =>
     ICON.heart.replace('class="heart"', `class="heart ${i >= lives ? "lost" : ""}"`)).join("");
-  $("level-txt").textContent = (locale === "pt" ? LEVELS_PT : LEVELS)[answer[2]];
+  $("level-txt").textContent = (locale === "pt" && GAME.levelsPt) ? GAME.levelsPt[answer[2]] : LEVELS[answer[2]];
 
   if (score !== displayedScore) {
     animateScore($("score"), displayedScore, score);
@@ -1061,6 +1083,7 @@ function streakMultiplier(s) {
 }
 
 function pickDistractors(answer) {
+  if (GAME.pickDistractors) return GAME.pickDistractors(answer, COUNTRIES);
   const sameTier = COUNTRIES.filter(c => c !== answer && c[2] === answer[2]);
   const rest = COUNTRIES.filter(c => c !== answer && c[2] !== answer[2]);
   return shuffle(sameTier).slice(0, 3).concat(shuffle(rest)).slice(0, 3);
@@ -1071,18 +1094,14 @@ function nextRound() {
   locked = false;
   const answer = queue[round];
   renderHud(answer);
-  $("qnum").textContent = locale === "pt" ? `Bandeira ${round + 1}` : `Flag ${round + 1}`;
-  $("country-name").textContent = countryName(answer);
+  $("qnum").textContent = `${(locale === "pt" && GAME.promptCounterLabelPt) || GAME.promptCounterLabel} ${round + 1}`;
+  GAME.renderPrompt(answer);
   $("feedback").textContent = "";
   $("feedback").className = "feedback";
 
   const options = shuffle([answer, ...pickDistractors(answer)]);
-  $("options").innerHTML = options.map(c =>
-    `<button class="flag-btn" data-code="${c[0]}" aria-label="Guess ${countryName(c)}">
-       <img src="${flagUrl(c[0])}" alt="" draggable="false">
-       <span class="mark"></span>
-     </button>`).join("");
-  document.querySelectorAll(".flag-btn").forEach(b =>
+  $("options").innerHTML = options.map(c => GAME.renderOption(c)).join("");
+  $("options").querySelectorAll("button").forEach(b =>
     b.addEventListener("click", () => answerWith(b, answer)));
 
   clearInterval(timerId);
@@ -1113,14 +1132,16 @@ function lockRound(answer) {
   locked = true;
   lockedAt = Date.now();
   clearInterval(timerId);
-  document.querySelectorAll(".flag-btn").forEach(b => {
+  $("options").querySelectorAll("button").forEach(b => {
     b.disabled = true;
-    if (b.dataset.code === answer[0]) {
+    const isCorrect = b.dataset.key === GAME.optionKey(answer);
+    if (isCorrect) {
       b.classList.add("correct");
       b.querySelector(".mark").innerHTML = ICON.check;
     } else {
       b.classList.add("dim");
     }
+    if (GAME.onLockButton) GAME.onLockButton(b, isCorrect);
   });
 }
 
@@ -1132,7 +1153,7 @@ function setFeedback(text, kind) {
 
 function answerWith(btn, answer) {
   if (locked) return;
-  const correct = btn.dataset.code === answer[0];
+  const correct = btn.dataset.key === GAME.optionKey(answer);
   lockRound(answer);
   if (correct) {
     const noTimer = practiceMode && practiceCfg.timer === "off";
@@ -1167,9 +1188,9 @@ function answerWith(btn, answer) {
     btn.querySelector(".mark").innerHTML = ICON.x;
     lives--; streak = 0;
     results.push("no");
-    setFeedback(locale === "pt" ? `A resposta era ${nameOf(btn.dataset.code)}` : `That flag is ${nameOf(btn.dataset.code)}`, "bad");
+    setFeedback(GAME.wrongAnswerText(answer, btn.dataset.key), "bad");
   }
-  track("flag_answered", { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
+  track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   nextRoundTimer = setTimeout(nextRound, correct ? 850 : 1550);
@@ -1188,30 +1209,16 @@ function timeUp(answer) {
   lives--; streak = 0;
   results.push("to");
   setFeedback(locale === "pt" ? "Tempo esgotado" : "Out of time", "bad");
-  track("flag_answered", { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
+  track(GAME.trackAnswerEvent, { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
   nextRoundTimer = setTimeout(nextRound, 1350);
 }
 
-function nameOf(code) {
-  if (locale === "pt" && COUNTRY_NAMES_PT[code]) return COUNTRY_NAMES_PT[code];
-  const c = COUNTRIES.find(c => c[0] === code);
-  return c ? c[1] : code;
-}
-
-function countryName(c) {
-  return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
-}
-
-const RANKS = [
-  { min: 60, icon: ICON.globe,   emoji: "🌍", en: ["World Legend", "Do you work at the UN?"], pt: ["Lenda Mundial", "Trabalhas na ONU?"] },
-  { min: 40, icon: ICON.crown,   emoji: "🏆", en: ["Flag Master", "Genuinely elite. Respect."], pt: ["Mestre das Bandeiras", "Verdadeiramente de elite. Respeito."] },
-  { min: 25, icon: ICON.medal,   emoji: "🥇", en: ["Globetrotter", "You know your way around a map."], pt: ["Globetrotter", "Sabes mesmo orientar-te num mapa."] },
-  { min: 15, icon: ICON.medal,   emoji: "🥈", en: ["Traveler", "Solid geography instincts."], pt: ["Viajante", "Bom instinto de geografia."] },
-  { min: 8,  icon: ICON.plane,   emoji: "🧳", en: ["Tourist", "Not bad — the world is big."], pt: ["Turista", "Nada mau — o mundo é grande."] },
-  { min: 0,  icon: ICON.compass, emoji: "🧭", en: ["Lost Tourist", "Time to spin the globe some more."], pt: ["Turista Perdido", "Hora de rodar mais um pouco o globo."] },
-];
+// GAME.ranks comes straight from games.json: an array of
+// { min, icon, emoji, en: [title, sub], pt?: [title, sub] } entries, sorted
+// highest min first. `icon` is a key into the ICON set above.
+const RANKS = GAME.ranks.map(r => ({ ...r, icon: ICON[r.icon] }));
 
 function rankFor(flags) {
   return RANKS.find(r => flags >= r.min) || RANKS[RANKS.length - 1];
@@ -1221,7 +1228,7 @@ function endGame() {
   clearInterval(timerId);
   const flagsRight = results.filter(r => r === "ok").length;
   const rk = rankFor(flagsRight);
-  const [title, sub] = locale === "pt" ? rk.pt : rk.en;
+  const [title, sub] = (locale === "pt" && rk.pt) ? rk.pt : rk.en;
   track("game_over", { mode: practiceMode ? "practice" : "standard", score, flags_right: flagsRight, best_streak: bestStreak, rounds_played: results.length, rank: rk.en[0] });
   $("end-medal").innerHTML = rk.icon;
   $("end-title").textContent = title;
@@ -1229,6 +1236,7 @@ function endGame() {
   $("btn-share-label").textContent = locale === "pt" ? "Desafiar um amigo" : "Challenge a friend";
   $("stat-score").textContent = score;
   $("stat-flags").textContent = flagsRight;
+  $("stat-flags-label").textContent = GAME.unitPlural[0].toUpperCase() + GAME.unitPlural.slice(1);
   $("stat-streak").textContent = bestStreak;
   $("dots").innerHTML = results.map(r =>
     `<span class="d ${r}"></span>`).join("");
@@ -1265,6 +1273,7 @@ function logPlay() {
       type: "play",
       name: savedName,
       practice: practiceMode,
+      game: GAME.leaderboardGame,
     }),
   }).catch(() => {});
 }
@@ -1303,7 +1312,7 @@ function skeletonRow() {
   return `<div class="lb-nearby-row skeleton">
      <span class="pos">#0</span>
      <span class="n">Loading</span>
-     <span class="metrics"><span class="f">00<span class="unit">flags</span></span><span class="pts">000 pts</span></span>
+     <span class="metrics"><span class="f">00<span class="unit">${GAME.unitPlural}</span></span><span class="pts">000 pts</span></span>
    </div>`;
 }
 
@@ -1311,7 +1320,7 @@ function top3Hero(name, flags, score) {
   return `<div class="top3-hero">
      <span class="top3-hero-medal">${MEDALS[0]}</span>
      <div class="top3-hero-name">${escapeHtml(name)}</div>
-     <div class="top3-hero-stats"><b>${score} pts</b> · ${flags} flags</div>
+     <div class="top3-hero-stats"><b>${score} pts</b> · ${flags} ${GAME.unitPlural}</div>
    </div>`;
 }
 
@@ -1343,7 +1352,7 @@ async function loadStartTop3() {
 
   $("top3-list").innerHTML = top3HeroSkeleton() + `<div class="top3-runners">${[2, 3].map(top3RunnerSkeleton).join("")}</div>`;
   try {
-    const res = await fetch(LEADERBOARD_URL);
+    const res = await fetch(`${LEADERBOARD_URL}?game=${GAME.leaderboardGame}`);
     const data = await res.json();
     const top = data.top || [];
     if (!top.length) {
@@ -1370,7 +1379,7 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
 
   try {
     const youName = displayName || "You";
-    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}`;
+    const url = `${LEADERBOARD_URL}?score=${score}&flags=${flagsCount}&name=${encodeURIComponent(youName)}&game=${GAME.leaderboardGame}`;
     const res = await fetch(url);
     const data = await res.json();
     const rows = data.rows || [];
@@ -1386,7 +1395,7 @@ async function loadNearbyLeaderboard(displayName, flagsCount) {
          <span class="pos">${medal || "#" + r.pos}</span>
          <span class="n">${escapeHtml(r.name)}</span>
          <span class="metrics">
-           <span class="f">${r.flags}<span class="unit">flags</span></span>
+           <span class="f">${r.flags}<span class="unit">${GAME.unitPlural}</span></span>
            <span class="pts">${r.score} pts</span>
          </span>
        </div>`;
@@ -1431,8 +1440,8 @@ async function submitScore(nameOverride, { silent = false } = {}) {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(isRename
-        ? { type: "rename", id: lastSubmitId, name }
-        : { name, score, flags: flagsRight, streak: bestStreak }),
+        ? { type: "rename", id: lastSubmitId, name, game: GAME.leaderboardGame }
+        : { name, score, flags: flagsRight, streak: bestStreak, game: GAME.leaderboardGame }),
     });
     const data = await res.json();
     if (!isRename && data && data.id) lastSubmitId = data.id;
@@ -1466,15 +1475,15 @@ function shareText(includeUrl = true) {
   const total = results.length;
   const rk = rankFor(flagsRight);
   const isPt = locale === "pt";
-  const title = isPt ? rk.pt[0] : rk.en[0];
+  const title = (isPt && rk.pt) ? rk.pt[0] : rk.en[0];
   const squares = results.map(r => r === "ok" ? "🟩" : r === "no" ? "🟥" : "⬛");
   // group into rows of 10 so the grid reads cleanly in a comment
   const grid = [];
   for (let i = 0; i < squares.length; i += 10) grid.push(squares.slice(i, i + 10).join(""));
   return [
-    `${rk.emoji} Flag Master — ${title}`,
+    `${rk.emoji} ${GAME.titlePlain} — ${title}`,
     ``,
-    isPt ? `🎯 ${flagsRight}/${total} bandeiras corretas` : `🎯 ${flagsRight}/${total} flags correct`,
+    isPt ? `🎯 ${flagsRight}/${total} bandeiras corretas` : `🎯 ${flagsRight}/${total} ${GAME.unitPlural} correct`,
     isPt ? `⭐ ${score.toLocaleString()} pontos` : `⭐ ${score.toLocaleString()} points`,
     isPt ? `🔥 Melhor sequência: ${bestStreak}` : `🔥 Best streak: ${bestStreak}`,
     ``,
@@ -1506,7 +1515,7 @@ $("ic-slot-4").innerHTML = ICON.trend;
 $("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
-$("promo-ic").innerHTML = ICON.globe;
+$("promo-ic").innerHTML = ICON[GAME.crossPromoIcon];
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
@@ -1515,13 +1524,12 @@ $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
 
 /* ---------- theme ---------- */
-const THEME_KEY = "flagmaster-theme";
 function applyTheme(t) {
   document.documentElement.setAttribute("data-theme", t);
   $("theme-toggle").innerHTML = t === "light" ? ICON.moon : ICON.sun;
 }
-let theme = "light";
-try { theme = localStorage.getItem(THEME_KEY) || "light"; } catch {}
+let theme = GAME.initialTheme;
+try { theme = localStorage.getItem(THEME_KEY) || GAME.initialTheme; } catch {}
 applyTheme(theme);
 $("theme-toggle").addEventListener("click", () => {
   theme = theme === "light" ? "dark" : "light";
@@ -1532,12 +1540,10 @@ $("theme-toggle").addEventListener("click", () => {
 /* ---------- arcade menu (more games) ---------- */
 $("arcade-trigger").innerHTML = ICON.grid;
 function openArcadeSheet() {
-  let best = null;
-  try { const raw = localStorage.getItem("capitalmaster-best"); best = raw ? JSON.parse(raw) : null; } catch {}
-  $("arcade-card-sub").textContent = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
+  renderArcadeMenu(GAME);
   $("arcade-backdrop").classList.add("show");
   $("arcade-sheet").classList.add("show");
-  track("arcade_menu_opened", { from: "flags" });
+  track("arcade_menu_opened", { from: GAME.analyticsId });
 }
 function closeArcadeSheet() {
   $("arcade-backdrop").classList.remove("show");
@@ -1546,9 +1552,8 @@ function closeArcadeSheet() {
 $("arcade-trigger").addEventListener("click", openArcadeSheet);
 $("arcade-backdrop").addEventListener("click", closeArcadeSheet);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeArcadeSheet(); });
-$("arcade-card").addEventListener("click", () => track("arcade_menu_clicked", { from: "flags", to: "capital-master" }));
 
-buildBackground();
+GAME.buildBackground($("flag-bg"));
 loadStartTop3();
 renderPersonalBest();
 
@@ -1568,7 +1573,7 @@ document.querySelectorAll(".seg").forEach(seg => {
 });
 $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
 $("cross-promo").addEventListener("click", () => {
-  track("cross_promo_clicked", { from: "flags", to: "capital-master" });
+  track("cross_promo_clicked", { from: GAME.analyticsId, to: GAME.crossPromoTargetId });
   location.href = CROSS_PROMO_URL;
 });
 $("btn-share").addEventListener("click", async () => {
@@ -1583,6 +1588,41 @@ $("btn-share").addEventListener("click", async () => {
   track("share_clicked", { method: "clipboard", score, flags: results.filter(r => r === "ok").length });
   copyResult();
 });
+
+function relativeUrl(fromGame, toGame) {
+  const dir = toGame.outputDir === "." ? "" : `${toGame.outputDir}/`;
+  return `${fromGame.assetPrefix}${dir}`;
+}
+
+function renderArcadeMenu(currentGame) {
+  const others = GAMES.filter(g => g.id !== currentGame.id);
+  $("arcade-sheet-cards").innerHTML = others.map(g => {
+    if (!g.enabled) {
+      return `<div class="arcade-card arcade-card-disabled" aria-disabled="true">
+         <span class="arcade-ic">${g.icon}</span>
+         <div class="arcade-body">
+           <div class="arcade-h">${g.titlePlain}</div>
+           <div class="arcade-s">${g.tagline}</div>
+         </div>
+       </div>`;
+    }
+    let best = null;
+    try { const raw = localStorage.getItem(`${g.storagePrefix}-best`); best = raw ? JSON.parse(raw) : null; } catch {}
+    const sub = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
+    return `<a class="arcade-card" href="${relativeUrl(currentGame, g)}" data-to="${g.analyticsId}">
+       <span class="arcade-ic" style="background:${g.arcadeGradient}">${g.icon}</span>
+       <div class="arcade-body">
+         <div class="arcade-h">${g.titlePlain}</div>
+         <span class="arcade-s">${sub}</span>
+       </div>
+       <span class="arcade-go">→</span>
+     </a>`;
+  }).join("");
+  $("arcade-sheet-cards").querySelectorAll("[data-to]").forEach(el => {
+    el.addEventListener("click", () => track("arcade_menu_clicked", { from: currentGame.analyticsId, to: el.dataset.to }));
+  });
+}
+
 </script>
 </body>
 </html>
