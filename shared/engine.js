@@ -305,11 +305,6 @@ function timeUp(answer) {
   setTimeout(nextRound, 1350);
 }
 
-function nameOf(code) {
-  const c = COUNTRIES.find(c => c[0] === code);
-  return c ? c[1] : code;
-}
-
 function rank(flags) {
   if (flags >= 60) return [ICON.globe, "World Legend", "Do you work at the UN?"];
   if (flags >= 40) return [ICON.crown, GAME.titlePlain, "Genuinely elite. Respect."];
