@@ -989,8 +989,14 @@ GAME.renderOption = function (item) {
 
 GAME.optionKey = function (item) { return item[3]; };
 
-GAME.wrongAnswerText = function (item) {
+GAME.wrongAnswerText = function (item, clickedKey) {
   return `The capital is ${item[3]}`;
+};
+
+GAME.onLockButton = function (btn, isCorrect) {
+  const color = isCorrect ? "var(--text)" : "var(--muted)";
+  btn.style.setProperty("color", color, "important");
+  btn.style.setProperty("-webkit-text-fill-color", color, "important");
 };
 
 GAME.pickDistractors = function (answer, items) {
@@ -1356,12 +1362,14 @@ function lockRound(answer) {
   clearInterval(timerId);
   $("options").querySelectorAll("button").forEach(b => {
     b.disabled = true;
-    if (b.dataset.key === GAME.optionKey(answer)) {
+    const isCorrect = b.dataset.key === GAME.optionKey(answer);
+    if (isCorrect) {
       b.classList.add("correct");
       b.querySelector(".mark").innerHTML = ICON.check;
     } else {
       b.classList.add("dim");
     }
+    if (GAME.onLockButton) GAME.onLockButton(b, isCorrect);
   });
 }
 
@@ -1406,7 +1414,7 @@ function answerWith(btn, answer) {
     btn.querySelector(".mark").innerHTML = ICON.x;
     lives--; streak = 0;
     results.push("no");
-    setFeedback(GAME.wrongAnswerText(answer), "bad");
+    setFeedback(GAME.wrongAnswerText(answer, btn.dataset.key), "bad");
   }
   track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
@@ -1800,6 +1808,11 @@ $("btn-share").addEventListener("click", async () => {
   copyResult();
 });
 
+function relativeUrl(fromGame, toGame) {
+  const dir = toGame.outputDir === "." ? "" : `${toGame.outputDir}/`;
+  return `${fromGame.assetPrefix}${dir}`;
+}
+
 function renderArcadeMenu(currentGame) {
   const others = GAMES.filter(g => g.id !== currentGame.id);
   $("arcade-sheet-cards").innerHTML = others.map(g => {
@@ -1815,7 +1828,7 @@ function renderArcadeMenu(currentGame) {
     let best = null;
     try { const raw = localStorage.getItem(`${g.storagePrefix}-best`); best = raw ? JSON.parse(raw) : null; } catch {}
     const sub = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
-    return `<a class="arcade-card" href="${g.url}" data-to="${g.analyticsId}">
+    return `<a class="arcade-card" href="${relativeUrl(currentGame, g)}" data-to="${g.analyticsId}">
        <span class="arcade-ic">${g.icon}</span>
        <div class="arcade-body">
          <div class="arcade-h">${g.titlePlain}</div>
