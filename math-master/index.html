@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Capital Master — how many capitals do you know?</title>
+<title>Math Master — how many problems do you know?</title>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.uid=t.uid||[],t.uid.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify createPersonProfile group resetGroups setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSurveyResponse".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  const isProdHost = location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/capital-master/');
+  const isProdHost = location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/math-master/');
   if (isProdHost) {
     posthog.init('phc_HmmUlFmsobnkDBi3HhWQdG4D5137kLdSyTomkppw9Ic', { api_host: 'https://eu.i.posthog.com', person_profiles: 'identified_only' });
   }
@@ -500,38 +500,10 @@
     .btn { padding: 14px 32px; }
   }
 
-#world-map { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-#world-map svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-#world-map .land {
-  fill: var(--muted); fill-opacity: .1; fill-rule: evenodd;
-  stroke: var(--text); stroke-width: 1.6; stroke-opacity: .5;
-  stroke-linejoin: round;
-}
-:root[data-theme="light"] #world-map .land { fill-opacity: .14; stroke-width: 1.8; stroke-opacity: .8; }
-#flag-bg .capital-dot {
-  position: absolute; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--gold); transform: translate(-50%, -50%);
-  animation: blink var(--d) ease-in-out var(--delay) infinite;
-}
-@keyframes blink {
-  0%, 100% { opacity: .18; box-shadow: 0 0 0 0 rgba(255,209,102,0); }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 8px 3px #fff, 0 0 22px 8px rgba(255,209,102,.9), 0 0 40px 14px rgba(255,209,102,.4);
-  }
-}
-:root[data-theme="light"] #flag-bg .capital-dot {
-  background: hsl(var(--hue) 75% 45%); animation-name: blink-color;
-}
-@keyframes blink-color {
-  0%, 100% { opacity: .25; box-shadow: 0 0 0 0 transparent; }
-  50% {
-    opacity: 1;
-    box-shadow:
-      0 0 6px 2px hsl(var(--hue) 90% 70%),
-      0 0 18px 6px hsl(var(--hue) 80% 55% / .8),
-      0 0 32px 12px hsl(var(--hue) 80% 55% / .35);
-  }
+#flag-bg .mg {
+  position: absolute; font-weight: 700; color: var(--muted);
+  will-change: transform; user-select: none; pointer-events: none;
+  animation: drift var(--d) ease-in-out var(--delay) infinite alternate;
 }
 #flag-bg .veil {
   position: absolute; inset: 0;
@@ -541,41 +513,42 @@
 }
 :root[data-theme="light"] #flag-bg .veil {
   background:
-    radial-gradient(900px 620px at 50% 42%, rgba(238,241,248,.22), rgba(238,241,248,.6) 78%),
-    linear-gradient(180deg, rgba(238,241,248,.14), rgba(238,241,248,.5));
+    radial-gradient(900px 620px at 50% 42%, rgba(238,241,248,.4), rgba(238,241,248,.8) 78%),
+    linear-gradient(180deg, rgba(238,241,248,.28), rgba(238,241,248,.72));
+}
+@keyframes drift {
+  from { transform: translate(0,0) rotate(var(--r1)); }
+  to   { transform: translate(var(--tx), var(--ty)) rotate(var(--r2)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #flag-bg .capital-dot,
-  :root[data-theme="light"] #flag-bg .capital-dot { animation: none; opacity: .7; }
+  #flag-bg .mg { animation: none; }
 }
 :root[data-theme="light"] .hero .tag {
   text-shadow: 0 0 12px var(--bg), 0 0 6px var(--bg), 0 1px 2px var(--bg);
 }
 
-.prompt-flag {
-  width: 100%; max-width: 190px; aspect-ratio: 4 / 2.7; object-fit: cover; border-radius: 14px;
-  box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); margin: 0 auto 12px; display: block;
-}
-.capital-btn {
-  border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
-  background: var(--surface); color: var(--text); cursor: pointer; padding: 18px 12px;
-  min-height: 64px; position: relative;
+#prompt-flag { display: none; }
+
+.math-btn {
+  border: 2px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--text); cursor: pointer; padding: 22px 12px;
+  min-height: 84px; position: relative;
   display: flex; align-items: center; justify-content: center;
   transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
 }
-.capital-btn .capital-name { font-size: 16px; font-weight: 600; text-align: center; line-height: 1.25; }
-.capital-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
-.capital-btn .mark {
+.math-btn .math-num { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+.math-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
+.math-btn .mark {
   position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
   display: grid; place-items: center; opacity: 0; transform: scale(.5);
   transition: opacity .2s, transform .2s; z-index: 2;
 }
-.capital-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
-.capital-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
-.capital-btn.wrong { border-color: var(--bad); animation: shake .4s; }
-.capital-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
-.capital-btn:disabled { cursor: default; }
-.capital-btn.dim { opacity: .3; }
+.math-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
+.math-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
+.math-btn.wrong { border-color: var(--bad); animation: shake .4s; }
+.math-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
+.math-btn:disabled { cursor: default; }
+.math-btn.dim { opacity: .3; }
 </style>
 </head>
 <body>
@@ -593,16 +566,16 @@
   <!-- START -->
   <section id="screen-start" class="screen active">
     <div class="hero">
-      <span class="badge"><span class="dot"></span>108 countries · one shot</span>
-      <h1>Capital&nbsp;Master</h1>
-      <p class="tag">How many capital cities of the world do you actually know? Prove it.</p>
+      <span class="badge"><span class="dot"></span>200 problems · one shot</span>
+      <h1>Math&nbsp;Master</h1>
+      <p class="tag">How fast can you crunch the numbers? Prove it.</p>
       <div class="personal-best" id="personal-best" style="display:none">
-        🏆 Your best: <b id="pb-flags">0</b> capitals · <b id="pb-score">0</b> pts
+        🏆 Your best: <b id="pb-flags">0</b> problems · <b id="pb-score">0</b> pts
       </div>
       <div class="rules">
         <div class="rule">
           <span class="ic" id="ic-slot-1"></span>
-          <span class="txt">Spot the right capital out of <b>4 options</b></span>
+          <span class="txt">Spot the right problem out of <b>4 options</b></span>
         </div>
         <div class="rule">
           <span class="ic" id="ic-slot-2"></span>
@@ -651,10 +624,10 @@
           </div>
         </div>
         <div class="cfg-row">
-          <span class="cfg-label">Countries</span>
+          <span class="cfg-label">Problems</span>
           <div class="seg" data-cfg="difficulty">
             <button class="seg-btn active" data-value="easy" type="button">Easy only</button>
-            <button class="seg-btn" data-value="all" type="button">All 108</button>
+            <button class="seg-btn" data-value="all" type="button">All 200</button>
           </div>
         </div>
       </div>
@@ -740,381 +713,173 @@
 
 <script>
 const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":true,"outputDir":"math-master","url":"math-master/","assetPrefix":"../","icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"How fast can you crunch the numbers? Prove it.","storagePrefix":"mathmaster","leaderboardGame":"math","analyticsId":"math-master","gameUrl":"https://vitoraa.github.io/flag-master/math-master/","crossPromoUrl":"../","crossPromoTargetId":"flag-master","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)","itemCount":200,"itemNoun":"problems","unitSingular":"problem","unitPlural":"problems","promptCounterLabel":"Problem","practiceCfgLabel":"Problems","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Math nerd zone","4":"Very hard"},"trackAnswerEvent":"math_answered","ranks":[{"min":60,"icon":"globe","emoji":"🧮","en":["Math Legend","Are you secretly a calculator?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Math Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Number Cruncher","You chew through equations."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Quick Thinker","Solid mental math instincts."]},{"min":8,"icon":"plane","emoji":"🧠","en":["Warming Up","Not bad — keep at it."]},{"min":0,"icon":"compass","emoji":"🔢","en":["Rusty","Time to dust off the times tables."]}]}];
-const GAME = GAMES.find(g => g.id === "capital-master");
-const OTHER_CITIES = {
-  "us": ["New York City","Los Angeles","Chicago"],
-  "br": ["Rio de Janeiro","São Paulo"],
-  "fr": ["Marseille","Lyon","Nice"],
-  "de": ["Munich","Frankfurt","Hamburg"],
-  "it": ["Milan","Venice","Florence","Naples"],
-  "es": ["Barcelona","Valencia","Seville"],
-  "gb": ["Manchester","Liverpool","Edinburgh","Birmingham"],
-  "jp": ["Osaka","Kyoto"],
-  "cn": ["Shanghai","Hong Kong","Guangzhou"],
-  "ca": ["Toronto","Vancouver","Montreal"],
-  "mx": ["Guadalajara","Cancún","Monterrey"],
-  "ar": ["Córdoba","Mendoza","Rosario"],
-  "pt": ["Porto"],
-  "au": ["Sydney","Melbourne"],
-  "in": ["Mumbai","Bangalore","Kolkata"],
-  "ru": ["Saint Petersburg"],
-  "kr": ["Busan"],
-  "nl": ["Rotterdam","The Hague"],
-  "ch": ["Zurich","Geneva"],
-  "se": ["Gothenburg"],
-  "no": ["Bergen"],
-  "gr": ["Thessaloniki"],
-  "tr": ["Istanbul","Izmir"],
-  "eg": ["Alexandria"],
-  "za": ["Cape Town","Johannesburg","Durban"],
-  "ie": ["Cork","Galway"],
-  "dk": ["Aarhus"],
-  "be": ["Antwerp","Bruges"],
-  "pl": ["Kraków"],
-  "at": ["Salzburg"],
-  "fi": ["Tampere"],
-  "ua": ["Lviv","Odesa"],
-  "cl": ["Valparaíso"],
-  "co": ["Medellín","Cartagena"],
-  "pe": ["Cusco","Arequipa"],
-  "uy": ["Punta del Este"],
-  "ve": ["Maracaibo"],
-  "cu": ["Santiago de Cuba"],
-  "th": ["Chiang Mai","Phuket"],
-  "vn": ["Ho Chi Minh City","Da Nang"],
-  "ph": ["Cebu"],
-  "id": ["Bali","Surabaya"],
-  "my": ["Penang"],
-  "nz": ["Auckland"],
-  "il": ["Tel Aviv","Haifa"],
-  "sa": ["Jeddah","Mecca"],
-  "ae": ["Dubai","Sharjah"],
-  "ma": ["Casablanca","Marrakech"],
-  "ng": ["Lagos"],
-  "ke": ["Mombasa"],
-  "cz": ["Brno"],
-  "hu": ["Debrecen"],
-  "ro": ["Cluj-Napoca"],
-  "hr": ["Dubrovnik","Split"],
-  "pk": ["Karachi","Lahore"],
-  "bd": ["Chittagong"],
-  "ec": ["Guayaquil"],
-  "bo": ["La Paz","Santa Cruz de la Sierra"],
-  "py": ["Ciudad del Este"],
-  "pa": ["Colón"],
-  "cr": ["Limón"],
-  "jm": ["Montego Bay"],
-  "ir": ["Isfahan","Shiraz"],
-  "iq": ["Basra"],
-  "si": ["Maribor"],
-  "sk": ["Košice"],
-  "rs": ["Novi Sad"],
-  "bg": ["Plovdiv","Varna"],
-  "lt": ["Kaunas"],
-  "ba": ["Mostar"],
-  "me": ["Kotor"],
-  "mt": ["Sliema","Birkirkara"],
-  "cy": ["Limassol"],
-  "ge": ["Batumi"],
-  "kz": ["Almaty"],
-  "uz": ["Samarkand","Bukhara"],
-  "lk": ["Colombo","Kandy"],
-  "mm": ["Yangon","Mandalay"],
-  "kh": ["Siem Reap"],
-  "la": ["Luang Prabang"],
-  "jo": ["Aqaba"],
-  "ly": ["Benghazi"],
-  "ci": ["Abidjan"],
-  "cm": ["Douala"],
-  "tz": ["Dar es Salaam"],
-  "zw": ["Bulawayo","Victoria Falls"],
-  "fj": ["Nadi","Lautoka"],
-  "gt": ["Antigua Guatemala","Quetzaltenango"],
-  "hn": ["San Pedro Sula"],
-  "sv": ["Santa Ana"],
-  "ni": ["Granada","León"],
-  "do": ["Santiago","Punta Cana"],
-  "ht": ["Cap-Haïtien"],
-  "tt": ["San Fernando"],
-  "bz": ["Belize City"],
-  "af": ["Kandahar"],
-  "bi": ["Bujumbura"],
-  "bj": ["Cotonou"],
-  "bs": ["Freeport"],
-  "cd": ["Lubumbashi"],
-  "er": ["Massawa"],
-  "gm": ["Serekunda"],
-  "gq": ["Bata"],
-  "mw": ["Blantyre"],
-  "ps": ["Gaza City"],
-  "sy": ["Aleppo"],
-  "sz": ["Manzini"],
-  "ye": ["Aden"],
-};
+const GAME = GAMES.find(g => g.id === "math-master");
+// Procedurally generated equation pool — unlike flags/capitals, math
+// problems are cheap to generate, so there's no hand-written data list.
+// Item shape: [id, exprText, tier, answer, meta]
+// meta = { op, a, b } describes the operands actually shown (for ÷,
+// a = dividend, b = divisor) so pickMathDistractors can simulate mistakes
+// without re-parsing the display string.
 
-// [code, name, tier, capital]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
-GAME.items = [
-  ["us","United States",1,"Washington, D.C."],
-  ["br","Brazil",1,"Brasília"],
-  ["fr","France",1,"Paris"],
-  ["de","Germany",1,"Berlin"],
-  ["it","Italy",1,"Rome"],
-  ["es","Spain",1,"Madrid"],
-  ["gb","United Kingdom",1,"London"],
-  ["jp","Japan",1,"Tokyo"],
-  ["cn","China",1,"Beijing"],
-  ["ca","Canada",2,"Ottawa"],
-  ["mx","Mexico",1,"Mexico City"],
-  ["ar","Argentina",1,"Buenos Aires"],
-  ["pt","Portugal",1,"Lisbon"],
-  ["au","Australia",2,"Canberra"],
-  ["in","India",1,"New Delhi"],
-  ["ru","Russia",1,"Moscow"],
-  ["kr","South Korea",1,"Seoul"],
-  ["nl","Netherlands",1,"Amsterdam"],
-  ["ch","Switzerland",2,"Bern"],
-  ["se","Sweden",1,"Stockholm"],
-  ["no","Norway",1,"Oslo"],
-  ["gr","Greece",1,"Athens"],
-  ["tr","Turkey",2,"Ankara"],
-  ["eg","Egypt",1,"Cairo"],
-  ["za","South Africa",2,"Pretoria"],
-  ["ie","Ireland",1,"Dublin"],
-  ["dk","Denmark",1,"Copenhagen"],
-  ["be","Belgium",1,"Brussels"],
-  ["pl","Poland",2,"Warsaw"],
-  ["at","Austria",2,"Vienna"],
-  ["fi","Finland",2,"Helsinki"],
-  ["ua","Ukraine",2,"Kyiv"],
-  ["cl","Chile",2,"Santiago"],
-  ["co","Colombia",2,"Bogotá"],
-  ["pe","Peru",2,"Lima"],
-  ["uy","Uruguay",2,"Montevideo"],
-  ["ve","Venezuela",2,"Caracas"],
-  ["cu","Cuba",2,"Havana"],
-  ["th","Thailand",2,"Bangkok"],
-  ["vn","Vietnam",2,"Hanoi"],
-  ["ph","Philippines",2,"Manila"],
-  ["id","Indonesia",2,"Jakarta"],
-  ["my","Malaysia",2,"Kuala Lumpur"],
-  ["nz","New Zealand",2,"Wellington"],
-  ["il","Israel",3,"Jerusalem"],
-  ["sa","Saudi Arabia",2,"Riyadh"],
-  ["ae","United Arab Emirates",2,"Abu Dhabi"],
-  ["ma","Morocco",2,"Rabat"],
-  ["ng","Nigeria",3,"Abuja"],
-  ["ke","Kenya",2,"Nairobi"],
-  ["cz","Czechia",2,"Prague"],
-  ["hu","Hungary",2,"Budapest"],
-  ["ro","Romania",2,"Bucharest"],
-  ["hr","Croatia",2,"Zagreb"],
-  ["pk","Pakistan",2,"Islamabad"],
-  ["bd","Bangladesh",2,"Dhaka"],
-  ["ec","Ecuador",2,"Quito"],
-  ["bo","Bolivia",3,"Sucre"],
-  ["py","Paraguay",2,"Asunción"],
-  ["pa","Panama",2,"Panama City"],
-  ["cr","Costa Rica",2,"San José"],
-  ["jm","Jamaica",2,"Kingston"],
-  ["ir","Iran",2,"Tehran"],
-  ["iq","Iraq",2,"Baghdad"],
-  ["si","Slovenia",3,"Ljubljana"],
-  ["sk","Slovakia",3,"Bratislava"],
-  ["rs","Serbia",3,"Belgrade"],
-  ["bg","Bulgaria",3,"Sofia"],
-  ["lt","Lithuania",3,"Vilnius"],
-  ["ba","Bosnia and Herzegovina",3,"Sarajevo"],
-  ["me","Montenegro",3,"Podgorica"],
-  ["mt","Malta",3,"Valletta"],
-  ["cy","Cyprus",3,"Nicosia"],
-  ["ge","Georgia",3,"Tbilisi"],
-  ["kz","Kazakhstan",3,"Astana"],
-  ["uz","Uzbekistan",3,"Tashkent"],
-  ["lk","Sri Lanka",3,"Sri Jayawardenepura Kotte"],
-  ["mm","Myanmar",3,"Naypyidaw"],
-  ["kh","Cambodia",3,"Phnom Penh"],
-  ["la","Laos",3,"Vientiane"],
-  ["jo","Jordan",3,"Amman"],
-  ["ly","Libya",3,"Tripoli"],
-  ["ci","Ivory Coast",3,"Yamoussoukro"],
-  ["cm","Cameroon",3,"Yaoundé"],
-  ["tz","Tanzania",3,"Dodoma"],
-  ["zw","Zimbabwe",3,"Harare"],
-  ["fj","Fiji",3,"Suva"],
-  ["gt","Guatemala",3,"Guatemala City"],
-  ["hn","Honduras",3,"Tegucigalpa"],
-  ["sv","El Salvador",3,"San Salvador"],
-  ["ni","Nicaragua",3,"Managua"],
-  ["do","Dominican Republic",3,"Santo Domingo"],
-  ["ht","Haiti",3,"Port-au-Prince"],
-  ["tt","Trinidad and Tobago",3,"Port of Spain"],
-  ["bz","Belize",3,"Belmopan"],
-  ["af","Afghanistan",4,"Kabul"],
-  ["bi","Burundi",4,"Gitega"],
-  ["bj","Benin",4,"Porto-Novo"],
-  ["bs","Bahamas",4,"Nassau"],
-  ["cd","DR Congo",4,"Kinshasa"],
-  ["er","Eritrea",4,"Asmara"],
-  ["gm","Gambia",4,"Banjul"],
-  ["gq","Equatorial Guinea",4,"Malabo"],
-  ["mw","Malawi",4,"Lilongwe"],
-  ["ps","Palestine",4,"Ramallah"],
-  ["sy","Syria",4,"Damascus"],
-  ["sz","Eswatini",4,"Mbabane"],
-  ["ye","Yemen",4,"Sana'a"],
-];
+function randInt(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 
-const SAME_COUNTRY_DISTRACTOR_CHANCE = 0.75;
-
-// unitSingular/unitPlural/promptCounterLabel/practiceCfgLabel/initialTheme/
-// levels/trackAnswerEvent/ranks all come from games.json — this file only
-// defines data (COUNTRIES/OTHER_CITIES above) and hooks below.
-
-GAME.renderPrompt = function (item) {
-  $("prompt-flag").src = flagUrl(item[0]);
-  $("country-name").textContent = item[1];
-};
-
-GAME.renderOption = function (item) {
-  return `<button class="capital-btn" data-key="${item[3]}" aria-label="Guess ${item[3]}">
-     <span class="capital-name">${item[3]}</span>
-     <span class="mark"></span>
-   </button>`;
-};
-
-GAME.optionKey = function (item) { return item[3]; };
-
-GAME.wrongAnswerText = function (item, clickedKey) {
-  return `The capital is ${item[3]}`;
-};
-
-GAME.onLockButton = function (btn, isCorrect) {
-  const color = isCorrect ? "var(--text)" : "var(--muted)";
-  btn.style.setProperty("color", color, "important");
-  btn.style.setProperty("-webkit-text-fill-color", color, "important");
-};
-
-GAME.pickDistractors = function (answer, items) {
-  const sameCountry = shuffle((OTHER_CITIES[answer[0]] || []).slice());
-  const sameTier = shuffle(items.filter(c => c !== answer && c[2] === answer[2]));
-  const otherTier = shuffle(items.filter(c => c !== answer && c[2] !== answer[2]));
-  const foreignCapitals = sameTier.concat(otherTier).map(c => c[3]);
-
-  const used = new Set([answer[3]]);
-  const picks = [];
-  while (picks.length < 3 && (sameCountry.length || foreignCapitals.length)) {
-    const useSameCountry = sameCountry.length > 0 &&
-      (foreignCapitals.length === 0 || Math.random() < SAME_COUNTRY_DISTRACTOR_CHANCE);
-    const candidate = useSameCountry ? sameCountry.shift() : foreignCapitals.shift();
-    if (candidate && !used.has(candidate)) { used.add(candidate); picks.push(candidate); }
+function addSub(min, max, tier, nextId) {
+  const a = randInt(min, max), b = randInt(min, max);
+  const id = `m${nextId()}`;
+  if (Math.random() < 0.5) {
+    return [id, `${a} + ${b}`, tier, a + b, { op: "+", a, b }];
   }
-  return picks.map(cap => items.find(c => c[3] === cap) || { 3: cap });
-};
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  return [id, `${hi} − ${lo}`, tier, hi - lo, { op: "−", a: hi, b: lo }];
+}
 
-const HUE_PALETTE = [210, 165, 280, 42];
+function mul(aMin, aMax, bMin, bMax, tier, nextId) {
+  const a = randInt(aMin, aMax), b = randInt(bMin, bMax);
+  const id = `m${nextId()}`;
+  return [id, `${a} × ${b}`, tier, a * b, { op: "×", a, b }];
+}
 
-const WORLD_PATH = "M624,799 L631,803 L639,804 L636,807 L631,807 L628,805 L626,807 L621,809 L615,808 L611,807 L606,806 L599,803 L593,800 L585,794 L590,795 L598,798 L605,800 L608,798 L610,794 L615,792 L619,792 L621,795 L624,799Z M675,784 L679,786 L678,788 L670,790 L668,788 L663,791 L660,788 L667,785 L671,786 L675,784Z M1390,776 L1382,777 L1382,774 L1383,771 L1387,772 L1392,773 L1390,776Z M1808,727 L1813,729 L1816,728 L1820,727 L1824,727 L1824,734 L1822,736 L1822,740 L1820,739 L1816,742 L1811,742 L1808,737 L1807,734 L1804,729 L1808,727Z M1961,727 L1962,730 L1966,727 L1968,730 L1966,735 L1962,739 L1960,741 L1962,744 L1957,744 L1953,746 L1951,749 L1948,755 L1944,758 L1941,759 L1936,759 L1932,757 L1926,757 L1928,751 L1935,745 L1939,744 L1943,742 L1947,739 L1951,736 L1953,732 L1955,731 L1956,728 L1960,725 L1961,727Z M1970,701 L1974,707 L1974,703 L1977,704 L1978,709 L1982,710 L1986,711 L1989,709 L1992,709 L1990,714 L1989,718 L1984,717 L1983,719 L1983,723 L1981,726 L1978,729 L1974,732 L1970,729 L1973,725 L1972,722 L1966,719 L1970,716 L1971,711 L1971,708 L1968,704 L1966,701 L1961,696 L1959,692 L1964,694 L1968,696 L1970,701Z M1928,623 L1926,624 L1923,623 L1919,620 L1916,617 L1912,614 L1914,612 L1917,614 L1919,616 L1921,617 L1926,621 L1928,623Z M1278,575 L1279,582 L1280,585 L1280,587 L1277,586 L1277,591 L1275,595 L1275,600 L1272,606 L1270,614 L1266,624 L1264,632 L1262,639 L1257,640 L1252,642 L1249,641 L1245,639 L1243,636 L1243,631 L1241,627 L1240,623 L1241,619 L1244,618 L1247,612 L1247,608 L1246,605 L1245,602 L1244,597 L1246,594 L1247,590 L1253,589 L1255,588 L1260,585 L1265,581 L1267,578 L1266,576 L1268,577 L1271,573 L1271,569 L1273,567 L1275,569 L1277,572 L1278,575Z M1798,576 L1800,581 L1803,579 L1805,581 L1808,583 L1807,586 L1808,590 L1809,593 L1812,599 L1811,602 L1813,605 L1819,608 L1823,611 L1827,613 L1829,618 L1832,624 L1834,623 L1836,625 L1838,630 L1842,634 L1845,636 L1849,640 L1851,645 L1851,648 L1851,651 L1853,656 L1853,661 L1852,664 L1850,669 L1850,672 L1849,676 L1847,681 L1843,684 L1841,688 L1839,691 L1837,695 L1835,698 L1834,702 L1833,706 L1830,710 L1824,710 L1819,712 L1816,714 L1813,717 L1808,714 L1805,713 L1806,711 L1803,712 L1798,716 L1793,714 L1790,713 L1787,713 L1781,711 L1778,708 L1777,704 L1775,701 L1773,699 L1767,698 L1769,695 L1768,691 L1765,695 L1760,696 L1763,693 L1764,690 L1766,687 L1766,683 L1761,688 L1758,689 L1755,694 L1751,692 L1751,689 L1748,685 L1745,682 L1739,678 L1735,678 L1730,675 L1720,676 L1712,677 L1706,679 L1701,679 L1695,682 L1690,683 L1689,686 L1687,688 L1682,688 L1679,689 L1674,688 L1670,689 L1666,689 L1663,692 L1658,693 L1656,695 L1652,695 L1648,695 L1642,691 L1639,690 L1639,687 L1642,686 L1643,683 L1643,679 L1643,676 L1640,670 L1639,667 L1639,664 L1637,660 L1634,656 L1634,652 L1630,647 L1630,645 L1632,647 L1630,642 L1633,644 L1635,646 L1632,639 L1630,635 L1631,632 L1632,628 L1632,625 L1634,621 L1635,625 L1637,621 L1641,619 L1644,617 L1648,615 L1652,615 L1657,613 L1660,613 L1663,611 L1666,611 L1671,609 L1674,607 L1676,604 L1679,601 L1680,596 L1683,591 L1686,596 L1688,595 L1686,592 L1688,590 L1690,591 L1691,586 L1694,584 L1695,582 L1698,581 L1701,580 L1703,578 L1706,577 L1710,579 L1713,583 L1717,583 L1720,583 L1719,580 L1722,576 L1724,574 L1726,570 L1729,568 L1732,568 L1737,567 L1732,563 L1735,562 L1739,563 L1742,565 L1747,567 L1752,568 L1755,566 L1758,566 L1761,569 L1759,572 L1757,574 L1756,576 L1754,579 L1752,582 L1757,586 L1761,588 L1764,590 L1768,593 L1773,595 L1779,598 L1783,596 L1784,594 L1785,591 L1786,588 L1787,584 L1786,581 L1786,576 L1787,572 L1787,569 L1788,566 L1790,563 L1792,559 L1793,562 L1794,565 L1795,568 L1797,571 L1798,574 L1798,576Z M1671,557 L1661,553 L1666,552 L1669,554 L1671,555 L1671,557Z M1898,553 L1893,550 L1892,546 L1896,551 L1898,553Z M1691,556 L1687,558 L1689,552 L1694,549 L1700,547 L1704,547 L1707,547 L1705,548 L1700,551 L1695,552 L1691,556Z M1655,545 L1657,546 L1660,546 L1662,548 L1655,549 L1652,550 L1649,550 L1650,547 L1654,547 L1655,545Z M1683,545 L1682,548 L1674,550 L1666,549 L1671,546 L1674,547 L1678,547 L1683,545Z M1888,546 L1884,545 L1881,543 L1879,541 L1882,542 L1887,545 L1888,546Z M1603,538 L1614,538 L1615,536 L1626,539 L1628,542 L1636,543 L1643,547 L1636,549 L1630,546 L1625,547 L1620,546 L1614,545 L1608,543 L1604,542 L1602,543 L1591,541 L1590,538 L1585,538 L1589,533 L1596,533 L1600,535 L1603,538Z M1866,538 L1862,536 L1860,533 L1858,529 L1861,531 L1864,534 L1867,536 L1866,538Z M1844,530 L1841,531 L1838,534 L1835,535 L1827,533 L1824,532 L1829,531 L1832,531 L1833,528 L1835,531 L1838,530 L1839,528 L1842,526 L1842,523 L1845,523 L1846,527 L1844,530Z M1725,517 L1727,521 L1722,519 L1718,519 L1714,519 L1711,519 L1712,516 L1719,516 L1725,517Z M1851,525 L1849,526 L1848,523 L1847,521 L1844,519 L1841,517 L1837,515 L1842,515 L1843,517 L1846,518 L1848,520 L1850,522 L1851,525Z M1745,506 L1747,515 L1753,519 L1757,513 L1764,509 L1768,509 L1773,511 L1777,513 L1783,514 L1793,518 L1803,521 L1807,524 L1810,527 L1811,530 L1820,534 L1822,537 L1817,537 L1818,541 L1823,545 L1826,551 L1829,550 L1834,554 L1838,557 L1833,559 L1827,557 L1822,556 L1817,553 L1814,550 L1811,545 L1804,542 L1799,544 L1796,546 L1797,550 L1792,552 L1789,551 L1784,551 L1779,546 L1773,545 L1765,547 L1767,542 L1770,541 L1769,535 L1766,530 L1755,525 L1751,525 L1743,520 L1741,522 L1738,521 L1733,516 L1739,514 L1743,514 L1735,512 L1732,509 L1727,508 L1725,505 L1733,504 L1735,502 L1744,504 L1745,506Z M1696,492 L1691,498 L1687,499 L1682,498 L1673,498 L1668,499 L1667,503 L1672,508 L1675,505 L1685,503 L1685,506 L1682,505 L1680,508 L1675,511 L1680,518 L1684,526 L1684,530 L1681,531 L1679,529 L1682,525 L1676,527 L1676,523 L1672,520 L1672,515 L1668,516 L1669,523 L1669,531 L1666,532 L1663,530 L1665,525 L1664,519 L1660,516 L1662,512 L1663,508 L1666,499 L1667,497 L1672,493 L1676,494 L1683,495 L1689,495 L1695,491 L1696,492Z M1715,494 L1715,499 L1712,498 L1711,501 L1713,504 L1709,501 L1708,494 L1709,490 L1711,488 L1711,491 L1714,491 L1715,494Z M1588,533 L1582,533 L1577,528 L1570,523 L1568,520 L1563,516 L1561,511 L1556,504 L1551,499 L1550,494 L1548,490 L1543,486 L1540,482 L1536,479 L1530,472 L1529,470 L1533,470 L1542,471 L1546,476 L1551,480 L1554,482 L1559,488 L1565,488 L1569,492 L1573,497 L1577,499 L1575,504 L1578,506 L1581,510 L1583,513 L1587,513 L1589,517 L1588,524 L1588,533Z M1655,490 L1661,495 L1655,496 L1653,499 L1653,504 L1648,508 L1647,514 L1645,522 L1638,523 L1636,519 L1632,519 L1629,517 L1623,519 L1621,517 L1617,517 L1612,516 L1612,509 L1609,507 L1606,503 L1605,498 L1606,493 L1609,489 L1613,491 L1618,490 L1619,485 L1621,484 L1628,483 L1632,478 L1634,475 L1637,473 L1641,470 L1646,466 L1648,462 L1654,464 L1657,468 L1662,470 L1658,472 L1659,475 L1655,477 L1652,482 L1656,487 L1655,490Z M1702,453 L1703,457 L1703,460 L1701,465 L1699,459 L1696,462 L1698,466 L1697,469 L1690,466 L1689,462 L1690,459 L1687,456 L1685,459 L1678,462 L1680,455 L1683,454 L1686,452 L1688,454 L1692,453 L1693,450 L1697,450 L1697,446 L1701,448 L1702,451 L1702,453Z M1451,466 L1446,467 L1444,462 L1443,454 L1445,445 L1449,449 L1452,452 L1454,458 L1454,464 L1451,466Z M1689,443 L1687,445 L1685,448 L1683,450 L1680,446 L1682,443 L1683,440 L1686,439 L1685,443 L1689,438 L1689,443Z M1658,448 L1651,454 L1654,450 L1658,446 L1661,442 L1664,437 L1665,441 L1661,444 L1658,448Z M1677,434 L1680,436 L1684,436 L1681,440 L1678,442 L1678,437 L1677,434Z M1697,432 L1699,439 L1695,437 L1696,442 L1693,444 L1693,440 L1691,436 L1694,437 L1690,430 L1696,430 L1697,432Z M1675,427 L1674,432 L1671,429 L1668,425 L1673,425 L1675,427Z M1674,397 L1677,399 L1679,397 L1679,401 L1681,405 L1679,410 L1676,411 L1675,416 L1676,420 L1679,421 L1682,420 L1689,423 L1688,426 L1690,428 L1689,430 L1685,428 L1683,425 L1682,427 L1678,423 L1673,424 L1670,423 L1672,419 L1670,420 L1667,417 L1666,414 L1666,409 L1668,411 L1669,402 L1671,397 L1674,397Z M573,401 L568,401 L565,399 L568,397 L573,398 L576,399 L573,401Z M597,390 L602,390 L607,390 L610,391 L612,393 L615,393 L618,395 L620,397 L618,399 L616,398 L611,398 L608,399 L606,398 L603,402 L602,400 L598,399 L595,399 L592,399 L589,400 L586,398 L592,397 L596,398 L598,396 L596,394 L592,391 L597,390Z M1613,396 L1608,399 L1604,397 L1603,392 L1606,390 L1612,388 L1615,388 L1617,391 L1614,393 L1613,396Z M136,394 L134,393 L133,390 L134,387 L137,388 L139,390 L140,392 L138,393 L136,394Z M557,374 L560,376 L565,375 L567,376 L571,380 L575,382 L580,383 L584,385 L588,387 L584,389 L580,390 L576,389 L568,390 L572,387 L569,385 L566,385 L564,383 L563,380 L560,380 L554,379 L545,377 L544,376 L546,374 L540,374 L536,377 L533,378 L530,379 L532,375 L535,373 L537,372 L542,372 L548,372 L552,372 L557,374Z M1673,373 L1671,378 L1668,373 L1667,369 L1671,364 L1675,359 L1678,361 L1677,364 L1673,373Z M1748,310 L1746,316 L1743,314 L1740,315 L1739,318 L1735,317 L1738,311 L1742,311 L1744,309 L1748,310Z M1192,302 L1188,304 L1183,308 L1181,307 L1179,305 L1182,305 L1187,303 L1192,302Z M1132,302 L1135,304 L1139,303 L1143,304 L1146,304 L1137,306 L1131,304 L1132,302Z M1086,288 L1084,292 L1084,297 L1080,294 L1077,294 L1069,291 L1070,288 L1076,289 L1082,288 L1086,288Z M1051,271 L1054,275 L1054,282 L1049,284 L1047,282 L1047,276 L1045,272 L1048,273 L1051,271Z M1783,294 L1781,298 L1782,301 L1779,305 L1772,307 L1762,308 L1754,314 L1751,312 L1750,308 L1741,309 L1734,312 L1728,312 L1733,316 L1730,325 L1726,328 L1723,325 L1725,320 L1721,319 L1719,315 L1724,313 L1727,310 L1733,307 L1737,303 L1748,301 L1754,303 L1760,293 L1763,295 L1771,290 L1775,288 L1778,281 L1777,275 L1779,271 L1785,270 L1788,278 L1788,282 L1783,288 L1783,294Z M1053,266 L1051,270 L1049,269 L1047,265 L1049,263 L1052,261 L1053,266Z M1800,255 L1803,256 L1807,253 L1809,260 L1800,261 L1795,267 L1787,263 L1784,269 L1778,269 L1777,264 L1780,259 L1785,259 L1787,251 L1789,247 L1795,253 L1800,255Z M646,241 L650,242 L655,242 L653,244 L644,242 L642,240 L644,239 L646,241Z M657,227 L647,226 L642,223 L651,224 L656,226 L657,227Z M314,230 L311,231 L302,229 L300,227 L295,225 L289,222 L286,219 L293,219 L296,220 L301,221 L303,222 L306,225 L312,227 L314,230Z M688,218 L684,223 L688,221 L692,223 L690,225 L695,226 L697,225 L703,226 L701,230 L705,230 L706,232 L708,236 L705,241 L699,240 L700,235 L692,240 L689,239 L693,237 L687,235 L682,236 L671,236 L673,232 L671,230 L676,227 L681,218 L685,215 L690,213 L691,215 L688,218Z M263,200 L268,199 L266,206 L271,210 L266,208 L264,205 L261,203 L260,201 L263,200Z M1798,218 L1804,228 L1795,226 L1792,234 L1797,240 L1797,244 L1793,240 L1789,245 L1788,240 L1789,235 L1788,229 L1790,224 L1790,217 L1787,211 L1787,204 L1792,201 L1790,199 L1793,198 L1794,202 L1796,207 L1796,212 L1798,218Z M962,210 L952,213 L945,212 L949,206 L946,201 L954,196 L958,194 L963,193 L969,197 L966,201 L966,205 L962,210Z M1071,191 L1067,196 L1061,192 L1061,190 L1069,188 L1071,191Z M150,183 L144,185 L142,183 L141,181 L146,179 L149,178 L152,178 L155,180 L150,183Z M983,174 L977,180 L983,179 L989,180 L988,184 L983,189 L988,189 L994,197 L998,197 L1001,204 L1003,206 L1009,207 L1009,211 L1006,212 L1008,215 L1003,218 L996,218 L986,219 L984,218 L980,221 L975,220 L971,222 L968,221 L976,215 L981,214 L972,213 L971,211 L977,209 L973,206 L975,203 L983,203 L984,200 L980,197 L973,196 L974,192 L972,190 L969,193 L969,187 L966,185 L968,179 L972,174 L977,175 L983,174Z M545,152 L539,155 L535,155 L537,150 L545,151 L545,152Z M46,146 L49,147 L53,146 L57,148 L63,148 L58,150 L54,149 L52,148 L47,148 L46,146Z M527,135 L528,138 L531,137 L534,138 L540,140 L546,142 L547,145 L551,144 L555,146 L550,148 L541,146 L538,144 L533,147 L525,150 L523,146 L515,147 L520,144 L521,140 L523,135 L527,135Z M919,131 L918,134 L924,138 L917,142 L901,146 L896,147 L889,146 L874,145 L879,142 L867,139 L877,138 L865,135 L869,132 L877,131 L886,135 L894,132 L901,133 L910,130 L919,131Z M579,127 L572,127 L571,125 L573,121 L578,121 L583,122 L582,125 L579,127Z M28,130 L31,131 L30,127 L45,128 L56,133 L51,136 L41,136 L41,142 L39,143 L34,143 L30,141 L22,139 L21,137 L15,136 L9,137 L6,135 L7,133 L1,134 L3,137 L0,139 L0,117 L14,121 L28,127 L28,130Z M469,116 L465,118 L458,116 L453,117 L446,114 L450,113 L454,110 L460,112 L464,113 L469,116Z M7,106 L0,106 L0,103 L5,102 L13,104 L7,106Z M497,114 L497,120 L504,115 L511,119 L509,123 L515,127 L521,123 L525,118 L525,112 L533,112 L541,113 L548,116 L549,119 L545,121 L549,124 L548,127 L537,131 L529,132 L524,130 L522,133 L516,138 L515,140 L508,144 L500,144 L496,147 L496,150 L489,151 L482,155 L476,162 L474,166 L474,173 L482,173 L485,179 L487,183 L495,182 L505,184 L511,186 L515,189 L522,190 L528,193 L537,193 L543,194 L542,198 L544,204 L548,210 L556,216 L560,214 L563,208 L560,199 L557,196 L565,194 L572,190 L575,186 L574,182 L571,177 L564,173 L570,167 L568,162 L566,154 L570,152 L579,154 L585,155 L590,153 L595,155 L602,158 L603,160 L613,161 L613,165 L615,172 L620,173 L624,177 L632,174 L638,167 L641,165 L646,170 L653,177 L659,184 L657,187 L664,190 L669,193 L678,195 L681,197 L684,201 L688,202 L690,204 L691,210 L687,212 L683,214 L673,216 L666,221 L657,222 L645,221 L637,221 L631,221 L626,225 L619,227 L611,235 L605,240 L610,239 L619,232 L630,227 L639,226 L643,229 L638,233 L640,239 L642,243 L649,246 L658,245 L664,239 L664,243 L668,245 L661,249 L649,252 L643,254 L637,258 L633,258 L632,253 L642,248 L633,249 L627,249 L622,254 L616,256 L610,257 L607,261 L607,265 L608,268 L610,266 L611,269 L608,270 L601,270 L595,271 L590,273 L599,272 L593,274 L589,274 L588,279 L584,284 L582,282 L580,281 L582,284 L583,287 L581,289 L578,293 L579,289 L576,287 L576,282 L575,285 L576,288 L572,288 L576,289 L576,295 L579,297 L579,302 L576,307 L570,308 L566,312 L564,312 L561,314 L554,319 L551,322 L548,325 L547,329 L548,333 L550,338 L553,342 L555,351 L555,354 L553,360 L549,360 L548,358 L546,356 L543,351 L541,347 L540,345 L541,341 L539,338 L535,334 L533,333 L527,335 L523,332 L520,331 L514,332 L509,331 L505,332 L502,332 L503,336 L499,338 L495,338 L491,335 L486,336 L482,335 L479,335 L474,336 L469,340 L463,343 L460,345 L459,348 L459,352 L460,356 L458,361 L457,365 L457,373 L456,375 L457,378 L459,381 L460,385 L464,389 L465,393 L467,395 L473,397 L475,399 L480,398 L485,397 L489,396 L492,395 L496,393 L497,390 L497,385 L502,382 L508,381 L513,381 L516,380 L518,384 L515,387 L513,391 L513,394 L512,399 L509,397 L510,400 L510,402 L510,405 L509,408 L507,410 L506,412 L510,413 L513,412 L517,412 L522,412 L525,412 L528,411 L530,412 L533,413 L537,415 L538,417 L538,420 L537,422 L536,427 L536,431 L535,434 L534,437 L535,439 L537,442 L539,444 L541,447 L543,449 L546,450 L550,451 L553,449 L556,448 L558,447 L561,447 L564,448 L566,449 L568,450 L570,452 L573,452 L577,448 L580,446 L581,441 L584,438 L587,438 L592,438 L597,435 L599,434 L601,431 L605,433 L604,436 L600,437 L602,439 L600,445 L602,450 L605,445 L604,443 L603,439 L610,437 L609,434 L611,432 L613,436 L617,436 L621,440 L626,441 L632,441 L635,443 L639,444 L643,442 L650,441 L656,440 L651,442 L653,445 L658,445 L662,448 L663,452 L666,452 L668,454 L672,456 L675,459 L675,462 L680,465 L683,467 L689,468 L694,467 L700,468 L706,470 L712,475 L713,477 L716,480 L719,489 L722,490 L723,494 L718,499 L720,500 L730,501 L730,507 L734,503 L741,505 L751,509 L753,512 L752,515 L759,513 L770,516 L778,516 L786,521 L793,527 L797,528 L802,529 L804,530 L806,537 L807,541 L805,550 L802,554 L794,561 L791,568 L787,572 L784,577 L784,587 L782,596 L782,599 L780,601 L779,609 L773,616 L773,622 L768,624 L767,628 L761,628 L752,630 L748,632 L742,634 L735,638 L731,644 L730,648 L731,651 L730,657 L728,659 L725,662 L718,672 L713,677 L710,679 L707,684 L703,688 L701,691 L695,694 L691,693 L688,694 L683,691 L679,691 L675,688 L675,691 L682,696 L681,700 L685,702 L679,712 L671,715 L660,716 L654,716 L655,719 L654,723 L655,726 L651,728 L646,729 L640,727 L638,728 L639,734 L643,735 L646,734 L647,736 L642,738 L638,742 L637,747 L636,750 L631,750 L626,753 L625,757 L630,761 L635,762 L633,767 L627,771 L623,777 L618,779 L616,782 L618,788 L621,791 L614,791 L611,792 L606,794 L606,799 L597,797 L591,794 L584,790 L582,787 L583,784 L581,780 L580,770 L582,765 L588,761 L580,759 L585,754 L587,745 L593,747 L596,735 L592,734 L591,741 L587,740 L589,732 L591,722 L593,718 L592,713 L591,706 L597,697 L601,688 L603,680 L602,672 L604,667 L603,660 L606,654 L607,643 L609,631 L611,619 L610,610 L609,602 L603,599 L592,591 L582,585 L578,581 L575,577 L572,568 L566,558 L561,547 L559,544 L557,540 L553,536 L549,534 L550,532 L548,526 L549,522 L554,519 L557,515 L556,512 L554,515 L550,512 L550,506 L553,502 L555,498 L558,495 L562,492 L563,490 L563,487 L564,485 L567,485 L569,482 L572,479 L569,477 L571,474 L569,469 L570,463 L567,460 L565,458 L564,455 L563,452 L560,450 L557,452 L555,454 L553,455 L556,458 L553,460 L550,457 L547,457 L546,455 L542,454 L540,455 L536,453 L535,450 L532,447 L529,445 L527,447 L524,445 L523,442 L523,439 L522,437 L519,434 L518,433 L516,431 L513,428 L514,426 L512,427 L508,427 L504,425 L501,425 L497,423 L493,423 L491,422 L488,419 L481,413 L478,411 L474,410 L471,410 L466,412 L464,413 L460,412 L455,411 L450,408 L446,407 L440,405 L435,402 L431,400 L425,398 L423,396 L417,393 L414,389 L413,386 L414,384 L415,381 L413,378 L411,373 L406,368 L400,364 L398,360 L393,358 L393,353 L390,352 L387,349 L385,345 L382,345 L379,342 L377,339 L373,333 L371,329 L367,325 L362,323 L361,326 L362,328 L363,332 L365,335 L369,339 L371,340 L372,342 L374,346 L375,347 L376,349 L380,352 L382,357 L383,359 L385,362 L385,365 L390,368 L392,370 L390,373 L387,370 L384,367 L380,364 L377,363 L377,358 L376,355 L373,354 L370,351 L364,349 L361,346 L366,344 L361,337 L358,336 L356,332 L354,329 L352,324 L349,319 L348,316 L345,313 L342,313 L338,311 L336,309 L331,309 L329,305 L324,299 L319,291 L317,288 L313,284 L312,279 L309,276 L310,271 L310,267 L308,262 L310,257 L312,247 L311,240 L309,235 L307,232 L316,233 L319,238 L319,232 L318,228 L306,222 L302,220 L292,218 L289,213 L290,209 L283,207 L282,202 L275,198 L272,193 L267,192 L265,187 L258,182 L255,177 L250,177 L241,177 L234,175 L223,169 L218,168 L208,166 L200,167 L189,164 L183,162 L177,163 L178,167 L175,167 L168,168 L163,170 L157,171 L156,168 L159,163 L165,161 L156,163 L152,166 L144,170 L148,173 L143,177 L137,179 L132,181 L130,183 L122,186 L120,189 L113,191 L110,191 L104,192 L99,194 L94,196 L85,198 L90,194 L95,193 L101,189 L108,189 L111,187 L118,183 L124,180 L125,176 L128,173 L121,174 L116,175 L113,173 L111,175 L109,172 L104,174 L100,174 L100,171 L101,169 L97,167 L90,168 L85,165 L81,164 L81,161 L77,158 L79,155 L84,152 L86,149 L90,149 L94,150 L99,147 L103,147 L107,146 L106,143 L103,142 L107,140 L103,140 L97,141 L91,141 L84,142 L75,141 L73,138 L66,135 L74,133 L86,130 L91,130 L90,133 L102,133 L97,129 L90,127 L86,124 L81,122 L74,120 L77,117 L86,117 L94,115 L95,112 L101,109 L106,109 L116,106 L122,107 L130,104 L139,105 L143,107 L145,106 L154,106 L163,109 L168,108 L180,110 L191,110 L195,111 L202,110 L211,112 L217,113 L227,114 L236,117 L242,117 L247,115 L253,113 L262,114 L270,111 L279,110 L283,112 L287,111 L288,108 L292,109 L301,114 L309,110 L310,114 L316,114 L318,112 L325,112 L334,115 L347,117 L354,118 L360,117 L367,120 L359,123 L369,124 L384,123 L389,122 L395,126 L401,123 L395,120 L399,119 L406,118 L410,118 L415,119 L420,122 L427,122 L436,124 L445,123 L453,123 L452,120 L457,119 L466,121 L466,126 L470,122 L474,122 L476,116 L471,113 L464,111 L464,104 L471,100 L478,101 L484,104 L492,110 L487,113 L497,114Z M366,94 L363,96 L375,95 L383,97 L389,95 L394,96 L399,102 L402,100 L398,94 L403,93 L408,94 L414,96 L418,102 L420,106 L429,108 L439,111 L438,113 L429,114 L433,116 L431,118 L421,117 L411,116 L405,116 L394,118 L378,119 L370,119 L367,117 L360,115 L355,116 L348,111 L352,111 L360,110 L368,110 L375,109 L365,108 L353,108 L345,108 L342,106 L355,104 L346,104 L337,102 L341,98 L345,96 L360,93 L366,94Z M419,92 L415,96 L406,92 L415,91 L419,92Z M576,94 L570,95 L564,95 L558,96 L551,93 L554,90 L566,91 L576,94Z M519,94 L523,97 L529,93 L543,90 L552,96 L551,100 L562,98 L568,96 L580,99 L588,101 L588,104 L599,102 L604,106 L618,108 L623,110 L628,116 L618,118 L631,122 L640,123 L648,128 L656,129 L655,132 L645,139 L638,137 L629,131 L622,132 L621,135 L627,138 L635,141 L637,142 L641,148 L639,152 L632,150 L618,146 L626,151 L632,154 L617,154 L605,150 L599,148 L601,146 L592,143 L584,141 L568,143 L564,141 L567,137 L578,137 L589,136 L587,134 L589,132 L596,126 L595,124 L593,122 L584,119 L573,117 L577,116 L571,112 L566,112 L561,110 L558,112 L548,113 L528,111 L516,110 L507,109 L503,107 L509,104 L501,104 L499,99 L503,94 L509,91 L523,90 L519,94Z M442,90 L449,91 L459,90 L460,92 L455,94 L464,97 L463,102 L454,104 L448,104 L444,101 L431,97 L442,96 L436,92 L442,90Z M1798,93 L1789,93 L1778,93 L1782,90 L1789,90 L1797,92 L1798,93Z M482,96 L476,100 L470,100 L466,95 L469,90 L475,88 L487,88 L497,90 L489,95 L482,96Z M331,103 L316,106 L313,104 L300,101 L302,99 L307,94 L311,91 L306,87 L325,86 L333,88 L347,88 L352,89 L358,92 L351,93 L338,97 L331,101 L331,103Z M1837,83 L1831,85 L1822,85 L1812,82 L1813,81 L1823,81 L1837,83Z M480,83 L477,86 L469,85 L462,84 L465,81 L473,80 L478,82 L480,83Z M1806,80 L1802,84 L1781,84 L1772,85 L1761,82 L1764,78 L1771,77 L1786,77 L1806,80Z M453,74 L457,76 L457,79 L455,83 L446,84 L440,83 L440,80 L431,80 L430,76 L436,76 L445,74 L452,75 L453,74Z M399,77 L401,79 L406,78 L412,78 L413,81 L409,83 L391,84 L377,87 L368,87 L379,82 L354,83 L346,82 L354,77 L359,75 L374,77 L384,80 L394,81 L386,75 L391,73 L397,74 L399,77Z M1320,107 L1316,108 L1298,107 L1297,104 L1287,103 L1286,100 L1292,99 L1291,96 L1302,91 L1297,90 L1311,85 L1309,83 L1321,80 L1340,76 L1358,75 L1368,73 L1379,73 L1383,75 L1379,76 L1359,79 L1342,82 L1325,87 L1317,93 L1308,98 L1309,103 L1320,107Z M474,72 L480,73 L491,73 L496,75 L495,77 L501,79 L505,80 L512,80 L520,81 L529,79 L540,79 L549,79 L555,81 L556,84 L553,85 L545,86 L538,86 L522,87 L510,87 L501,86 L487,84 L485,81 L484,78 L478,76 L467,75 L460,74 L463,71 L474,72Z M354,69 L354,73 L349,75 L344,75 L334,77 L325,78 L317,77 L327,73 L338,69 L347,69 L354,69Z M1594,72 L1596,75 L1601,74 L1617,74 L1630,77 L1634,79 L1633,82 L1627,83 L1612,86 L1608,88 L1615,89 L1623,90 L1628,89 L1631,93 L1633,91 L1642,90 L1660,91 L1661,94 L1684,95 L1685,90 L1697,91 L1705,91 L1714,94 L1717,98 L1714,100 L1721,104 L1729,107 L1735,101 L1744,103 L1753,102 L1764,104 L1768,102 L1777,103 L1773,98 L1780,95 L1831,99 L1835,102 L1850,106 L1872,105 L1883,106 L1888,109 L1887,113 L1894,114 L1902,113 L1911,113 L1922,114 L1932,113 L1942,118 L1949,117 L1944,113 L1947,111 L1965,112 L1976,112 L1992,114 L2000,117 L2000,139 L1993,141 L1986,141 L1991,144 L1994,149 L1997,150 L1996,154 L1985,153 L1970,157 L1965,157 L1956,161 L1948,165 L1946,167 L1938,163 L1924,168 L1921,166 L1916,168 L1909,167 L1907,171 L1900,176 L1907,180 L1906,188 L1901,188 L1898,193 L1901,195 L1891,198 L1889,204 L1881,206 L1879,211 L1871,217 L1869,213 L1867,205 L1864,192 L1866,185 L1871,181 L1880,177 L1890,170 L1899,165 L1909,160 L1914,152 L1907,153 L1904,158 L1890,164 L1885,157 L1871,159 L1857,168 L1861,171 L1849,173 L1840,173 L1841,169 L1832,169 L1825,171 L1808,170 L1790,172 L1772,183 L1751,196 L1759,197 L1762,200 L1768,201 L1771,199 L1777,199 L1785,205 L1785,210 L1781,215 L1781,222 L1778,231 L1770,239 L1768,243 L1760,249 L1753,256 L1749,259 L1742,262 L1738,262 L1735,260 L1727,264 L1724,265 L1722,267 L1720,269 L1721,273 L1718,274 L1715,277 L1711,278 L1709,279 L1708,282 L1710,283 L1713,285 L1718,292 L1719,296 L1719,302 L1717,305 L1712,306 L1708,308 L1703,309 L1702,306 L1703,302 L1701,296 L1705,295 L1701,290 L1698,289 L1696,291 L1694,289 L1694,286 L1697,281 L1693,280 L1690,278 L1683,280 L1679,282 L1673,284 L1675,281 L1674,279 L1679,275 L1676,273 L1671,274 L1665,278 L1661,282 L1656,282 L1653,285 L1656,289 L1660,289 L1665,294 L1671,290 L1676,292 L1680,292 L1681,295 L1673,296 L1670,299 L1665,302 L1662,306 L1668,309 L1670,315 L1673,320 L1677,324 L1677,328 L1674,330 L1675,333 L1678,334 L1677,339 L1676,343 L1673,344 L1669,350 L1664,357 L1659,364 L1652,369 L1644,373 L1638,374 L1634,377 L1632,375 L1629,377 L1621,380 L1615,381 L1614,387 L1610,387 L1609,383 L1610,381 L1603,379 L1600,380 L1593,385 L1588,390 L1587,394 L1591,400 L1596,407 L1601,411 L1605,415 L1607,425 L1607,435 L1602,439 L1596,442 L1591,447 L1584,452 L1582,449 L1584,445 L1580,442 L1575,441 L1573,438 L1570,432 L1565,430 L1560,430 L1561,425 L1556,426 L1556,432 L1553,440 L1551,445 L1551,449 L1555,449 L1557,454 L1558,459 L1561,462 L1565,463 L1567,465 L1572,469 L1574,473 L1575,477 L1574,479 L1575,484 L1577,486 L1579,491 L1575,493 L1570,489 L1563,485 L1563,482 L1559,478 L1559,474 L1557,470 L1557,466 L1556,464 L1554,462 L1553,459 L1550,456 L1547,453 L1546,457 L1545,454 L1546,450 L1548,445 L1547,441 L1549,436 L1547,433 L1547,427 L1545,424 L1543,418 L1542,411 L1540,406 L1536,409 L1530,413 L1527,412 L1523,411 L1525,404 L1524,399 L1520,392 L1517,390 L1513,385 L1512,382 L1511,379 L1510,377 L1508,374 L1503,373 L1502,379 L1499,378 L1495,377 L1490,379 L1483,381 L1484,385 L1481,388 L1473,392 L1466,398 L1462,402 L1457,405 L1454,409 L1449,411 L1445,416 L1446,423 L1446,428 L1444,433 L1444,442 L1441,443 L1438,447 L1440,449 L1435,450 L1433,454 L1431,456 L1426,451 L1423,443 L1421,437 L1419,435 L1416,429 L1415,422 L1414,419 L1409,411 L1406,400 L1405,393 L1405,387 L1404,381 L1395,385 L1392,384 L1384,377 L1387,375 L1385,373 L1379,368 L1375,367 L1373,363 L1369,359 L1359,360 L1349,360 L1342,361 L1331,359 L1325,358 L1319,357 L1317,350 L1314,349 L1310,350 L1304,353 L1297,351 L1292,347 L1286,345 L1283,340 L1278,333 L1275,333 L1272,332 L1270,334 L1267,333 L1268,336 L1269,341 L1271,346 L1274,347 L1279,352 L1278,356 L1281,359 L1282,362 L1282,358 L1283,356 L1287,357 L1287,360 L1285,363 L1287,365 L1292,366 L1297,366 L1300,366 L1304,362 L1308,359 L1312,355 L1313,353 L1313,357 L1313,362 L1316,365 L1319,367 L1323,368 L1326,369 L1329,372 L1330,374 L1332,376 L1330,379 L1327,383 L1325,387 L1321,388 L1320,390 L1321,394 L1318,395 L1314,397 L1314,400 L1309,401 L1307,402 L1304,406 L1301,405 L1298,407 L1291,409 L1290,411 L1284,416 L1275,418 L1270,422 L1266,422 L1263,424 L1260,426 L1255,426 L1252,428 L1250,429 L1245,430 L1242,430 L1240,427 L1240,424 L1238,418 L1237,415 L1237,413 L1238,409 L1237,407 L1235,405 L1232,401 L1229,396 L1227,392 L1224,388 L1221,387 L1217,382 L1217,378 L1217,375 L1214,368 L1211,366 L1208,365 L1206,362 L1205,358 L1201,352 L1198,348 L1195,344 L1193,341 L1194,337 L1192,338 L1191,343 L1190,345 L1187,345 L1184,342 L1180,334 L1182,341 L1185,346 L1189,355 L1192,358 L1193,361 L1198,367 L1197,372 L1204,377 L1207,383 L1206,390 L1208,397 L1210,398 L1213,400 L1217,406 L1218,412 L1221,414 L1229,419 L1232,423 L1235,426 L1237,428 L1239,429 L1241,431 L1237,435 L1240,436 L1243,440 L1245,442 L1253,441 L1259,440 L1264,438 L1267,438 L1272,437 L1276,436 L1279,435 L1282,433 L1284,435 L1284,438 L1282,443 L1281,449 L1278,455 L1275,462 L1270,470 L1265,477 L1259,484 L1253,489 L1245,494 L1240,498 L1234,505 L1232,508 L1227,512 L1226,514 L1223,518 L1221,520 L1220,524 L1218,526 L1215,533 L1216,536 L1219,538 L1218,543 L1218,547 L1220,551 L1222,556 L1224,557 L1225,560 L1225,565 L1225,570 L1226,579 L1227,582 L1225,586 L1223,589 L1219,593 L1214,595 L1208,598 L1202,604 L1199,605 L1196,609 L1193,610 L1193,614 L1195,618 L1197,621 L1197,628 L1197,631 L1197,634 L1195,636 L1190,638 L1183,641 L1181,643 L1183,646 L1182,649 L1181,653 L1180,657 L1179,660 L1175,663 L1172,666 L1170,669 L1167,673 L1161,679 L1157,682 L1153,685 L1147,687 L1144,687 L1140,688 L1137,689 L1131,688 L1128,688 L1120,690 L1115,691 L1112,693 L1107,691 L1102,689 L1101,685 L1100,681 L1101,676 L1098,671 L1095,666 L1091,659 L1087,655 L1085,651 L1083,645 L1082,641 L1080,633 L1080,626 L1079,623 L1077,621 L1074,616 L1071,609 L1070,606 L1066,600 L1065,596 L1065,593 L1065,588 L1067,583 L1069,575 L1071,573 L1074,569 L1076,567 L1076,563 L1076,560 L1074,558 L1073,554 L1072,551 L1074,548 L1072,542 L1071,538 L1068,535 L1068,532 L1066,528 L1062,522 L1056,516 L1052,512 L1049,506 L1050,503 L1052,499 L1053,494 L1054,487 L1054,483 L1052,479 L1050,478 L1049,476 L1047,473 L1041,475 L1037,476 L1033,476 L1030,473 L1028,469 L1024,465 L1020,465 L1015,465 L1010,466 L1006,467 L997,470 L994,472 L989,474 L984,472 L978,471 L974,471 L968,472 L964,474 L958,476 L950,473 L945,469 L940,466 L936,462 L931,460 L928,457 L927,455 L926,451 L924,447 L922,445 L919,443 L918,441 L916,439 L913,436 L909,434 L908,432 L906,427 L907,424 L905,420 L902,418 L905,417 L907,413 L909,410 L908,407 L910,405 L910,399 L910,394 L909,391 L910,388 L908,386 L905,383 L906,378 L908,377 L910,374 L911,368 L914,365 L918,361 L918,358 L920,354 L923,352 L927,346 L930,344 L935,344 L939,340 L942,338 L947,334 L945,327 L948,322 L948,319 L952,315 L957,313 L962,310 L965,305 L967,301 L971,301 L974,304 L980,303 L986,305 L993,302 L999,301 L1003,298 L1008,297 L1018,296 L1027,295 L1030,296 L1035,294 L1041,294 L1043,295 L1047,295 L1053,292 L1057,293 L1061,294 L1059,298 L1061,302 L1060,306 L1056,309 L1057,312 L1062,315 L1070,318 L1077,318 L1085,321 L1087,326 L1092,327 L1100,329 L1106,332 L1109,330 L1111,328 L1110,324 L1112,321 L1116,318 L1120,318 L1127,319 L1129,321 L1133,322 L1138,323 L1140,325 L1147,325 L1153,326 L1158,328 L1161,328 L1165,327 L1167,325 L1172,325 L1176,325 L1178,328 L1179,326 L1183,328 L1188,328 L1190,327 L1192,325 L1193,322 L1194,318 L1197,312 L1200,308 L1199,303 L1201,301 L1199,298 L1201,296 L1198,297 L1193,296 L1189,299 L1181,299 L1176,296 L1170,296 L1169,299 L1165,299 L1160,296 L1154,296 L1150,291 L1146,288 L1149,283 L1145,281 L1152,275 L1160,275 L1162,271 L1173,272 L1180,268 L1186,267 L1195,266 L1205,270 L1213,273 L1220,272 L1224,272 L1231,269 L1232,267 L1230,263 L1227,261 L1224,260 L1222,259 L1215,254 L1209,252 L1204,249 L1208,248 L1212,243 L1209,241 L1217,239 L1212,238 L1208,239 L1204,241 L1199,241 L1194,243 L1195,246 L1197,248 L1203,247 L1202,249 L1196,250 L1188,254 L1185,252 L1186,250 L1180,248 L1187,245 L1176,243 L1171,241 L1169,244 L1164,248 L1162,251 L1159,257 L1156,259 L1154,263 L1156,267 L1161,271 L1153,272 L1151,274 L1146,277 L1145,274 L1141,273 L1138,273 L1132,274 L1136,277 L1133,278 L1130,278 L1127,275 L1127,280 L1130,282 L1128,283 L1131,286 L1133,288 L1134,291 L1128,289 L1130,292 L1127,293 L1129,298 L1125,298 L1120,295 L1118,291 L1117,287 L1115,285 L1112,281 L1111,279 L1108,276 L1107,274 L1108,270 L1106,267 L1105,265 L1103,264 L1097,262 L1094,260 L1089,258 L1084,254 L1083,251 L1079,249 L1078,251 L1076,249 L1077,247 L1073,246 L1068,248 L1069,251 L1070,255 L1075,258 L1078,262 L1084,267 L1088,267 L1093,271 L1097,273 L1102,276 L1102,279 L1099,276 L1094,275 L1091,279 L1095,281 L1095,284 L1089,289 L1087,288 L1088,285 L1087,280 L1086,278 L1083,277 L1082,274 L1078,273 L1076,271 L1072,271 L1067,268 L1062,265 L1058,261 L1057,256 L1054,255 L1049,254 L1047,254 L1044,257 L1036,260 L1025,259 L1017,261 L1017,264 L1017,267 L1012,271 L1005,272 L1001,277 L998,282 L1001,285 L997,287 L996,291 L992,292 L988,296 L981,296 L976,296 L972,298 L970,300 L967,300 L965,298 L964,295 L959,294 L956,295 L953,295 L951,295 L951,291 L951,287 L947,285 L948,281 L950,279 L951,274 L950,269 L950,263 L948,261 L956,257 L962,258 L970,258 L976,259 L980,259 L989,259 L992,255 L993,244 L988,239 L984,236 L975,234 L974,230 L982,228 L991,230 L989,223 L995,226 L1007,222 L1009,217 L1014,216 L1018,215 L1021,213 L1026,205 L1034,203 L1038,203 L1044,201 L1049,200 L1048,198 L1047,195 L1045,192 L1045,186 L1047,183 L1052,182 L1054,181 L1059,179 L1059,182 L1057,184 L1061,186 L1059,188 L1054,192 L1055,195 L1061,198 L1066,199 L1070,197 L1076,200 L1078,201 L1082,200 L1091,197 L1098,195 L1103,196 L1109,198 L1110,195 L1118,193 L1117,189 L1117,185 L1120,181 L1125,179 L1130,183 L1134,183 L1135,179 L1136,176 L1130,174 L1130,171 L1137,170 L1144,169 L1150,170 L1155,170 L1162,167 L1156,164 L1146,164 L1136,166 L1127,168 L1124,164 L1118,163 L1120,157 L1117,152 L1120,149 L1125,145 L1137,139 L1141,138 L1133,133 L1123,135 L1118,139 L1119,142 L1110,147 L1099,151 L1095,159 L1099,163 L1104,166 L1099,172 L1093,174 L1091,183 L1088,188 L1081,188 L1078,192 L1072,192 L1070,187 L1065,181 L1061,173 L1058,170 L1047,176 L1039,177 L1031,175 L1029,169 L1028,156 L1033,152 L1048,147 L1058,142 L1069,134 L1082,123 L1091,119 L1107,112 L1119,110 L1128,110 L1136,105 L1147,106 L1156,105 L1174,109 L1167,110 L1173,114 L1179,112 L1188,115 L1203,116 L1224,123 L1228,125 L1228,129 L1222,132 L1213,133 L1188,129 L1184,130 L1193,134 L1194,142 L1201,144 L1206,145 L1206,143 L1203,140 L1207,138 L1220,142 L1225,140 L1221,136 L1234,131 L1239,131 L1244,133 L1247,129 L1243,126 L1245,122 L1241,119 L1257,121 L1260,124 L1253,125 L1253,128 L1257,130 L1266,128 L1267,125 L1279,122 L1298,117 L1303,118 L1297,121 L1304,122 L1308,120 L1318,120 L1327,117 L1333,121 L1339,117 L1334,114 L1336,112 L1353,114 L1360,115 L1381,122 L1384,119 L1379,116 L1372,114 L1374,112 L1371,107 L1381,100 L1384,95 L1389,94 L1403,96 L1404,99 L1399,103 L1403,105 L1404,109 L1403,117 L1409,120 L1407,124 L1396,132 L1402,132 L1405,130 L1411,129 L1412,126 L1417,124 L1414,120 L1416,117 L1410,116 L1409,113 L1413,108 L1406,103 L1416,99 L1415,95 L1420,98 L1418,104 L1424,105 L1422,101 L1431,99 L1443,98 L1453,101 L1448,97 L1447,91 L1457,90 L1470,90 L1482,89 L1478,86 L1484,83 L1491,83 L1501,80 L1516,79 L1518,78 L1533,77 L1537,78 L1550,75 L1560,75 L1561,73 L1567,71 L1580,68 L1589,70 L1582,72 L1594,72Z M1273,271 L1276,275 L1280,276 L1275,277 L1274,281 L1271,284 L1273,291 L1279,292 L1282,295 L1290,296 L1299,295 L1299,289 L1299,284 L1295,282 L1296,278 L1293,278 L1294,273 L1299,274 L1304,272 L1300,269 L1298,266 L1294,267 L1293,271 L1292,268 L1293,264 L1285,260 L1283,255 L1280,254 L1285,253 L1285,249 L1290,248 L1295,249 L1296,243 L1295,240 L1289,240 L1284,239 L1278,241 L1273,242 L1270,246 L1265,246 L1259,252 L1264,257 L1264,261 L1270,268 L1273,271Z M388,68 L377,70 L369,68 L374,66 L382,66 L390,67 L388,68Z M1137,67 L1125,70 L1115,68 L1119,67 L1116,65 L1127,64 L1129,66 L1137,67Z M468,66 L459,67 L455,66 L452,64 L459,62 L462,62 L469,64 L468,66Z M444,65 L446,67 L437,67 L428,65 L416,65 L421,63 L414,62 L425,60 L440,62 L444,65Z M1584,65 L1552,67 L1563,60 L1567,59 L1571,60 L1585,63 L1584,65Z M1101,57 L1120,61 L1106,64 L1103,68 L1098,69 L1095,73 L1088,73 L1076,70 L1081,68 L1073,67 L1062,62 L1058,57 L1073,55 L1076,57 L1084,57 L1086,55 L1094,55 L1101,57Z M1141,53 L1152,55 L1144,58 L1128,59 L1112,58 L1103,56 L1096,54 L1114,52 L1122,54 L1127,52 L1141,53Z M1284,53 L1277,53 L1272,54 L1264,55 L1258,54 L1262,52 L1249,52 L1260,51 L1268,51 L1273,51 L1278,50 L1286,52 L1284,53Z M1555,62 L1543,62 L1528,61 L1518,59 L1514,55 L1507,54 L1521,50 L1533,49 L1544,51 L1557,57 L1555,62Z M517,57 L523,59 L516,61 L505,65 L496,65 L484,65 L478,62 L483,59 L472,59 L466,57 L463,55 L467,52 L470,51 L476,50 L474,49 L487,49 L494,52 L503,53 L512,54 L517,57Z M619,38 L634,39 L646,39 L656,41 L643,45 L629,46 L624,47 L636,47 L623,51 L614,52 L605,57 L593,58 L590,59 L573,59 L580,60 L577,61 L581,64 L576,66 L567,67 L565,69 L557,71 L567,72 L552,77 L538,75 L522,76 L513,75 L503,75 L502,72 L512,71 L510,67 L513,67 L528,69 L520,66 L511,65 L516,62 L526,61 L527,59 L519,57 L517,54 L532,54 L537,55 L545,53 L533,52 L513,53 L504,51 L499,49 L492,47 L491,45 L499,44 L506,44 L517,43 L525,41 L532,41 L538,43 L542,40 L549,39 L559,38 L576,38 L579,39 L595,38 L607,38 L619,38Z M849,36 L884,40 L874,43 L853,43 L823,43 L826,44 L845,44 L862,46 L873,44 L877,46 L871,49 L885,47 L912,45 L929,46 L932,48 L910,52 L906,54 L889,55 L901,55 L895,59 L891,62 L891,69 L897,72 L889,73 L880,74 L890,77 L891,82 L885,82 L892,87 L880,88 L886,90 L885,92 L877,93 L869,93 L876,97 L865,97 L862,98 L870,100 L877,103 L879,107 L869,108 L865,106 L858,103 L860,107 L854,110 L868,110 L876,110 L861,115 L846,120 L830,122 L823,122 L818,124 L810,130 L798,133 L794,134 L787,135 L779,136 L774,140 L774,144 L771,147 L762,152 L764,156 L762,161 L759,166 L751,166 L743,162 L732,162 L726,159 L723,153 L713,147 L710,143 L710,138 L702,133 L704,129 L700,127 L706,120 L714,118 L716,116 L717,112 L711,113 L708,114 L703,115 L696,113 L696,110 L698,107 L703,106 L714,108 L705,104 L700,103 L694,103 L690,102 L696,97 L693,95 L688,91 L682,85 L674,83 L660,77 L648,77 L633,77 L619,77 L613,76 L603,72 L618,70 L629,70 L605,69 L593,66 L615,62 L635,59 L637,57 L622,55 L627,53 L646,49 L654,48 L652,46 L665,44 L682,43 L699,43 L705,45 L720,42 L733,44 L741,45 L753,46 L739,43 L740,41 L759,38 L778,38 L785,36 L805,35 L849,36Z";
+function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
+  const divisor = randInt(divMin, divMax);
+  const quotient = randInt(quotMin, quotMax);
+  const dividend = divisor * quotient;
+  const id = `m${nextId()}`;
+  return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { op: "÷", a: dividend, b: divisor }];
+}
 
-const CAPITAL_COORDS = {
-  us: [38.9, -77.0], br: [-15.8, -47.9], fr: [48.9, 2.3], de: [52.5, 13.4], it: [41.9, 12.5],
-  es: [40.4, -3.7], gb: [51.5, -0.1], jp: [35.7, 139.7], cn: [39.9, 116.4], ca: [45.4, -75.7],
-  mx: [19.4, -99.1], ar: [-34.6, -58.4], pt: [38.7, -9.1], au: [-35.3, 149.1], in: [28.6, 77.2],
-  ru: [55.8, 37.6], kr: [37.6, 127.0], nl: [52.4, 4.9], ch: [46.9, 7.4], se: [59.3, 18.1],
-  no: [59.9, 10.7], gr: [38.0, 23.7], tr: [39.9, 32.9], eg: [30.0, 31.2], za: [-25.7, 28.2],
-  ie: [53.3, -6.3], dk: [55.7, 12.6], be: [50.8, 4.4], pl: [52.2, 21.0], at: [48.2, 16.4],
-  fi: [60.2, 24.9], ua: [50.5, 30.5], cl: [-33.4, -70.6], co: [4.7, -74.1], pe: [-12.0, -77.0],
-  uy: [-34.9, -56.2], ve: [10.5, -66.9], cu: [23.1, -82.4], th: [13.8, 100.5], vn: [21.0, 105.8],
-  ph: [14.6, 121.0], id: [-6.2, 106.8], my: [3.1, 101.7], nz: [-41.3, 174.8], il: [31.8, 35.2],
-  sa: [24.7, 46.7], ae: [24.5, 54.4], ma: [34.0, -6.8], ng: [9.1, 7.5], ke: [-1.3, 36.8],
-  cz: [50.1, 14.4], hu: [47.5, 19.0], ro: [44.4, 26.1], hr: [45.8, 16.0], pk: [33.7, 73.0],
-  bd: [23.8, 90.4], ec: [-0.2, -78.5], bo: [-19.0, -65.3], py: [-25.3, -57.6], pa: [8.98, -79.5],
-  cr: [9.9, -84.1], jm: [18.0, -76.8], ir: [35.7, 51.4], iq: [33.3, 44.4], si: [46.05, 14.5],
-  sk: [48.15, 17.1], rs: [44.8, 20.5], bg: [42.7, 23.3], lt: [54.7, 25.3], ba: [43.85, 18.4],
-  me: [42.4, 19.3], mt: [35.9, 14.5], cy: [35.2, 33.4], ge: [41.7, 44.8], kz: [51.2, 71.4],
-  uz: [41.3, 69.3], lk: [6.9, 79.9], mm: [19.8, 96.1], kh: [11.6, 104.9], la: [17.97, 102.6],
-  jo: [31.95, 35.9], ly: [32.9, 13.2], ci: [6.8, -5.3], cm: [3.85, 11.5], tz: [-6.2, 35.7],
-  zw: [-17.8, 31.0], fj: [-18.1, 178.4], gt: [14.6, -90.5], hn: [14.1, -87.2], sv: [13.7, -89.2],
-  ni: [12.1, -86.3], do: [18.5, -69.9], ht: [18.5, -72.3], tt: [10.65, -61.5], bz: [17.25, -88.77],
-  af: [34.5, 69.2], bi: [-3.4, 29.9], bj: [6.5, 2.6], bs: [25.05, -77.35], cd: [-4.3, 15.3],
-  er: [15.3, 38.9], gm: [13.45, -16.6], gq: [3.75, 8.78], mw: [-13.98, 33.78], ps: [31.9, 35.2],
-  sy: [33.5, 36.3], sz: [-26.3, 31.1], ye: [15.35, 44.2],
-};
+function generateItems() {
+  let counter = 0;
+  const nextId = () => counter++;
+  const GENERATORS = {
+    1: () => Math.random() < 0.7 ? addSub(1, 20, 1, nextId) : mul(2, 5, 2, 5, 1, nextId),
+    2: () => Math.random() < 0.6 ? addSub(10, 50, 2, nextId) : mul(2, 9, 2, 9, 2, nextId),
+    3: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 3, nextId) : div(2, 12, 2, 12, 3, nextId),
+    4: () => Math.random() < 0.5 ? mul(10, 99, 2, 12, 4, nextId) : div(2, 20, 10, 50, 4, nextId),
+  };
+  const PER_TIER = 50;
+  const items = [];
+  for (let tier = 1; tier <= 4; tier++) {
+    for (let i = 0; i < PER_TIER; i++) items.push(GENERATORS[tier]());
+  }
+  return items;
+}
 
-// Parse the land path into rings (viewBox 0..2000 x 0..1000) for a point-in-land test.
-function parseLandRings(d) {
-  return d.split("Z").filter(s => /\d/.test(s)).map(sub => {
-    const nums = sub.match(/-?\d+(?:\.\d+)?/g).map(Number);
-    const ring = [];
-    for (let i = 0; i < nums.length - 1; i += 2) ring.push([nums[i], nums[i + 1]]);
-    return ring;
+function applyOp(op, a, b) {
+  if (op === "+") return a + b;
+  if (op === "−") return a - b;
+  if (op === "×") return a * b;
+  if (op === "÷") return b === 0 ? a : a / b;
+  return a;
+}
+
+function offByOperandVariants(op, a, b) {
+  const out = [];
+  [-1, 1].forEach(d => {
+    out.push(applyOp(op, a + d, b));
+    if (b + d !== 0) out.push(applyOp(op, a, b + d));
   });
+  return out;
 }
 
-// Even-odd ray cast across all coastline edges: true when the point is on land.
-function pointInLand(x, y, rings) {
-  let inside = false;
-  for (const ring of rings) {
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const [xi, yi] = ring[i], [xj, yj] = ring[j];
-      if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
-    }
-  }
-  return inside;
+function operationSlipVariants(op, a, b) {
+  return ["+", "−", "×"].filter(o => o !== op).map(o => applyOp(o, a, b));
 }
 
-// If (x, y) falls in the sea (a coastal capital snapped to a simplified path),
-// spiral outward to the nearest point that lands on the mainland.
-function snapToLand(x, y, rings) {
-  if (pointInLand(x, y, rings)) return [x, y];
-  for (let r = 6; r <= 160; r += 6) {
-    for (let a = 0; a < 360; a += 20) {
-      const rad = a * Math.PI / 180;
-      const px = x + r * Math.cos(rad), py = y + r * Math.sin(rad);
-      if (pointInLand(px, py, rings)) return [px, py];
-    }
+function smallOffsetVariants(tier, correct) {
+  const scale = tier <= 2 ? 3 : Math.max(3, Math.round(correct * 0.1));
+  return [correct - scale, correct + scale, correct - 2 * scale, correct + 2 * scale];
+}
+
+function shuffleArr(a) {
+  const out = a.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
   }
-  return [x, y];
+  return out;
+}
+
+// Custom pickDistractors: unlike flags/capitals (where any other pool item
+// is a plausible wrong answer), a random other equation's answer could be
+// wildly off or collide with the correct value. Instead this simulates
+// specific mistakes: off-by-one-operand, wrong operator, small offset.
+function pickMathDistractors(answer) {
+  const tier = answer[2], correct = answer[3], meta = answer[4];
+  const used = new Set([correct]);
+  const picks = [];
+  const candidates = shuffleArr([
+    ...offByOperandVariants(meta.op, meta.a, meta.b),
+    ...operationSlipVariants(meta.op, meta.a, meta.b),
+    ...smallOffsetVariants(tier, correct),
+  ]);
+  for (const c of candidates) {
+    if (picks.length >= 3) break;
+    const n = Math.round(c);
+    if (n <= 0 || used.has(n)) continue;
+    used.add(n);
+    picks.push(n);
+  }
+  let step = 1, attempt = 0;
+  while (picks.length < 3) {
+    const n = correct + step * (attempt % 2 === 0 ? 1 : -1);
+    step++;
+    attempt++;
+    if (n > 0 && !used.has(n)) { used.add(n); picks.push(n); }
+  }
+  return picks.map(n => ({ 3: n }));
+}
+
+if (typeof GAME !== "undefined") {
+  GAME.items = generateItems();
+
+  GAME.renderPrompt = function (item) {
+    $("prompt-flag").style.display = "none";
+    $("country-name").textContent = `${item[1]} = ?`;
+  };
+
+  GAME.renderOption = function (item) {
+    return `<button class="math-btn" data-key="${item[3]}" aria-label="Answer ${item[3]}">
+       <span class="math-num">${item[3]}</span>
+       <span class="mark"></span>
+     </button>`;
+  };
+
+  GAME.optionKey = function (item) { return item[3]; };
+
+  GAME.wrongAnswerText = function (item, clickedKey) {
+    return `The answer was ${item[3]}`;
+  };
+
+  GAME.pickDistractors = pickMathDistractors;
+}
+
+// Exposed for game.test.js only. The browser build never sets `module`.
+if (typeof module !== "undefined") {
+  module.exports = { generateItems, pickMathDistractors, applyOp };
 }
 
 GAME.buildBackground = function (layer) {
-  const map = document.createElement("div");
-  map.id = "world-map";
-  const vw = window.innerWidth * 1.12, vh = window.innerHeight * 1.12;
-  const scale = Math.max(vw / 2000, vh / 1000) * 1.05;
-  map.style.width = (2000 * scale) + "px";
-  map.style.height = (1000 * scale) + "px";
-  layer.appendChild(map);
-
-  const svgNS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("viewBox", "0 0 2000 1000");
-  const land = document.createElementNS(svgNS, "path");
-  land.setAttribute("d", WORLD_PATH);
-  land.setAttribute("class", "land");
-  svg.appendChild(land);
-  map.appendChild(svg);
-
-  const rings = parseLandRings(WORLD_PATH);
-  const lights = shuffle(
-    COUNTRIES.map(c => ({ c, coords: CAPITAL_COORDS[c[0]] })).filter(l => l.coords)
-  );
-  const keep = Math.round(lights.length * 0.9);
-  lights.slice(0, keep).forEach(({ c, coords }) => {
-    const [px2000, py1000] = [
-      (coords[1] + 180) / 360 * 2000,
-      (90 - coords[0]) / 180 * 1000,
-    ];
-    const [lx, ly] = snapToLand(px2000, py1000, rings);
-    const el = document.createElement("div");
-    el.className = "capital-dot";
-    el.title = c[3];
-    el.style.left = (lx / 20) + "%";
-    el.style.top = (ly / 10) + "%";
-    el.style.setProperty("--d", rnd(2.5, 5).toFixed(1) + "s");
-    el.style.setProperty("--delay", (-rnd(0, 5)).toFixed(1) + "s");
-    el.style.setProperty("--hue", HUE_PALETTE[Math.floor(Math.random() * HUE_PALETTE.length)]);
-    map.appendChild(el);
-  });
+  const GLYPHS = ["+", "−", "×", "÷", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  const cols = 6, rows = 6;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const glyph = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      const el = document.createElement("div");
+      el.className = "mg";
+      el.textContent = glyph;
+      el.style.fontSize = rnd(34, 64) + "px";
+      el.style.left = (c / cols * 100 + rnd(-4, 4)) + "%";
+      el.style.top  = (r / rows * 100 + rnd(-4, 4)) + "%";
+      el.style.opacity = rnd(0.12, 0.28).toFixed(2);
+      el.style.setProperty("--tx", rnd(-46, 46).toFixed(0) + "px");
+      el.style.setProperty("--ty", rnd(-46, 46).toFixed(0) + "px");
+      el.style.setProperty("--r1", rnd(-9, 9).toFixed(1) + "deg");
+      el.style.setProperty("--r2", rnd(-9, 9).toFixed(1) + "deg");
+      el.style.setProperty("--d", rnd(4.5, 9).toFixed(1) + "s");
+      el.style.setProperty("--delay", (-rnd(0, 9)).toFixed(1) + "s");
+      layer.appendChild(el);
+    }
+  }
   const veil = document.createElement("div");
   veil.className = "veil";
   layer.appendChild(veil);

@@ -5,10 +5,10 @@
 // a = dividend, b = divisor) so pickMathDistractors can simulate mistakes
 // without re-parsing the display string.
 
-function rnd(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
+function randInt(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 
 function addSub(min, max, tier, nextId) {
-  const a = rnd(min, max), b = rnd(min, max);
+  const a = randInt(min, max), b = randInt(min, max);
   const id = `m${nextId()}`;
   if (Math.random() < 0.5) {
     return [id, `${a} + ${b}`, tier, a + b, { op: "+", a, b }];
@@ -18,14 +18,14 @@ function addSub(min, max, tier, nextId) {
 }
 
 function mul(aMin, aMax, bMin, bMax, tier, nextId) {
-  const a = rnd(aMin, aMax), b = rnd(bMin, bMax);
+  const a = randInt(aMin, aMax), b = randInt(bMin, bMax);
   const id = `m${nextId()}`;
   return [id, `${a} × ${b}`, tier, a * b, { op: "×", a, b }];
 }
 
 function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
-  const divisor = rnd(divMin, divMax);
-  const quotient = rnd(quotMin, quotMax);
+  const divisor = randInt(divMin, divMax);
+  const quotient = randInt(quotMin, quotMax);
   const dividend = divisor * quotient;
   const id = `m${nextId()}`;
   return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { op: "÷", a: dividend, b: divisor }];
