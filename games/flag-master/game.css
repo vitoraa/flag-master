@@ -11,6 +11,11 @@
     radial-gradient(900px 620px at 50% 42%, rgba(6,7,13,.42), rgba(6,7,13,.8) 78%),
     linear-gradient(180deg, rgba(6,7,13,.32), rgba(6,7,13,.74));
 }
+:root[data-theme="light"] #flag-bg .veil {
+  background:
+    radial-gradient(900px 620px at 50% 42%, rgba(238,241,248,.4), rgba(238,241,248,.8) 78%),
+    linear-gradient(180deg, rgba(238,241,248,.28), rgba(238,241,248,.72));
+}
 @keyframes drift {
   from { transform: translate(0,0) rotate(var(--r1)); }
   to   { transform: translate(var(--tx), var(--ty)) rotate(var(--r2)); }
