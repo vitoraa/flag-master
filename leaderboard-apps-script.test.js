@@ -64,4 +64,10 @@ assert.strictEqual(capitals.log, "CapitalPlayLog");
 
 assert.notStrictEqual(flagsDefault.cacheKey, capitals.cacheKey);
 
+const mathNames = sheetNamesFor_("math");
+assert.strictEqual(mathNames.scores, "MathScores");
+assert.strictEqual(mathNames.log, "MathPlayLog");
+assert.notStrictEqual(mathNames.cacheKey, flagsDefault.cacheKey);
+assert.notStrictEqual(mathNames.cacheKey, capitals.cacheKey);
+
 console.log("All leaderboard-apps-script tests passed");

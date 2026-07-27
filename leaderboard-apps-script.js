@@ -11,7 +11,16 @@ function sheetNamesFor_(game) {
   if (game === "capitals") {
     return { scores: "CapitalScores", log: "CapitalPlayLog", cacheKey: CACHE_KEY + ":capitals" };
   }
+  if (game === "math") {
+    return { scores: "MathScores", log: "MathPlayLog", cacheKey: CACHE_KEY + ":math" };
+  }
   return { scores: SHEET_NAME, log: PLAY_LOG_SHEET_NAME, cacheKey: CACHE_KEY + ":flags" };
+}
+
+function normalizeGame_(raw) {
+  if (raw === "capitals") return "capitals";
+  if (raw === "math") return "math";
+  return "flags";
 }
 
 function getSheet_(game) {
@@ -64,7 +73,7 @@ function getSortedAll_(game) {
 
 function doPost(e) {
   const data = JSON.parse(e.postData.contents);
-  const game = data.game === "capitals" ? "capitals" : "flags";
+  const game = normalizeGame_(data.game);
   const name = String(data.name || "Anonymous").slice(0, 24);
   const score = Number(data.score) || 0;
   const flags = Number(data.flags) || 0;
@@ -132,7 +141,7 @@ function buildNearbyRows_(all, idx, youName, youScore, youFlags) {
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  const game = p.game === "capitals" ? "capitals" : "flags";
+  const game = normalizeGame_(p.game);
   let all = getSortedAll_(game);
 
   const total = all.length;
@@ -166,5 +175,5 @@ function doGet(e) {
 // Exposed for leaderboard-apps-script.test.js only. Apps Script's runtime
 // has no `module` global, so this is a no-op when deployed.
 if (typeof module !== "undefined") {
-  module.exports = { sheetNamesFor_, getSortedAll_ };
+  module.exports = { sheetNamesFor_, getSortedAll_, normalizeGame_ };
 }
