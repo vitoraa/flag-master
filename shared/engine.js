@@ -29,6 +29,8 @@ const NAME_KEY = `${GAME.storagePrefix}-name`;
 const BEST_KEY = `${GAME.storagePrefix}-best`;
 const GAME_URL = GAME.gameUrl;
 const PLAYS_KEY = `${GAME.storagePrefix}-games-played`;
+const RATING_GIVEN_KEY = `${GAME.storagePrefix}-rating-given`;
+const RATING_DISMISSED_KEY = `${GAME.storagePrefix}-rating-dismissed`;
 const CROSS_PROMO_URL = GAME.crossPromoUrl;
 const THEME_KEY = `${GAME.storagePrefix}-theme`;
 const COUNTRIES = GAME.items;
@@ -357,14 +359,73 @@ function endGame() {
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
   }
-  updateCrossPromo();
+  let plays = 0;
+  try { plays = parseInt(localStorage.getItem(PLAYS_KEY) || "0", 10) + 1; localStorage.setItem(PLAYS_KEY, plays); } catch {}
+  updateCrossPromo(plays);
+  updateRatingCard(plays);
 }
 
 // Only pitch the sibling game once a player has finished a couple of runs here first.
-function updateCrossPromo() {
-  let plays = 0;
-  try { plays = parseInt(localStorage.getItem(PLAYS_KEY) || "0", 10) + 1; localStorage.setItem(PLAYS_KEY, plays); } catch {}
+function updateCrossPromo(plays) {
   $("cross-promo").style.display = plays >= 2 ? "" : "none";
+}
+
+function updateRatingCard(plays) {
+  let given = false, dismissed = false;
+  try {
+    given = localStorage.getItem(RATING_GIVEN_KEY) === "1";
+    dismissed = localStorage.getItem(RATING_DISMISSED_KEY) === "1";
+  } catch {}
+  $("rating-card").style.display = (plays >= 4 && !given && !dismissed) ? "" : "none";
+}
+
+let pendingRating = null;
+
+function renderFeedbackStars(rating) {
+  $("feedback-modal-stars").innerHTML = Array.from({ length: 5 }, (_, i) =>
+    `<span class="modal-star ${i < rating ? "filled" : ""}">★</span>`).join("");
+}
+
+function openFeedbackModal(rating) {
+  pendingRating = rating;
+  try { localStorage.setItem(RATING_GIVEN_KEY, "1"); } catch {}
+  $("rating-card").style.display = "none";
+  renderFeedbackStars(rating);
+  $("feedback-text").value = "";
+  $("feedback-backdrop").classList.add("show");
+  $("feedback-sheet").classList.add("show");
+}
+
+function closeFeedbackModal() {
+  $("feedback-backdrop").classList.remove("show");
+  $("feedback-sheet").classList.remove("show");
+}
+
+// Fire-and-forget, mirrors logPlay(): no loading state, the modal closes
+// synchronously and this resolves in the background.
+function sendFeedback(rating, text) {
+  if (!LEADERBOARD_URL) return;
+  let savedName = "";
+  try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
+  fetch(LEADERBOARD_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      type: "feedback",
+      game: GAME.leaderboardGame,
+      rating: rating,
+      text: text || "",
+      name: savedName,
+    }),
+  }).catch(() => {});
+}
+
+function sendFeedbackAndClose() {
+  if (pendingRating === null) { closeFeedbackModal(); return; }
+  const text = $("feedback-text").value.trim().slice(0, 500);
+  sendFeedback(pendingRating, text);
+  pendingRating = null;
+  closeFeedbackModal();
 }
 
 // Fire-and-forget: logs every game as soon as it starts, even ones that
@@ -629,6 +690,17 @@ $("quit-btn").addEventListener("click", quitToStart);
 $("screen-game").addEventListener("click", skipDelay);
 $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
+$("rating-stars").addEventListener("click", e => {
+  const btn = e.target.closest(".star-btn");
+  if (!btn) return;
+  openFeedbackModal(Number(btn.dataset.rating));
+});
+$("rating-dismiss").addEventListener("click", () => {
+  try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
+  $("rating-card").style.display = "none";
+});
+$("feedback-send").addEventListener("click", sendFeedbackAndClose);
+$("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
 
 /* ---------- theme ---------- */
 function applyTheme(t) {

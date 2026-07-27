@@ -464,6 +464,39 @@
 
   .share-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
+  .rating-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 15px;
+    padding: 16px; margin-bottom: 22px; position: relative; text-align: center;
+  }
+  .rating-dismiss {
+    position: absolute; top: 8px; right: 8px; width: 26px; height: 26px;
+    border-radius: 50%; border: 0; background: none; color: var(--muted);
+    cursor: pointer; display: grid; place-items: center; font-size: 13px;
+    transition: background .15s, color .15s;
+  }
+  .rating-dismiss:hover { background: var(--surface-2); color: var(--text); }
+  .rating-prompt { font-size: 13.5px; font-weight: 600; margin-bottom: 10px; }
+  .rating-stars { display: flex; gap: 6px; justify-content: center; }
+  .star-btn {
+    border: 0; background: none; cursor: pointer; font-size: 26px; line-height: 1;
+    color: var(--line); padding: 2px; transition: transform .15s, color .15s;
+  }
+  .star-btn:hover { color: var(--gold); transform: translateY(-2px); }
+
+  .feedback-sheet { text-align: center; }
+  .feedback-modal-stars {
+    font-size: 30px; letter-spacing: 6px; margin-bottom: 14px; color: var(--line);
+  }
+  .feedback-modal-stars .modal-star.filled { color: var(--gold); }
+  .feedback-textarea {
+    display: block; width: 100%; min-height: 90px; resize: vertical; box-sizing: border-box;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 14px;
+    outline: none; transition: border-color .15s; margin-bottom: 14px;
+  }
+  .feedback-textarea:focus { border-color: var(--accent); }
+  #feedback-send { width: 100%; }
+
   .promo-card {
     display: flex; align-items: center; gap: 12px; text-align: left;
     background: linear-gradient(135deg, rgba(160,107,255,.14), rgba(108,140,255,.09));
@@ -560,6 +593,13 @@
   <div class="arcade-grip"></div>
   <div class="arcade-sheet-title">More games</div>
   <div id="arcade-sheet-cards"></div>
+</div>
+<div id="feedback-backdrop" class="arcade-backdrop"></div>
+<div id="feedback-sheet" class="arcade-sheet feedback-sheet">
+  <div class="arcade-grip"></div>
+  <div class="feedback-modal-stars" id="feedback-modal-stars"></div>
+  <textarea id="feedback-text" class="feedback-textarea" placeholder="Anything we should improve? (optional)" maxlength="500"></textarea>
+  <button class="btn" id="feedback-send">Send</button>
 </div>
 <div id="flag-bg" aria-hidden="true"></div>
 <div id="app">
@@ -701,6 +741,17 @@
           <div class="promo-s">Try Capital Master — same streaks, new map</div>
         </div>
         <div class="promo-arrow">→</div>
+      </div>
+      <div class="rating-card" id="rating-card" style="display:none">
+        <button class="rating-dismiss" id="rating-dismiss" aria-label="Dismiss">✕</button>
+        <div class="rating-prompt">Enjoying the game?</div>
+        <div class="rating-stars" id="rating-stars">
+          <button class="star-btn" data-rating="1" aria-label="Rate 1 star">★</button>
+          <button class="star-btn" data-rating="2" aria-label="Rate 2 stars">★</button>
+          <button class="star-btn" data-rating="3" aria-label="Rate 3 stars">★</button>
+          <button class="star-btn" data-rating="4" aria-label="Rate 4 stars">★</button>
+          <button class="star-btn" data-rating="5" aria-label="Rate 5 stars">★</button>
+        </div>
       </div>
       <div class="share-row">
         <button class="btn" id="btn-share"><span id="ic-share"></span><span id="btn-share-label">Challenge a friend</span></button>
@@ -922,6 +973,8 @@ const NAME_KEY = `${GAME.storagePrefix}-name`;
 const BEST_KEY = `${GAME.storagePrefix}-best`;
 const GAME_URL = GAME.gameUrl;
 const PLAYS_KEY = `${GAME.storagePrefix}-games-played`;
+const RATING_GIVEN_KEY = `${GAME.storagePrefix}-rating-given`;
+const RATING_DISMISSED_KEY = `${GAME.storagePrefix}-rating-dismissed`;
 const CROSS_PROMO_URL = GAME.crossPromoUrl;
 const THEME_KEY = `${GAME.storagePrefix}-theme`;
 const COUNTRIES = GAME.items;
@@ -1250,14 +1303,73 @@ function endGame() {
     $("practice-end-note").style.display = "none";
     resetLeaderboardUI();
   }
-  updateCrossPromo();
+  let plays = 0;
+  try { plays = parseInt(localStorage.getItem(PLAYS_KEY) || "0", 10) + 1; localStorage.setItem(PLAYS_KEY, plays); } catch {}
+  updateCrossPromo(plays);
+  updateRatingCard(plays);
 }
 
 // Only pitch the sibling game once a player has finished a couple of runs here first.
-function updateCrossPromo() {
-  let plays = 0;
-  try { plays = parseInt(localStorage.getItem(PLAYS_KEY) || "0", 10) + 1; localStorage.setItem(PLAYS_KEY, plays); } catch {}
+function updateCrossPromo(plays) {
   $("cross-promo").style.display = plays >= 2 ? "" : "none";
+}
+
+function updateRatingCard(plays) {
+  let given = false, dismissed = false;
+  try {
+    given = localStorage.getItem(RATING_GIVEN_KEY) === "1";
+    dismissed = localStorage.getItem(RATING_DISMISSED_KEY) === "1";
+  } catch {}
+  $("rating-card").style.display = (plays >= 4 && !given && !dismissed) ? "" : "none";
+}
+
+let pendingRating = null;
+
+function renderFeedbackStars(rating) {
+  $("feedback-modal-stars").innerHTML = Array.from({ length: 5 }, (_, i) =>
+    `<span class="modal-star ${i < rating ? "filled" : ""}">★</span>`).join("");
+}
+
+function openFeedbackModal(rating) {
+  pendingRating = rating;
+  try { localStorage.setItem(RATING_GIVEN_KEY, "1"); } catch {}
+  $("rating-card").style.display = "none";
+  renderFeedbackStars(rating);
+  $("feedback-text").value = "";
+  $("feedback-backdrop").classList.add("show");
+  $("feedback-sheet").classList.add("show");
+}
+
+function closeFeedbackModal() {
+  $("feedback-backdrop").classList.remove("show");
+  $("feedback-sheet").classList.remove("show");
+}
+
+// Fire-and-forget, mirrors logPlay(): no loading state, the modal closes
+// synchronously and this resolves in the background.
+function sendFeedback(rating, text) {
+  if (!LEADERBOARD_URL) return;
+  let savedName = "";
+  try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
+  fetch(LEADERBOARD_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      type: "feedback",
+      game: GAME.leaderboardGame,
+      rating: rating,
+      text: text || "",
+      name: savedName,
+    }),
+  }).catch(() => {});
+}
+
+function sendFeedbackAndClose() {
+  if (pendingRating === null) { closeFeedbackModal(); return; }
+  const text = $("feedback-text").value.trim().slice(0, 500);
+  sendFeedback(pendingRating, text);
+  pendingRating = null;
+  closeFeedbackModal();
 }
 
 // Fire-and-forget: logs every game as soon as it starts, even ones that
@@ -1522,6 +1634,17 @@ $("quit-btn").addEventListener("click", quitToStart);
 $("screen-game").addEventListener("click", skipDelay);
 $("lb-submit").addEventListener("click", () => submitScore());
 $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitScore(); });
+$("rating-stars").addEventListener("click", e => {
+  const btn = e.target.closest(".star-btn");
+  if (!btn) return;
+  openFeedbackModal(Number(btn.dataset.rating));
+});
+$("rating-dismiss").addEventListener("click", () => {
+  try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
+  $("rating-card").style.display = "none";
+});
+$("feedback-send").addEventListener("click", sendFeedbackAndClose);
+$("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
 
 /* ---------- theme ---------- */
 function applyTheme(t) {
