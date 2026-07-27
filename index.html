@@ -109,7 +109,8 @@
     padding: 12px 14px; transition: transform .15s ease, border-color .15s;
   }
   .arcade-card:hover { transform: translateY(-1px); border-color: var(--accent); }
-  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; }
+  .arcade-card .arcade-ic { flex: none; width: 42px; height: 42px; border-radius: 11px; display: grid; place-items: center; font-size: 19px; color: #fff; }
+  .arcade-card-disabled .arcade-ic { background: radial-gradient(circle at 30% 30%, #9aa0a8, #5a6068 70%); }
   .arcade-card .arcade-body { flex: 1; min-width: 0; }
   .arcade-card .arcade-h { font-size: 14px; font-weight: 700; }
   .arcade-card .arcade-s { font-size: 12px; color: var(--muted); margin-top: 1px; }
@@ -712,10 +713,8 @@
 <div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
 
 <script>
-const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🌍","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map"},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🏛️","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge"},{"id":"math-master","enabled":false,"icon":"🔢","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"Coming soon"}];
+const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":false,"icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"Coming soon"}];
 const GAME = GAMES.find(g => g.id === "flag-master");
-const GAME_ITEM_COUNT = 195;
-
 // [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
 GAME.items = [
   ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
@@ -827,24 +826,9 @@ function countryName(c) {
   return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
 }
 
-GAME.unitSingular = "flag";
-GAME.unitPlural = "flags";
-GAME.promptCounterLabel = "Flag";
-GAME.promptCounterLabelPt = "Bandeira";
-GAME.practiceCfgLabel = "Flags";
-GAME.initialTheme = "light";
-GAME.levels = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
-GAME.levelsPt = { 1: "A aquecer", 2: "A ficar difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
-GAME.trackAnswerEvent = "flag_answered";
-
-GAME.rankTranslationsPt = [
-  ["Lenda Mundial", "Trabalhas na ONU?"],
-  ["Mestre das Bandeiras", "Verdadeiramente de elite. Respeito."],
-  ["Globetrotter", "Sabes mesmo orientar-te num mapa."],
-  ["Viajante", "Bom instinto de geografia."],
-  ["Turista", "Nada mau — o mundo é grande."],
-  ["Turista Perdido", "Hora de rodar mais um pouco o globo."],
-];
+// unitSingular/unitPlural/promptCounterLabel/promptCounterLabelPt/practiceCfgLabel/
+// initialTheme/levels/levelsPt/trackAnswerEvent/ranks all come from games.json —
+// this file only defines data (COUNTRIES/COUNTRY_NAMES_PT above) and hooks below.
 
 GAME.detectLocale = function (setLocale) {
   try {
@@ -1231,18 +1215,10 @@ function timeUp(answer) {
   nextRoundTimer = setTimeout(nextRound, 1350);
 }
 
-const DEFAULT_RANKS = [
-  { min: 60, icon: ICON.globe,   emoji: "🌍", en: ["World Legend", "Do you work at the UN?"] },
-  { min: 40, icon: ICON.crown,   emoji: "🏆", en: [GAME.titlePlain, "Genuinely elite. Respect."] },
-  { min: 25, icon: ICON.medal,   emoji: "🥇", en: ["Globetrotter", "You know your way around a map."] },
-  { min: 15, icon: ICON.medal,   emoji: "🥈", en: ["Traveler", "Solid geography instincts."] },
-  { min: 8,  icon: ICON.plane,   emoji: "🧳", en: ["Tourist", "Not bad — the world is big."] },
-  { min: 0,  icon: ICON.compass, emoji: "🧭", en: ["Lost Tourist", "Time to spin the globe some more."] },
-];
-// GAME.rankTranslationsPt, if provided, is a 6-entry array of [title, sub] pairs
-// in the same order as DEFAULT_RANKS above, used only when locale === "pt".
-const RANKS = DEFAULT_RANKS.map((r, i) =>
-  GAME.rankTranslationsPt ? { ...r, pt: GAME.rankTranslationsPt[i] } : r);
+// GAME.ranks comes straight from games.json: an array of
+// { min, icon, emoji, en: [title, sub], pt?: [title, sub] } entries, sorted
+// highest min first. `icon` is a key into the ICON set above.
+const RANKS = GAME.ranks.map(r => ({ ...r, icon: ICON[r.icon] }));
 
 function rankFor(flags) {
   return RANKS.find(r => flags >= r.min) || RANKS[RANKS.length - 1];
@@ -1539,7 +1515,7 @@ $("ic-slot-4").innerHTML = ICON.trend;
 $("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
-$("promo-ic").innerHTML = ICON.globe;
+$("promo-ic").innerHTML = ICON[GAME.crossPromoIcon];
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
@@ -1622,7 +1598,7 @@ function renderArcadeMenu(currentGame) {
   const others = GAMES.filter(g => g.id !== currentGame.id);
   $("arcade-sheet-cards").innerHTML = others.map(g => {
     if (!g.enabled) {
-      return `<div class="arcade-card arcade-card-disabled">
+      return `<div class="arcade-card arcade-card-disabled" aria-disabled="true">
          <span class="arcade-ic">${g.icon}</span>
          <div class="arcade-body">
            <div class="arcade-h">${g.titlePlain}</div>
@@ -1634,7 +1610,7 @@ function renderArcadeMenu(currentGame) {
     try { const raw = localStorage.getItem(`${g.storagePrefix}-best`); best = raw ? JSON.parse(raw) : null; } catch {}
     const sub = best ? `Your best: ${best.score.toLocaleString()} pts` : "Not played yet";
     return `<a class="arcade-card" href="${relativeUrl(currentGame, g)}" data-to="${g.analyticsId}">
-       <span class="arcade-ic">${g.icon}</span>
+       <span class="arcade-ic" style="background:${g.arcadeGradient}">${g.icon}</span>
        <div class="arcade-body">
          <div class="arcade-h">${g.titlePlain}</div>
          <span class="arcade-s">${sub}</span>
