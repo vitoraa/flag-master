@@ -856,7 +856,7 @@ const COUNTRY_NAMES_PT = {
 const ROUND_TIME = 10;
 const MAX_LIVES = 3;
 const LEVELS = { 1: "Warming up", 2: "Getting tricky", 3: "Flag nerd zone", 4: "Very hard" };
-const LEVELS_PT = { 1: "Aquecendo", 2: "Ficando difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
+const LEVELS_PT = { 1: "A aquecer", 2: "A ficar difícil", 3: "Fera das bandeiras", 4: "Muito difícil" };
 
 // Paste your deployed Google Apps Script Web App URL here to enable the leaderboard.
 const LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycbxiOvdi5JWkd4o6d_1R6Dd392q1xawUz9yOBJASbGKdtxirVVjb-TfU5X0HhjqIrkQ/exec";
@@ -1164,7 +1164,7 @@ function answerWith(btn, answer) {
     btn.querySelector(".mark").innerHTML = ICON.x;
     lives--; streak = 0;
     results.push("no");
-    setFeedback(locale === "pt" ? `Essa bandeira é do(a) ${nameOf(btn.dataset.code)}` : `That flag is ${nameOf(btn.dataset.code)}`, "bad");
+    setFeedback(locale === "pt" ? `A resposta era ${nameOf(btn.dataset.code)}` : `That flag is ${nameOf(btn.dataset.code)}`, "bad");
   }
   track("flag_answered", { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
