@@ -347,8 +347,6 @@ function endGame() {
   $("stat-flags").textContent = flagsRight;
   $("stat-flags-label").textContent = GAME.unitPlural[0].toUpperCase() + GAME.unitPlural.slice(1);
   $("stat-streak").textContent = bestStreak;
-  $("dots").innerHTML = results.map(r =>
-    `<span class="d ${r}"></span>`).join("");
   show("end");
   $("new-best-badge").style.display = "none";
   if (practiceMode) {
