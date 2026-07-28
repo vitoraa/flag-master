@@ -251,43 +251,78 @@ function sameLastDigitVariants(correct) {
   return [10, -10, 20, -20].map(d => correct + d);
 }
 
+// The specific mistake each kind is designed to punish. These are forced into
+// the option set (subject to the usual positive-and-distinct rules) so the
+// wrong answer a rushing player computes is always sitting right there.
+function forcedMistakes(item) {
+  const meta = item[4], correct = item[3];
+  if (meta.kind === "twostep" && meta.shape !== "left") {
+    return [evalLeftToRight(meta)];
+  }
+  if (meta.kind === "missing") {
+    const visible = meta.slot === "a" ? meta.b : meta.a;
+    const stated = applyOp(meta.op, meta.a, meta.b);
+    // Applying the operation to the stated result instead of inverting it.
+    const applied = applyOp(meta.op, stated, visible);
+    // Inverting with the wrong operand order, e.g. reading "? ÷ 6 = 9" as 6 ÷ 9.
+    const swapped = applyOp(meta.op, visible, stated);
+    return [applied, swapped, correct + 1, correct - 1];
+  }
+  return [];
+}
+
 // Custom pickDistractors: unlike flags/capitals (where any other pool item
 // is a plausible wrong answer), a random other equation's answer could be
 // wildly off or collide with the correct value. Instead this simulates
-// specific mistakes: off-by-one-operand, wrong operator, small offset.
+// specific mistakes: the kind's signature trap, off-by-one-operand, wrong
+// operator, small offset.
 function pickMathDistractors(answer) {
   const tier = answer[2], correct = answer[3], meta = answer[4];
   const used = new Set([correct]);
   const picks = [];
 
+  const accept = (raw) => {
+    const n = Math.round(raw);
+    if (!Number.isFinite(n) || n <= 0 || used.has(n)) return false;
+    used.add(n);
+    picks.push(n);
+    return true;
+  };
+
+  for (const m of forcedMistakes(answer)) {
+    if (picks.length >= 2) break;
+    accept(m);
+  }
+
   // Guarantee at least one same-last-digit distractor from tier 3 up —
   // tiers 1-2's answers are small enough that this isn't worth forcing.
-  if (tier >= 3) {
+  if (tier >= 3 && !picks.some(p => p % 10 === correct % 10)) {
     for (const c of sameLastDigitVariants(correct)) {
-      if (c > 0 && !used.has(c)) { used.add(c); picks.push(c); break; }
+      if (accept(c)) break;
     }
   }
 
-  const candidates = shuffleArr([
-    ...offByOperandVariants(meta.op, meta.a, meta.b),
-    ...operationSlipVariants(meta.op, meta.a, meta.b),
-    ...smallOffsetVariants(tier, correct),
-  ]);
-  for (const c of candidates) {
+  const candidates = meta.kind === "binary"
+    ? [
+        ...offByOperandVariants(meta.op, meta.a, meta.b),
+        ...operationSlipVariants(meta.op, meta.a, meta.b),
+        ...smallOffsetVariants(tier, correct),
+      ]
+    : smallOffsetVariants(tier, correct);
+
+  for (const c of shuffleArr(candidates)) {
     if (picks.length >= 3) break;
-    const n = Math.round(c);
-    if (n <= 0 || used.has(n)) continue;
-    used.add(n);
-    picks.push(n);
+    accept(c);
   }
+
   let step = 1, attempt = 0;
   while (picks.length < 3) {
     const n = correct + step * (attempt % 2 === 0 ? 1 : -1);
     step++;
     attempt++;
-    if (n > 0 && !used.has(n)) { used.add(n); picks.push(n); }
+    accept(n);
   }
-  return picks.map(n => ({ 3: n }));
+  return picks.slice(0, 3).map(n => ({ 3: n }));
 }
 
 if (typeof GAME !== "undefined") {

@@ -167,6 +167,50 @@ assert.notStrictEqual(
   assert.ok(sigs.size > 100, `two-step signatures must be varied, got ${sigs.size} distinct`);
 }
 
+// --- Distractors for the new kinds ---
+{
+  const nextId = (() => { let n = 0; return () => n++; })();
+  const check = (item) => {
+    const distractors = pickMathDistractors(item);
+    const values = distractors.map(d => d[3]);
+    assert.strictEqual(values.length, 3, `${item[1]}: must produce exactly 3 distractors`);
+    assert.strictEqual(new Set(values).size, 3, `${item[1]}: distractors must be unique`);
+    values.forEach(v => {
+      assert.ok(Number.isInteger(v) && v > 0, `${item[1]}: distractor ${v} must be a positive integer`);
+      assert.notStrictEqual(v, item[3], `${item[1]}: distractor must not equal the answer`);
+    });
+    return values;
+  };
+
+  // Tier 9's whole point: the left-to-right trap is always on offer.
+  for (let i = 0; i < 1000; i++) {
+    const item = twoStepTrap(9, nextId);
+    const values = check(item);
+    const trap = evalLeftToRight(item[4]);
+    assert.ok(values.includes(trap), `${item[1]}: trap value ${trap} must be among distractors ${values}`);
+  }
+
+  // Missing-operand items offer the "applied instead of inverted" mistake.
+  for (let i = 0; i < 1000; i++) {
+    const item = missingOperand(7, nextId);
+    const values = check(item);
+    const meta = item[4];
+    const visible = meta.slot === "a" ? meta.b : meta.a;
+    const stated = applyOp(meta.op, meta.a, meta.b);
+    const applied = applyOp(meta.op, stated, visible);
+    if (Number.isInteger(applied) && applied > 0 && applied !== item[3]) {
+      assert.ok(values.includes(applied), `${item[1]}: applied-instead-of-inverted value ${applied} must be offered, got ${values}`);
+    }
+  }
+
+  // The other new tiers just have to satisfy the universal rules.
+  for (let i = 0; i < 1000; i++) {
+    check(twoStepPlain(8, nextId));
+    check(twoStepDouble(10, nextId));
+    check(twoStepMissing(10, nextId));
+  }
+}
+
 // Regression: ensure fallback loop terminates with correct === 0 (edge case)
 const edgeCase = [
   "edge0", "0 - 0", 1, 0, { op: "−", a: 0, b: 0 }
