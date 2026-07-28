@@ -99,6 +99,7 @@
     "arcadeGradient": "radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)",
     "itemCount": 100,
     "itemCountLabel": "Endless",
+    "timerRuleText": "<b>6-18s</b> on the clock — less on easy, more on hard",
     "itemNoun": "problems",
     "unitSingular": "problem",
     "unitPlural": "problems",

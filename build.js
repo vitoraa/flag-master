@@ -57,6 +57,7 @@ for (const game of games.filter(g => g.enabled)) {
     .replace(/\{\{UNIT_SINGULAR\}\}/g, game.unitSingular)
     .replace(/\{\{UNIT_PLURAL\}\}/g, game.unitPlural)
     .replace(/\{\{PRACTICE_CFG_LABEL\}\}/g, game.practiceCfgLabel)
+    .replace(/\{\{TIMER_RULE_TEXT\}\}/g, game.timerRuleText || "<b>10 seconds</b> on the clock each round")
     .replace(/\{\{TOTAL_ALL_DIFFICULTY\}\}/g, game.itemCountLabel || `All ${game.itemCount}`)
     .replace(/\{\{CROSS_PROMO_HEADING\}\}/g, game.crossPromoHeading)
     .replace(/\{\{CROSS_PROMO_BODY\}\}/g, game.crossPromoBody)
