@@ -115,7 +115,7 @@ function doPost(e) {
       new Date(),
       game,
       Math.min(5, Math.max(0, Math.round(Number(data.rating) || 0))),
-      sanitizeForSheet_(String(data.text || "").slice(0, 1000)),
+      sanitizeForSheet_(String(data.text || "").slice(0, 500)),
       sanitizeForSheet_(name),
     ]);
     return ContentService
