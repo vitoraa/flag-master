@@ -780,8 +780,9 @@
 <div class="toast" id="toast"><span id="ic-check"></span>Copied — go challenge your friends</div>
 
 <script>
-const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":true,"outputDir":"math-master","url":"math-master/","assetPrefix":"../","icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"How fast can you crunch the numbers? Prove it.","storagePrefix":"mathmaster","leaderboardGame":"math","analyticsId":"math-master","gameUrl":"https://vitoraa.github.io/flag-master/math-master/","crossPromoUrl":"../","crossPromoTargetId":"flag-master","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)","itemCount":100,"itemNoun":"problems","unitSingular":"problem","unitPlural":"problems","promptCounterLabel":"Problem","practiceCfgLabel":"Problems","initialTheme":"light","levels":{"1":"Warming up","2":"Times tables","3":"Leveling up","4":"Getting tricky","5":"Math nerd zone","6":"Very hard"},"trackAnswerEvent":"math_answered","ranks":[{"min":60,"icon":"globe","emoji":"🧮","en":["Math Legend","Are you secretly a calculator?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Math Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Number Cruncher","You chew through equations."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Quick Thinker","Solid mental math instincts."]},{"min":8,"icon":"plane","emoji":"🧠","en":["Warming Up","Not bad — keep at it."]},{"min":0,"icon":"compass","emoji":"🔢","en":["Rusty","Time to dust off the times tables."]}]}];
+const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":true,"outputDir":"math-master","url":"math-master/","assetPrefix":"../","icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"How fast can you crunch the numbers? Prove it.","storagePrefix":"mathmaster","leaderboardGame":"math","analyticsId":"math-master","gameUrl":"https://vitoraa.github.io/flag-master/math-master/","crossPromoUrl":"../","crossPromoTargetId":"flag-master","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)","itemCount":100,"itemCountLabel":"Endless","timerRuleText":"\u003cb>6-18s\u003c/b> on the clock — less on easy, more on hard","itemNoun":"problems","unitSingular":"problem","unitPlural":"problems","promptCounterLabel":"Problem","practiceCfgLabel":"Problems","initialTheme":"light","levels":{"1":"Warming up","2":"Times tables","3":"Leveling up","4":"Getting tricky","5":"Math nerd zone","6":"Very hard","7":"Fill the blank","8":"Two steps","9":"Mind the order","10":"Brain melter"},"trackAnswerEvent":"math_answered","ranks":[{"min":60,"icon":"globe","emoji":"🧮","en":["Math Legend","Are you secretly a calculator?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Math Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Number Cruncher","You chew through equations."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Quick Thinker","Solid mental math instincts."]},{"min":8,"icon":"plane","emoji":"🧠","en":["Warming Up","Not bad — keep at it."]},{"min":0,"icon":"compass","emoji":"🔢","en":["Rusty","Time to dust off the times tables."]}]}];
 const GAME = GAMES.find(g => g.id === "capital-master");
+
 const OTHER_CITIES = {
   "us": ["New York City","Los Angeles","Chicago"],
   "br": ["Rio de Janeiro","São Paulo"],
@@ -1208,6 +1209,7 @@ const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false, lockedAt = 0, nextRoundTimer = null;
+let roundBudget = ROUND_TIME;
 let newBestAnnounced = false;
 
 let practiceMode = false;
@@ -1261,7 +1263,9 @@ function startGame() {
   track("game_started", practiceMode
     ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
     : { mode: "standard" });
-  queue = buildQueue();
+  // Games that supply GAME.nextItem generate problems on demand and run
+  // endlessly, so there is no pool to pre-build.
+  queue = GAME.nextItem ? [] : buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
   score = 0; streak = 0; bestStreak = 0; results = []; newBestAnnounced = false;
@@ -1360,9 +1364,18 @@ function pickDistractors(answer) {
 }
 
 function nextRound() {
-  if (lives <= 0 || round >= queue.length) return endGame();
+  if (lives <= 0) return endGame();
+  if (!GAME.nextItem && round >= queue.length) return endGame();
   locked = false;
-  const answer = queue[round];
+  const answer = GAME.nextItem
+    ? GAME.nextItem({
+        round,
+        streak,
+        score,
+        practiceMode,
+        practiceDifficulty: practiceCfg.difficulty,
+      })
+    : queue[round];
   renderHud(answer);
   $("qnum").textContent = `${(locale === "pt" && GAME.promptCounterLabelPt) || GAME.promptCounterLabel} ${round + 1}`;
   GAME.renderPrompt(answer);
@@ -1376,12 +1389,13 @@ function nextRound() {
 
   clearInterval(timerId);
   const noTimer = practiceMode && practiceCfg.timer === "off";
+  roundBudget = GAME.roundTime ? GAME.roundTime(answer) : ROUND_TIME;
   if (noTimer) {
     $("timerbar").style.display = "none";
     timeLeft = Infinity;
   } else {
     $("timerbar").style.display = "";
-    timeLeft = ROUND_TIME;
+    timeLeft = roundBudget;
     updateTimerBar();
     timerId = setInterval(() => {
       timeLeft -= 0.1;
@@ -1392,7 +1406,7 @@ function nextRound() {
 }
 
 function updateTimerBar() {
-  const pct = Math.max(0, timeLeft / ROUND_TIME * 100);
+  const pct = Math.max(0, timeLeft / roundBudget * 100);
   const fill = $("timerfill");
   fill.style.width = pct + "%";
   fill.classList.toggle("danger", timeLeft <= 3);
@@ -1419,6 +1433,14 @@ function setFeedback(text, kind) {
   const f = $("feedback");
   f.textContent = text;
   f.className = `feedback show ${kind}`;
+}
+
+// Fraction of the round's budget the player used. 1 on timeout, and 1 when
+// the round had no timer at all, so an untimed round can never register as
+// a "fast" answer.
+function timeRatioNow() {
+  if (!Number.isFinite(timeLeft) || roundBudget <= 0) return 1;
+  return Math.min(1, Math.max(0, (roundBudget - timeLeft) / roundBudget));
 }
 
 function answerWith(btn, answer) {
@@ -1460,6 +1482,7 @@ function answerWith(btn, answer) {
     results.push("no");
     setFeedback(GAME.wrongAnswerText(answer, btn.dataset.key), "bad");
   }
+  if (GAME.onAnswer) GAME.onAnswer(answer, { correct, timedOut: false, timeRatio: timeRatioNow() });
   track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
@@ -1479,6 +1502,7 @@ function timeUp(answer) {
   lives--; streak = 0;
   results.push("to");
   setFeedback(locale === "pt" ? "Tempo esgotado" : "Out of time", "bad");
+  if (GAME.onAnswer) GAME.onAnswer(answer, { correct: false, timedOut: true, timeRatio: 1 });
   track(GAME.trackAnswerEvent, { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
