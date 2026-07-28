@@ -1,5 +1,5 @@
 #flag-bg .mg {
-  position: absolute; font-weight: 700; color: var(--muted);
+  position: absolute; font-weight: 700; color: var(--muted); white-space: nowrap;
   will-change: transform; user-select: none; pointer-events: none;
   animation: drift var(--d) ease-in-out var(--delay) infinite alternate;
 }
