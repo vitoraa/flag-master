@@ -11,6 +11,12 @@ GAME.buildBackground = function (layer) {
     }
     return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
   }
+  // --muted reads much fainter against the light theme's near-white
+  // background than against the dark theme's near-black one at the same
+  // alpha, so light mode needs a noticeably higher opacity floor/ceiling
+  // to actually be visible.
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const opacityRange = isLight ? [0.28, 0.48] : [0.12, 0.28];
   const cols = 9, rows = 8;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -22,7 +28,7 @@ GAME.buildBackground = function (layer) {
       el.style.fontSize = (isEquation ? rnd(18, 32) : rnd(30, 58)) + "px";
       el.style.left = (c / cols * 100 + rnd(-3, 3)) + "%";
       el.style.top  = (r / rows * 100 + rnd(-3, 3)) + "%";
-      el.style.opacity = rnd(0.12, 0.28).toFixed(2);
+      el.style.opacity = rnd(opacityRange[0], opacityRange[1]).toFixed(2);
       el.style.setProperty("--tx", rnd(-46, 46).toFixed(0) + "px");
       el.style.setProperty("--ty", rnd(-46, 46).toFixed(0) + "px");
       el.style.setProperty("--r1", rnd(-9, 9).toFixed(1) + "deg");
