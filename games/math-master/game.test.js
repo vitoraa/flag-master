@@ -34,6 +34,16 @@ for (let i = 0; i < 500; i++) {
     assert.notStrictEqual(v, answer[3], "distractor must not equal the correct answer");
     assert.ok(v > 0, "distractor must be a positive number");
   });
+  // Regression: tier 2+ must include at least one distractor sharing the
+  // correct answer's last digit, so players can't shortcut by only
+  // computing the ones digit.
+  if (answer[2] >= 2) {
+    const correctLastDigit = answer[3] % 10;
+    assert.ok(
+      values.some(v => v % 10 === correctLastDigit),
+      `tier ${answer[2]} answer ${answer[3]} (${answer[1]}) should have a same-last-digit distractor among ${values}`
+    );
+  }
 }
 
 // Regression: ensure fallback loop terminates with correct === 0 (edge case)

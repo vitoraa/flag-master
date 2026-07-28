@@ -812,6 +812,13 @@ function shuffleArr(a) {
   return out;
 }
 
+// A distractor sharing the correct answer's last digit (e.g. 56 vs 66)
+// stops players from shortcutting to the right option by computing only
+// the ones digit and picking whichever option is the only one that matches.
+function sameLastDigitVariants(correct) {
+  return [10, -10, 20, -20].map(d => correct + d);
+}
+
 // Custom pickDistractors: unlike flags/capitals (where any other pool item
 // is a plausible wrong answer), a random other equation's answer could be
 // wildly off or collide with the correct value. Instead this simulates
@@ -820,6 +827,15 @@ function pickMathDistractors(answer) {
   const tier = answer[2], correct = answer[3], meta = answer[4];
   const used = new Set([correct]);
   const picks = [];
+
+  // Guarantee at least one same-last-digit distractor from tier 2 up —
+  // tier 1's answers are small enough that this isn't worth forcing.
+  if (tier >= 2) {
+    for (const c of sameLastDigitVariants(correct)) {
+      if (c > 0 && !used.has(c)) { used.add(c); picks.push(c); break; }
+    }
+  }
+
   const candidates = shuffleArr([
     ...offByOperandVariants(meta.op, meta.a, meta.b),
     ...operationSlipVariants(meta.op, meta.a, meta.b),
