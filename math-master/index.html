@@ -750,12 +750,18 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
 function generateItems() {
   let counter = 0;
   const nextId = () => counter++;
-  // Full single-digit multiplication tables (2-9 x 2-9) live in tier 1
-  // alongside add/sub — otherwise tier 1 stays trivial for too long and
-  // the real step-up (two-digit operands, then division) doesn't arrive
-  // until far too many rounds in.
+  // Full single-digit multiplication tables (2-9 x 2-9) and easy clean
+  // division (e.g. 8 ÷ 4) live in tier 1 alongside add/sub — otherwise
+  // tier 1 stays trivial for too long and the real step-up (two-digit
+  // operands, then harder division) doesn't arrive until far too many
+  // rounds in.
   const GENERATORS = {
-    1: () => Math.random() < 0.5 ? addSub(1, 20, 1, nextId) : mul(2, 9, 2, 9, 1, nextId),
+    1: () => {
+      const r = Math.random();
+      if (r < 1 / 3) return addSub(1, 20, 1, nextId);
+      if (r < 2 / 3) return mul(2, 9, 2, 9, 1, nextId);
+      return div(2, 9, 2, 9, 1, nextId);
+    },
     2: () => Math.random() < 0.5 ? addSub(10, 50, 2, nextId) : mul(2, 9, 10, 20, 2, nextId),
     3: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 3, nextId) : div(2, 12, 2, 12, 3, nextId),
     4: () => Math.random() < 0.5 ? mul(10, 99, 2, 12, 4, nextId) : div(2, 20, 10, 50, 4, nextId),
