@@ -3,6 +3,13 @@ const PLAY_LOG_SHEET_NAME = "PlayLog";
 const CACHE_KEY = "leaderboard_sorted_v1";
 const CACHE_TTL_SECONDS = 300;
 
+// Google Sheets evaluates a cell starting with =, +, -, or @ as a formula.
+// This is a public, unauthenticated endpoint, so any user-supplied string
+// that reaches appendRow/setValue must be defused before it's written.
+function sanitizeForSheet_(str) {
+  return /^[=+\-@\t\r]/.test(str) ? "'" + str : str;
+}
+
 // Maps a `game` value ("capitals" or anything else, including undefined)
 // to the sheet tabs and cache key it should use. Defaulting anything
 // other than "capitals" to the original flags names keeps the deployed
@@ -84,7 +91,7 @@ function doPost(e) {
 
   if (data.type === "play") {
     const logSheet = getPlayLogSheet_(game);
-    logSheet.appendRow([new Date(), name, score, flags, streak, !!data.practice]);
+    logSheet.appendRow([new Date(), sanitizeForSheet_(name), score, flags, streak, !!data.practice]);
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -94,7 +101,7 @@ function doPost(e) {
     const sheet = getSheet_(game);
     const rowId = Number(data.id);
     if (rowId >= 2 && rowId <= sheet.getLastRow()) {
-      sheet.getRange(rowId, 2).setValue(name);
+      sheet.getRange(rowId, 2).setValue(sanitizeForSheet_(name));
       CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
     }
     return ContentService
@@ -107,9 +114,9 @@ function doPost(e) {
     sheet.appendRow([
       new Date(),
       game,
-      Number(data.rating) || 0,
-      String(data.text || "").slice(0, 1000),
-      name,
+      Math.min(5, Math.max(0, Math.round(Number(data.rating) || 0))),
+      sanitizeForSheet_(String(data.text || "").slice(0, 1000)),
+      sanitizeForSheet_(name),
     ]);
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
@@ -117,7 +124,7 @@ function doPost(e) {
   }
 
   const sheet = getSheet_(game);
-  sheet.appendRow([new Date(), name, score, flags, streak]);
+  sheet.appendRow([new Date(), sanitizeForSheet_(name), score, flags, streak]);
   const rowId = sheet.getLastRow();
   CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
 
