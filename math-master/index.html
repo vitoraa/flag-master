@@ -1267,6 +1267,7 @@ const flagUrl = code => `${GAME.assetPrefix}flags/${code}.png`;
 
 let queue = [], round = 0, lives = MAX_LIVES, score = 0;
 let streak = 0, bestStreak = 0, results = [], timerId = null, timeLeft = 0, locked = false, lockedAt = 0, nextRoundTimer = null;
+let roundBudget = ROUND_TIME;
 let newBestAnnounced = false;
 
 let practiceMode = false;
@@ -1320,7 +1321,9 @@ function startGame() {
   track("game_started", practiceMode
     ? { mode: "practice", timer: practiceCfg.timer, lives: practiceCfg.lives, difficulty: practiceCfg.difficulty }
     : { mode: "standard" });
-  queue = buildQueue();
+  // Games that supply GAME.nextItem generate problems on demand and run
+  // endlessly, so there is no pool to pre-build.
+  queue = GAME.nextItem ? [] : buildQueue();
   round = 0;
   lives = (practiceMode && practiceCfg.lives === "unlimited") ? Infinity : MAX_LIVES;
   score = 0; streak = 0; bestStreak = 0; results = []; newBestAnnounced = false;
@@ -1419,9 +1422,18 @@ function pickDistractors(answer) {
 }
 
 function nextRound() {
-  if (lives <= 0 || round >= queue.length) return endGame();
+  if (lives <= 0) return endGame();
+  if (!GAME.nextItem && round >= queue.length) return endGame();
   locked = false;
-  const answer = queue[round];
+  const answer = GAME.nextItem
+    ? GAME.nextItem({
+        round,
+        streak,
+        score,
+        practiceMode,
+        practiceDifficulty: practiceCfg.difficulty,
+      })
+    : queue[round];
   renderHud(answer);
   $("qnum").textContent = `${(locale === "pt" && GAME.promptCounterLabelPt) || GAME.promptCounterLabel} ${round + 1}`;
   GAME.renderPrompt(answer);
@@ -1435,12 +1447,13 @@ function nextRound() {
 
   clearInterval(timerId);
   const noTimer = practiceMode && practiceCfg.timer === "off";
+  roundBudget = GAME.roundTime ? GAME.roundTime(answer) : ROUND_TIME;
   if (noTimer) {
     $("timerbar").style.display = "none";
     timeLeft = Infinity;
   } else {
     $("timerbar").style.display = "";
-    timeLeft = ROUND_TIME;
+    timeLeft = roundBudget;
     updateTimerBar();
     timerId = setInterval(() => {
       timeLeft -= 0.1;
@@ -1451,7 +1464,7 @@ function nextRound() {
 }
 
 function updateTimerBar() {
-  const pct = Math.max(0, timeLeft / ROUND_TIME * 100);
+  const pct = Math.max(0, timeLeft / roundBudget * 100);
   const fill = $("timerfill");
   fill.style.width = pct + "%";
   fill.classList.toggle("danger", timeLeft <= 3);
@@ -1478,6 +1491,14 @@ function setFeedback(text, kind) {
   const f = $("feedback");
   f.textContent = text;
   f.className = `feedback show ${kind}`;
+}
+
+// Fraction of the round's budget the player used. 1 on timeout, and 1 when
+// the round had no timer at all, so an untimed round can never register as
+// a "fast" answer.
+function timeRatioNow() {
+  if (!Number.isFinite(timeLeft) || roundBudget <= 0) return 1;
+  return Math.min(1, Math.max(0, (roundBudget - timeLeft) / roundBudget));
 }
 
 function answerWith(btn, answer) {
@@ -1519,6 +1540,7 @@ function answerWith(btn, answer) {
     results.push("no");
     setFeedback(GAME.wrongAnswerText(answer, btn.dataset.key), "bad");
   }
+  if (GAME.onAnswer) GAME.onAnswer(answer, { correct, timedOut: false, timeRatio: timeRatioNow() });
   track(GAME.trackAnswerEvent, { result: correct ? "correct" : "incorrect", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
@@ -1538,6 +1560,7 @@ function timeUp(answer) {
   lives--; streak = 0;
   results.push("to");
   setFeedback(locale === "pt" ? "Tempo esgotado" : "Out of time", "bad");
+  if (GAME.onAnswer) GAME.onAnswer(answer, { correct: false, timedOut: true, timeRatio: 1 });
   track(GAME.trackAnswerEvent, { result: "timeout", country: answer[0], tier: answer[2], streak, score, mode: practiceMode ? "practice" : "standard" });
   renderHud(answer);
   round++;
