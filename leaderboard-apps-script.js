@@ -3,6 +3,13 @@ const PLAY_LOG_SHEET_NAME = "PlayLog";
 const CACHE_KEY = "leaderboard_sorted_v1";
 const CACHE_TTL_SECONDS = 300;
 
+// Google Sheets evaluates a cell starting with =, +, -, or @ as a formula.
+// This is a public, unauthenticated endpoint, so any user-supplied string
+// that reaches appendRow/setValue must be defused before it's written.
+function sanitizeForSheet_(str) {
+  return /^[=+\-@\t\r]/.test(str) ? "'" + str : str;
+}
+
 // Maps a `game` value ("capitals" or anything else, including undefined)
 // to the sheet tabs and cache key it should use. Defaulting anything
 // other than "capitals" to the original flags names keeps the deployed
@@ -34,6 +41,18 @@ function getPlayLogSheet_(game) {
   if (!sheet) {
     sheet = ss.insertSheet(names.log);
     sheet.appendRow(["Timestamp", "Name", "Score", "Flags", "Streak", "Practice"]);
+  }
+  return sheet;
+}
+
+// Feedback is a single shared tab across both games (unlike Scores/PlayLog,
+// which are per-game) — rows are distinguished by the Game column.
+function getFeedbackSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("Feedback");
+  if (!sheet) {
+    sheet = ss.insertSheet("Feedback");
+    sheet.appendRow(["Timestamp", "Game", "Rating", "Text", "Name"]);
   }
   return sheet;
 }
@@ -72,7 +91,7 @@ function doPost(e) {
 
   if (data.type === "play") {
     const logSheet = getPlayLogSheet_(game);
-    logSheet.appendRow([new Date(), name, score, flags, streak, !!data.practice]);
+    logSheet.appendRow([new Date(), sanitizeForSheet_(name), score, flags, streak, !!data.practice]);
     return ContentService
       .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -82,7 +101,7 @@ function doPost(e) {
     const sheet = getSheet_(game);
     const rowId = Number(data.id);
     if (rowId >= 2 && rowId <= sheet.getLastRow()) {
-      sheet.getRange(rowId, 2).setValue(name);
+      sheet.getRange(rowId, 2).setValue(sanitizeForSheet_(name));
       CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
     }
     return ContentService
@@ -90,8 +109,22 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  if (data.type === "feedback") {
+    const sheet = getFeedbackSheet_();
+    sheet.appendRow([
+      new Date(),
+      game,
+      Math.min(5, Math.max(0, Math.round(Number(data.rating) || 0))),
+      sanitizeForSheet_(String(data.text || "").slice(0, 500)),
+      sanitizeForSheet_(name),
+    ]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const sheet = getSheet_(game);
-  sheet.appendRow([new Date(), name, score, flags, streak]);
+  sheet.appendRow([new Date(), sanitizeForSheet_(name), score, flags, streak]);
   const rowId = sheet.getLastRow();
   CacheService.getScriptCache().remove(sheetNamesFor_(game).cacheKey);
 
@@ -166,5 +199,5 @@ function doGet(e) {
 // Exposed for leaderboard-apps-script.test.js only. Apps Script's runtime
 // has no `module` global, so this is a no-op when deployed.
 if (typeof module !== "undefined") {
-  module.exports = { sheetNamesFor_, getSortedAll_ };
+  module.exports = { sheetNamesFor_, getSortedAll_, doPost };
 }

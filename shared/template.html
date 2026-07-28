@@ -21,6 +21,14 @@
   <div class="arcade-grip"></div>
   <div class="arcade-sheet-title">More games</div>
   <div id="arcade-sheet-cards"></div>
+  <button class="arcade-feedback-link" id="arcade-feedback-link" type="button">💬 Send feedback</button>
+</div>
+<div id="feedback-backdrop" class="arcade-backdrop"></div>
+<div id="feedback-sheet" class="arcade-sheet feedback-sheet">
+  <div class="arcade-grip"></div>
+  <div class="feedback-modal-stars" id="feedback-modal-stars"></div>
+  <textarea id="feedback-text" class="feedback-textarea" placeholder="Anything we should improve? (optional)" maxlength="500"></textarea>
+  <button class="btn" id="feedback-send">Send</button>
 </div>
 <div id="flag-bg" aria-hidden="true"></div>
 <div id="app">
@@ -151,10 +159,6 @@
         <div class="lb-status" id="lb-status"></div>
       </div>
 
-      <div class="result-strip">
-        <div class="label">Your run</div>
-        <div class="dots" id="dots"></div>
-      </div>
       <div class="promo-card" id="cross-promo" style="display:none">
         <div class="promo-ic" id="promo-ic"></div>
         <div class="promo-body">
@@ -162,6 +166,16 @@
           <div class="promo-s">{{CROSS_PROMO_BODY}}</div>
         </div>
         <div class="promo-arrow">→</div>
+      </div>
+      <div class="rating-card" id="rating-card" style="display:none">
+        <div class="rating-prompt">Enjoying the game?</div>
+        <div class="rating-stars" id="rating-stars">
+          <button class="star-btn" data-rating="1" aria-label="Rate 1 star">★</button>
+          <button class="star-btn" data-rating="2" aria-label="Rate 2 stars">★</button>
+          <button class="star-btn" data-rating="3" aria-label="Rate 3 stars">★</button>
+          <button class="star-btn" data-rating="4" aria-label="Rate 4 stars">★</button>
+          <button class="star-btn" data-rating="5" aria-label="Rate 5 stars">★</button>
+        </div>
       </div>
       <div class="share-row">
         <button class="btn" id="btn-share"><span id="ic-share"></span><span id="btn-share-label">Challenge a friend</span></button>
