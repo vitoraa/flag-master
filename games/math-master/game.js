@@ -43,7 +43,7 @@ function generateItems() {
     1: () => {
       const r = Math.random();
       if (r < 1 / 3) return addSub(1, 20, 1, nextId);
-      if (r < 2 / 3) return mul(2, 9, 2, 9, 1, nextId);
+      if (r < 2 / 3) return mul(2, 9, 2, 10, 1, nextId);
       return div(2, 9, 2, 9, 1, nextId);
     },
     2: () => Math.random() < 0.5 ? addSub(10, 50, 2, nextId) : mul(2, 9, 10, 20, 2, nextId),
