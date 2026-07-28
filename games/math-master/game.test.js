@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { generateItems, pickMathDistractors, applyOp } = require("./game.js");
+const { generateItems, pickMathDistractors, applyOp, equationSignature } = require("./game.js");
 
 const items = generateItems();
 assert.strictEqual(items.length, 100, "pool should contain 100 items");
@@ -7,6 +7,18 @@ const EXPECTED_PER_TIER = { 1: 10, 2: 20, 3: 30, 4: 40 };
 for (let tier = 1; tier <= 4; tier++) {
   const count = items.filter(it => it[2] === tier).length;
   assert.strictEqual(count, EXPECTED_PER_TIER[tier], `tier ${tier} should have ${EXPECTED_PER_TIER[tier]} items, got ${count}`);
+}
+
+// Regression: no two items in the pool should be the same underlying
+// question (e.g. two "4 x 10"s), across many freshly-generated pools.
+for (let trial = 0; trial < 30; trial++) {
+  const pool = trial === 0 ? items : generateItems();
+  const seen = new Set();
+  pool.forEach(it => {
+    const sig = equationSignature(it[4]);
+    assert.ok(!seen.has(sig), `duplicate question found in pool: ${it[1]} (signature ${sig})`);
+    seen.add(sig);
+  });
 }
 
 items.forEach(([id, expr, tier, answer, meta]) => {

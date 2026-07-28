@@ -31,6 +31,18 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
   return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { op: "÷", a: dividend, b: divisor }];
 }
 
+// Two equations count as "the same question" if they're the same operator
+// on the same operands — for +/x, operand order doesn't matter (4x10 is
+// the same question as 10x4).
+function equationSignature(meta) {
+  const { op, a, b } = meta;
+  if (op === "+" || op === "×") {
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    return `${op}:${lo}:${hi}`;
+  }
+  return `${op}:${a}:${b}`;
+}
+
 function generateItems() {
   let counter = 0;
   const nextId = () => counter++;
@@ -55,8 +67,22 @@ function generateItems() {
   // before the game gets interesting. itemCount is 100 overall.
   const PER_TIER = { 1: 10, 2: 20, 3: 30, 4: 40 };
   const items = [];
+  // Retry on a repeated question (e.g. two "4 x 10"s in the same pool) so
+  // players never see the exact same equation twice in one playthrough.
+  // Capped so a tier whose operand range is too small to fill without
+  // repeats can't loop forever — falls back to accepting the repeat.
+  const MAX_ATTEMPTS = 30;
+  const usedSignatures = new Set();
   for (let tier = 1; tier <= 4; tier++) {
-    for (let i = 0; i < PER_TIER[tier]; i++) items.push(GENERATORS[tier]());
+    for (let i = 0; i < PER_TIER[tier]; i++) {
+      let item, attempts = 0;
+      do {
+        item = GENERATORS[tier]();
+        attempts++;
+      } while (usedSignatures.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
+      usedSignatures.add(equationSignature(item[4]));
+      items.push(item);
+    }
   }
   return items;
 }
@@ -168,5 +194,5 @@ if (typeof GAME !== "undefined") {
 
 // Exposed for game.test.js only. The browser build never sets `module`.
 if (typeof module !== "undefined") {
-  module.exports = { generateItems, pickMathDistractors, applyOp };
+  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature };
 }
