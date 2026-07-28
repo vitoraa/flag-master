@@ -1,9 +1,21 @@
-// Procedurally generated equation pool — unlike flags/capitals, math
-// problems are cheap to generate, so there's no hand-written data list.
+// Procedurally generated equations — unlike flags/capitals, math problems
+// are cheap to generate, so there's no hand-written data list, and problems
+// are produced on demand at the player's current adaptive tier rather than
+// pre-baked into a fixed pool.
 // Item shape: [id, exprText, tier, answer, meta]
-// meta = { op, a, b } describes the operands actually shown (for ÷,
-// a = dividend, b = divisor) so pickMathDistractors can simulate mistakes
-// without re-parsing the display string.
+// meta.kind is "binary" ({ op, a, b }, where ÷'s a/b are dividend/divisor),
+// "missing" (one operand replaced by "?"), or "twostep" (a ± b × c and
+// similar). See missingOperand/evalTwoStep for the full shapes.
+
+// Under Node (tests) the difficulty controller is a separate module; in the
+// browser build difficulty.js is concatenated ahead of this file, so its
+// function declarations are already in scope and requiring would fail.
+// `var` (not `let`/`const`) is deliberate: it coexists with those hoisted
+// function declarations instead of throwing a redeclaration SyntaxError.
+var initialDifficulty, nextDifficulty;
+if (typeof module !== "undefined") {
+  ({ initialDifficulty, nextDifficulty } = require("./difficulty.js"));
+}
 
 function randInt(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 
@@ -170,44 +182,29 @@ function equationSignature(meta) {
   return `${op}:${a}:${b}`;
 }
 
-function generateItems() {
-  let counter = 0;
-  const nextId = () => counter++;
-  // 6 tiers instead of 4 — each step up is a smaller increment, so the
-  // ramp feels gradual instead of jumping straight from plain addition
-  // to two-digit multiplication in the same block.
-  const GENERATORS = {
-    1: () => addSub(1, 20, 1, nextId),
-    2: () => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
-    3: () => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
-    4: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
-    5: () => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
-    6: () => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
-  };
-  // Fewer easy-tier items so the ramp to real difficulty happens sooner —
-  // a large easy-tier block frustrates stronger players into quitting
-  // before the game gets interesting. itemCount is 100 overall.
-  const PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
-  const items = [];
-  // Retry on a repeated question (e.g. two "4 x 10"s in the same pool) so
-  // players never see the exact same equation twice in one playthrough.
-  // Capped so a tier whose operand range is too small to fill without
-  // repeats can't loop forever — falls back to accepting the repeat.
-  const MAX_ATTEMPTS = 30;
-  const usedSignatures = new Set();
-  for (let tier = 1; tier <= 6; tier++) {
-    for (let i = 0; i < PER_TIER[tier]; i++) {
-      let item, attempts = 0;
-      do {
-        item = GENERATORS[tier]();
-        attempts++;
-      } while (usedSignatures.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
-      usedSignatures.add(equationSignature(item[4]));
-      items.push(item);
-    }
-  }
-  return items;
+// Tier -> generator. Problems are produced on demand at the player's current
+// tier rather than pre-baked into a fixed pool, which is what makes endless
+// adaptive runs possible.
+const GENERATORS = {
+  1: (nextId) => addSub(1, 20, 1, nextId),
+  2: (nextId) => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
+  3: (nextId) => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
+  4: (nextId) => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
+  5: (nextId) => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
+  6: (nextId) => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
+  7: (nextId) => missingOperand(7, nextId),
+  8: (nextId) => twoStepPlain(8, nextId),
+  9: (nextId) => twoStepTrap(9, nextId),
+  10: (nextId) => Math.random() < 0.5 ? twoStepDouble(10, nextId) : twoStepMissing(10, nextId),
+};
+
+function makeItem(tier, nextId) {
+  return GENERATORS[tier](nextId);
 }
+
+// Seconds on the clock per tier. A flat 10s made "3 + 7" and "7 + 6 × 4"
+// equally urgent — easy rounds were sleepy and hard ones unfair.
+const TIER_TIME = { 1: 6, 2: 6, 3: 8, 4: 8, 5: 10, 6: 10, 7: 11, 8: 13, 9: 13, 10: 15 };
 
 function applyOp(op, a, b) {
   if (op === "+") return a + b;
@@ -326,11 +323,52 @@ function pickMathDistractors(answer) {
 }
 
 if (typeof GAME !== "undefined") {
-  GAME.items = generateItems();
+  // shared/engine.js reads GAME.items at load time. Math Master generates on
+  // demand instead, so the pool stays empty.
+  GAME.items = [];
+
+  let run = null;
+  const MAX_ATTEMPTS = 30;
+
+  GAME.nextItem = function (ctx) {
+    // round 0 is a fresh run — engine resets `round` in startGame().
+    if (ctx.round === 0 || !run) {
+      const easy = ctx.practiceMode && ctx.practiceDifficulty === "easy";
+      let counter = 0;
+      run = {
+        easy,
+        seen: new Set(),
+        nextId: () => counter++,
+        diff: initialDifficulty(easy ? 1 : 2),
+      };
+    }
+    // Easy practice pins the bottom of the ladder and never adapts.
+    const tier = run.easy ? (Math.random() < 0.5 ? 1 : 2) : run.diff.tier;
+    // Retry on a repeated question so players never see the same equation
+    // twice in one run. Capped so a tier too small to fill without repeats
+    // can't loop forever — falls back to accepting the repeat.
+    let item, attempts = 0;
+    do {
+      item = makeItem(tier, run.nextId);
+      attempts++;
+    } while (run.seen.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
+    run.seen.add(equationSignature(item[4]));
+    return item;
+  };
+
+  GAME.roundTime = function (item) { return TIER_TIME[item[2]] || 10; };
+
+  GAME.onAnswer = function (item, outcome) {
+    if (!run || run.easy) return;
+    run.diff = nextDifficulty(run.diff, outcome);
+  };
 
   GAME.renderPrompt = function (item) {
     $("prompt-flag").style.display = "none";
-    $("country-name").textContent = `${item[1]} = ?`;
+    // "missing" items already state their own "= N", so appending "= ?"
+    // would render "7 × ? = 56 = ?".
+    const suffix = item[4].kind === "missing" ? "" : " = ?";
+    $("country-name").textContent = `${item[1]}${suffix}`;
   };
 
   GAME.renderOption = function (item) {
@@ -352,7 +390,7 @@ if (typeof GAME !== "undefined") {
 // Exposed for game.test.js only. The browser build never sets `module`.
 if (typeof module !== "undefined") {
   module.exports = {
-    generateItems, pickMathDistractors, applyOp, equationSignature,
+    makeItem, TIER_TIME, pickMathDistractors, applyOp, equationSignature,
     missingOperand, twoStepPlain, twoStepTrap, twoStepDouble, twoStepMissing,
     evalTwoStep, evalLeftToRight,
   };

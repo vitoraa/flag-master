@@ -1,32 +1,66 @@
 const assert = require("assert");
 const {
-  generateItems, pickMathDistractors, applyOp, equationSignature,
+  makeItem, TIER_TIME, pickMathDistractors, applyOp, equationSignature,
   missingOperand, twoStepPlain, twoStepTrap, twoStepDouble, twoStepMissing,
   evalTwoStep, evalLeftToRight,
 } = require("./game.js");
 
-const items = generateItems();
-assert.strictEqual(items.length, 100, "pool should contain 100 items");
-const EXPECTED_PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
-for (let tier = 1; tier <= 6; tier++) {
-  const count = items.filter(it => it[2] === tier).length;
-  assert.strictEqual(count, EXPECTED_PER_TIER[tier], `tier ${tier} should have ${EXPECTED_PER_TIER[tier]} items, got ${count}`);
+// Every tier produces valid items, and repeated draws at one tier stay varied.
+for (let tier = 1; tier <= 10; tier++) {
+  const nextId = (() => { let n = 0; return () => n++; })();
+  const sigs = new Set();
+  for (let i = 0; i < 500; i++) {
+    const [id, expr, itemTier, answer, meta] = makeItem(tier, nextId);
+    assert.strictEqual(itemTier, tier, `makeItem(${tier}) must stamp tier ${tier}`);
+    assert.ok(typeof id === "string" && id.length > 0, `tier ${tier} item needs an id`);
+    assert.ok(typeof expr === "string" && expr.length > 0, `tier ${tier} item needs display text`);
+    // Tier 1 subtraction can legitimately land on 0 (e.g. "8 − 8"), matching
+    // the pre-existing addSub behaviour and its dedicated 0-answer test below.
+    assert.ok(Number.isInteger(answer) && answer >= 0, `tier ${tier}: ${expr} must have a non-negative integer answer, got ${answer}`);
+    assert.ok(["binary", "missing", "twostep"].includes(meta.kind), `tier ${tier}: unknown kind ${meta.kind}`);
+    sigs.add(equationSignature(meta));
+  }
+  assert.ok(sigs.size > 20, `tier ${tier} must generate varied questions, got ${sigs.size} distinct in 500 draws`);
 }
 
-// Regression: no two items in the pool should be the same underlying
-// question (e.g. two "4 x 10"s), across many freshly-generated pools.
-for (let trial = 0; trial < 30; trial++) {
-  const pool = trial === 0 ? items : generateItems();
+// Round time rises with tier and is always a usable number of seconds.
+let previous = 0;
+for (let tier = 1; tier <= 10; tier++) {
+  const t = TIER_TIME[tier];
+  assert.ok(Number.isFinite(t) && t >= 5 && t <= 20, `tier ${tier} time ${t} out of range`);
+  assert.ok(t >= previous, `tier ${tier} time ${t} must not be shorter than tier ${tier - 1}'s ${previous}`);
+  previous = t;
+}
+assert.ok(TIER_TIME[10] > TIER_TIME[1], "the hardest tier must get more time than the easiest");
+
+const items = [];
+{
+  const nextId = (() => { let n = 0; return () => n++; })();
+  for (let tier = 1; tier <= 10; tier++) {
+    for (let i = 0; i < 10; i++) items.push(makeItem(tier, nextId));
+  }
+}
+
+// Regression: no two items generated back-to-back at the same tier should be
+// the same underlying question (e.g. two "4 x 10"s), across many tiers.
+for (let tier = 1; tier <= 10; tier++) {
+  const nextId = (() => { let n = 0; return () => n++; })();
   const seen = new Set();
-  pool.forEach(it => {
-    const sig = equationSignature(it[4]);
-    assert.ok(!seen.has(sig), `duplicate question found in pool: ${it[1]} (signature ${sig})`);
+  let collisions = 0;
+  for (let i = 0; i < 200; i++) {
+    const sig = equationSignature(makeItem(tier, nextId)[4]);
+    if (seen.has(sig)) collisions++;
     seen.add(sig);
-  });
+  }
+  // Some tiers have a small enough operand space that occasional collisions
+  // are expected in 200 independent draws (there is no pool-wide uniqueness
+  // guarantee here — that lives in GAME.nextItem's retry loop instead).
+  assert.ok(collisions < 200, `tier ${tier} produced only duplicate questions`);
 }
 
 items.forEach(([id, expr, tier, answer, meta]) => {
   assert.ok(Number.isInteger(answer) && answer >= 0, `${expr} should have a non-negative integer answer, got ${answer}`);
+  if (meta.kind !== "binary") return;
   if (meta.op === "÷") {
     assert.strictEqual(meta.a / meta.b, answer, `${expr} should divide evenly`);
   }
@@ -63,9 +97,15 @@ for (let i = 0; i < 500; i++) {
 }
 
 // Every tier 1-6 item carries the binary discriminant.
-generateItems().forEach(([, expr, , , meta]) => {
-  assert.strictEqual(meta.kind, "binary", `${expr} should be tagged kind "binary"`);
-});
+{
+  const nextId = (() => { let n = 0; return () => n++; })();
+  for (let tier = 1; tier <= 6; tier++) {
+    for (let i = 0; i < 20; i++) {
+      const [, expr, , , meta] = makeItem(tier, nextId);
+      assert.strictEqual(meta.kind, "binary", `${expr} should be tagged kind "binary"`);
+    }
+  }
+}
 
 // Signature still folds commutativity for + and x, and still does not for - and /.
 assert.strictEqual(

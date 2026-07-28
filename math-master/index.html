@@ -755,12 +755,24 @@
 <script>
 const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":true,"outputDir":"math-master","url":"math-master/","assetPrefix":"../","icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"How fast can you crunch the numbers? Prove it.","storagePrefix":"mathmaster","leaderboardGame":"math","analyticsId":"math-master","gameUrl":"https://vitoraa.github.io/flag-master/math-master/","crossPromoUrl":"../","crossPromoTargetId":"flag-master","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)","itemCount":100,"itemNoun":"problems","unitSingular":"problem","unitPlural":"problems","promptCounterLabel":"Problem","practiceCfgLabel":"Problems","initialTheme":"light","levels":{"1":"Warming up","2":"Times tables","3":"Leveling up","4":"Getting tricky","5":"Math nerd zone","6":"Very hard"},"trackAnswerEvent":"math_answered","ranks":[{"min":60,"icon":"globe","emoji":"🧮","en":["Math Legend","Are you secretly a calculator?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Math Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Number Cruncher","You chew through equations."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Quick Thinker","Solid mental math instincts."]},{"min":8,"icon":"plane","emoji":"🧠","en":["Warming Up","Not bad — keep at it."]},{"min":0,"icon":"compass","emoji":"🔢","en":["Rusty","Time to dust off the times tables."]}]}];
 const GAME = GAMES.find(g => g.id === "math-master");
-// Procedurally generated equation pool — unlike flags/capitals, math
-// problems are cheap to generate, so there's no hand-written data list.
+// Procedurally generated equations — unlike flags/capitals, math problems
+// are cheap to generate, so there's no hand-written data list, and problems
+// are produced on demand at the player's current adaptive tier rather than
+// pre-baked into a fixed pool.
 // Item shape: [id, exprText, tier, answer, meta]
-// meta = { op, a, b } describes the operands actually shown (for ÷,
-// a = dividend, b = divisor) so pickMathDistractors can simulate mistakes
-// without re-parsing the display string.
+// meta.kind is "binary" ({ op, a, b }, where ÷'s a/b are dividend/divisor),
+// "missing" (one operand replaced by "?"), or "twostep" (a ± b × c and
+// similar). See missingOperand/evalTwoStep for the full shapes.
+
+// Under Node (tests) the difficulty controller is a separate module; in the
+// browser build difficulty.js is concatenated ahead of this file, so its
+// function declarations are already in scope and requiring would fail.
+// `var` (not `let`/`const`) is deliberate: it coexists with those hoisted
+// function declarations instead of throwing a redeclaration SyntaxError.
+var initialDifficulty, nextDifficulty;
+if (typeof module !== "undefined") {
+  ({ initialDifficulty, nextDifficulty } = require("./difficulty.js"));
+}
 
 function randInt(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 
@@ -788,6 +800,125 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
   return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { kind: "binary", op: "÷", a: dividend, b: divisor }];
 }
 
+// Tier 7+: one operand is replaced by "?" and the result is given, so the
+// player has to invert the operation rather than evaluate it. `tail`, when
+// present, appends a second term (tier 10) — see twoStepMissing.
+function missingOperand(tier, nextId, tail = null) {
+  const op = ["+", "−", "×", "÷"][randInt(0, 3)];
+  let a, b;
+  if (op === "×") { a = randInt(2, 12); b = randInt(2, 12); }
+  else if (op === "÷") { b = randInt(2, 12); a = b * randInt(2, 12); }
+  else if (op === "+") { a = randInt(10, 60); b = randInt(10, 60); }
+  // Subtraction: pick the subtrahend strictly below the minuend so the
+  // stated result is always positive.
+  else { a = randInt(30, 99); b = randInt(2, a - 1); }
+
+  const slot = Math.random() < 0.5 ? "a" : "b";
+  const answer = slot === "a" ? a : b;
+  const inner = applyOp(op, a, b);
+  // A subtracting tail must not drive the stated total to zero or below —
+  // a non-positive total reads as broken and breaks the distractor rules.
+  // When the inner value is too small to subtract from at all, fall back to
+  // addition instead of clamping to a degenerate c.
+  let usedTail = null;
+  if (tail) {
+    if (tail.op === "−" && inner - 1 >= 1) {
+      usedTail = { op: "−", c: Math.min(tail.c, inner - 1) };
+    } else if (tail.op === "−") {
+      usedTail = { op: "+", c: tail.c };
+    } else {
+      usedTail = { op: tail.op, c: tail.c };
+    }
+  }
+  const total = usedTail ? applyOp(usedTail.op, inner, usedTail.c) : inner;
+  const left = slot === "a" ? `? ${op} ${b}` : `${a} ${op} ?`;
+  const text = usedTail ? `${left} ${usedTail.op} ${usedTail.c} = ${total}` : `${left} = ${total}`;
+  return [`m${nextId()}`, text, tier, answer, { kind: "missing", op, a, b, slot, tail: usedTail }];
+}
+
+// A two-step expression's correct value, honouring operator precedence.
+// `shape` says where the tightly-binding operation sits:
+//   "left"  -> (a innerOp b) outerOp c        e.g. (12 − 5) × 8, 60 ÷ 4 + 9
+//   "right" -> a outerOp (b innerOp c)        e.g. 7 + 6 × 4
+//   "both"  -> (a × b) outerOp (c × d)        e.g. 9 × 7 − 4 × 8
+function evalTwoStep(meta) {
+  const { shape, outerOp, innerOp, a, b, c, d } = meta;
+  if (shape === "left") return applyOp(outerOp, applyOp(innerOp, a, b), c);
+  if (shape === "right") return applyOp(outerOp, a, applyOp(innerOp, b, c));
+  return applyOp(outerOp, applyOp("×", a, b), applyOp("×", c, d));
+}
+
+// What a player gets by evaluating strictly left to right and ignoring
+// precedence. For "left"-shaped expressions this equals the correct value
+// (tier 8 is deliberately trap-free); for the others it is the mistake the
+// tier is designed to punish, and is forced into the option set.
+function evalLeftToRight(meta) {
+  const { shape, outerOp, innerOp, a, b, c, d } = meta;
+  if (shape === "left") return applyOp(outerOp, applyOp(innerOp, a, b), c);
+  if (shape === "right") return applyOp(innerOp, applyOp(outerOp, a, b), c);
+  return applyOp("×", applyOp(outerOp, applyOp("×", a, b), c), d);
+}
+
+// Tier 8: two steps, but written so left-to-right reading is already correct —
+// either the first step is parenthesised, or it is a division written first.
+function twoStepPlain(tier, nextId) {
+  const id = `m${nextId()}`;
+  if (Math.random() < 0.5) {
+    const innerOp = Math.random() < 0.5 ? "+" : "−";
+    const b = randInt(2, 9);
+    // For subtraction keep a strictly above b so the inner value stays positive.
+    const a = innerOp === "−" ? randInt(b + 2, 20) : randInt(2, 20);
+    const c = randInt(2, 9);
+    const meta = { kind: "twostep", shape: "left", outerOp: "×", innerOp, a, b, c };
+    return [id, `(${a} ${innerOp} ${b}) × ${c}`, tier, evalTwoStep(meta), meta];
+  }
+  const b = randInt(2, 9);
+  const quotient = randInt(4, 12);
+  const a = b * quotient;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  // Keep the final value positive: subtract strictly less than the quotient.
+  const c = outerOp === "−" ? randInt(1, quotient - 1) : randInt(2, 20);
+  const meta = { kind: "twostep", shape: "left", outerOp, innerOp: "÷", a, b, c };
+  return [id, `${a} ÷ ${b} ${outerOp} ${c}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 9: a ± b × c. Multiplication binds tighter than the leading ±, so
+// reading left to right gives (a ± b) × c — always a different number, since
+// the two agree only when c === 1 and c is never 1 here.
+function twoStepTrap(tier, nextId) {
+  const id = `m${nextId()}`;
+  const b = randInt(2, 9), c = randInt(2, 9);
+  const product = b * c;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  // For subtraction keep a above the product (correct value positive) and
+  // above b (so the left-to-right trap value is positive too, making it a
+  // usable distractor).
+  const a = outerOp === "−" ? randInt(product + 1, product + 40) : randInt(2, 40);
+  const meta = { kind: "twostep", shape: "right", outerOp, innerOp: "×", a, b, c };
+  return [id, `${a} ${outerOp} ${b} × ${c}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 10: a × b ± c × d — two products to hold in your head at once.
+function twoStepDouble(tier, nextId) {
+  const id = `m${nextId()}`;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  let a = randInt(3, 12), b = randInt(3, 12), c = randInt(2, 9), d = randInt(2, 9);
+  if (outerOp === "−" && a * b <= c * d) {
+    // Swap the pairs so the left product is the larger one; the result stays
+    // positive without rejecting and regenerating.
+    [a, b, c, d] = [c, d, a, b];
+  }
+  if (outerOp === "−" && a * b === c * d) d = Math.max(2, d - 1);
+  const meta = { kind: "twostep", shape: "both", outerOp, innerOp: "×", a, b, c, d };
+  return [id, `${a} × ${b} ${outerOp} ${c} × ${d}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 10: a missing operand buried in a two-step expression, e.g. 3 × ? + 7 = 31.
+function twoStepMissing(tier, nextId) {
+  const op = Math.random() < 0.5 ? "+" : "−";
+  return missingOperand(tier, nextId, { op, c: randInt(2, 20) });
+}
+
 // Two equations count as "the same question" if they're the same operator
 // on the same operands — for +/x, operand order doesn't matter (4x10 is
 // the same question as 10x4). Non-binary kinds have no commutativity to
@@ -808,44 +939,29 @@ function equationSignature(meta) {
   return `${op}:${a}:${b}`;
 }
 
-function generateItems() {
-  let counter = 0;
-  const nextId = () => counter++;
-  // 6 tiers instead of 4 — each step up is a smaller increment, so the
-  // ramp feels gradual instead of jumping straight from plain addition
-  // to two-digit multiplication in the same block.
-  const GENERATORS = {
-    1: () => addSub(1, 20, 1, nextId),
-    2: () => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
-    3: () => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
-    4: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
-    5: () => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
-    6: () => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
-  };
-  // Fewer easy-tier items so the ramp to real difficulty happens sooner —
-  // a large easy-tier block frustrates stronger players into quitting
-  // before the game gets interesting. itemCount is 100 overall.
-  const PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
-  const items = [];
-  // Retry on a repeated question (e.g. two "4 x 10"s in the same pool) so
-  // players never see the exact same equation twice in one playthrough.
-  // Capped so a tier whose operand range is too small to fill without
-  // repeats can't loop forever — falls back to accepting the repeat.
-  const MAX_ATTEMPTS = 30;
-  const usedSignatures = new Set();
-  for (let tier = 1; tier <= 6; tier++) {
-    for (let i = 0; i < PER_TIER[tier]; i++) {
-      let item, attempts = 0;
-      do {
-        item = GENERATORS[tier]();
-        attempts++;
-      } while (usedSignatures.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
-      usedSignatures.add(equationSignature(item[4]));
-      items.push(item);
-    }
-  }
-  return items;
+// Tier -> generator. Problems are produced on demand at the player's current
+// tier rather than pre-baked into a fixed pool, which is what makes endless
+// adaptive runs possible.
+const GENERATORS = {
+  1: (nextId) => addSub(1, 20, 1, nextId),
+  2: (nextId) => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
+  3: (nextId) => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
+  4: (nextId) => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
+  5: (nextId) => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
+  6: (nextId) => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
+  7: (nextId) => missingOperand(7, nextId),
+  8: (nextId) => twoStepPlain(8, nextId),
+  9: (nextId) => twoStepTrap(9, nextId),
+  10: (nextId) => Math.random() < 0.5 ? twoStepDouble(10, nextId) : twoStepMissing(10, nextId),
+};
+
+function makeItem(tier, nextId) {
+  return GENERATORS[tier](nextId);
 }
+
+// Seconds on the clock per tier. A flat 10s made "3 + 7" and "7 + 6 × 4"
+// equally urgent — easy rounds were sleepy and hard ones unfair.
+const TIER_TIME = { 1: 6, 2: 6, 3: 8, 4: 8, 5: 10, 6: 10, 7: 11, 8: 13, 9: 13, 10: 15 };
 
 function applyOp(op, a, b) {
   if (op === "+") return a + b;
@@ -889,51 +1005,127 @@ function sameLastDigitVariants(correct) {
   return [10, -10, 20, -20].map(d => correct + d);
 }
 
+// The specific mistake each kind is designed to punish. These are forced into
+// the option set (subject to the usual positive-and-distinct rules) so the
+// wrong answer a rushing player computes is always sitting right there.
+function forcedMistakes(item) {
+  const meta = item[4], correct = item[3];
+  if (meta.kind === "twostep" && meta.shape !== "left") {
+    return [evalLeftToRight(meta)];
+  }
+  if (meta.kind === "missing") {
+    const visible = meta.slot === "a" ? meta.b : meta.a;
+    const stated = applyOp(meta.op, meta.a, meta.b);
+    // Applying the operation to the stated result instead of inverting it.
+    const applied = applyOp(meta.op, stated, visible);
+    // Inverting with the wrong operand order, e.g. reading "? ÷ 6 = 9" as 6 ÷ 9.
+    const swapped = applyOp(meta.op, visible, stated);
+    return [applied, swapped, correct + 1, correct - 1];
+  }
+  return [];
+}
+
 // Custom pickDistractors: unlike flags/capitals (where any other pool item
 // is a plausible wrong answer), a random other equation's answer could be
 // wildly off or collide with the correct value. Instead this simulates
-// specific mistakes: off-by-one-operand, wrong operator, small offset.
+// specific mistakes: the kind's signature trap, off-by-one-operand, wrong
+// operator, small offset.
 function pickMathDistractors(answer) {
   const tier = answer[2], correct = answer[3], meta = answer[4];
   const used = new Set([correct]);
   const picks = [];
 
+  const accept = (raw) => {
+    const n = Math.round(raw);
+    if (!Number.isFinite(n) || n <= 0 || used.has(n)) return false;
+    used.add(n);
+    picks.push(n);
+    return true;
+  };
+
+  for (const m of forcedMistakes(answer)) {
+    if (picks.length >= 2) break;
+    accept(m);
+  }
+
   // Guarantee at least one same-last-digit distractor from tier 3 up —
   // tiers 1-2's answers are small enough that this isn't worth forcing.
-  if (tier >= 3) {
+  if (tier >= 3 && !picks.some(p => p % 10 === correct % 10)) {
     for (const c of sameLastDigitVariants(correct)) {
-      if (c > 0 && !used.has(c)) { used.add(c); picks.push(c); break; }
+      if (accept(c)) break;
     }
   }
 
-  const candidates = shuffleArr([
-    ...offByOperandVariants(meta.op, meta.a, meta.b),
-    ...operationSlipVariants(meta.op, meta.a, meta.b),
-    ...smallOffsetVariants(tier, correct),
-  ]);
-  for (const c of candidates) {
+  const candidates = meta.kind === "binary"
+    ? [
+        ...offByOperandVariants(meta.op, meta.a, meta.b),
+        ...operationSlipVariants(meta.op, meta.a, meta.b),
+        ...smallOffsetVariants(tier, correct),
+      ]
+    : smallOffsetVariants(tier, correct);
+
+  for (const c of shuffleArr(candidates)) {
     if (picks.length >= 3) break;
-    const n = Math.round(c);
-    if (n <= 0 || used.has(n)) continue;
-    used.add(n);
-    picks.push(n);
+    accept(c);
   }
+
   let step = 1, attempt = 0;
   while (picks.length < 3) {
     const n = correct + step * (attempt % 2 === 0 ? 1 : -1);
     step++;
     attempt++;
-    if (n > 0 && !used.has(n)) { used.add(n); picks.push(n); }
+    accept(n);
   }
-  return picks.map(n => ({ 3: n }));
+  return picks.slice(0, 3).map(n => ({ 3: n }));
 }
 
 if (typeof GAME !== "undefined") {
-  GAME.items = generateItems();
+  // shared/engine.js reads GAME.items at load time. Math Master generates on
+  // demand instead, so the pool stays empty.
+  GAME.items = [];
+
+  let run = null;
+  const MAX_ATTEMPTS = 30;
+
+  GAME.nextItem = function (ctx) {
+    // round 0 is a fresh run — engine resets `round` in startGame().
+    if (ctx.round === 0 || !run) {
+      const easy = ctx.practiceMode && ctx.practiceDifficulty === "easy";
+      let counter = 0;
+      run = {
+        easy,
+        seen: new Set(),
+        nextId: () => counter++,
+        diff: initialDifficulty(easy ? 1 : 2),
+      };
+    }
+    // Easy practice pins the bottom of the ladder and never adapts.
+    const tier = run.easy ? (Math.random() < 0.5 ? 1 : 2) : run.diff.tier;
+    // Retry on a repeated question so players never see the same equation
+    // twice in one run. Capped so a tier too small to fill without repeats
+    // can't loop forever — falls back to accepting the repeat.
+    let item, attempts = 0;
+    do {
+      item = makeItem(tier, run.nextId);
+      attempts++;
+    } while (run.seen.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
+    run.seen.add(equationSignature(item[4]));
+    return item;
+  };
+
+  GAME.roundTime = function (item) { return TIER_TIME[item[2]] || 10; };
+
+  GAME.onAnswer = function (item, outcome) {
+    if (!run || run.easy) return;
+    run.diff = nextDifficulty(run.diff, outcome);
+  };
 
   GAME.renderPrompt = function (item) {
     $("prompt-flag").style.display = "none";
-    $("country-name").textContent = `${item[1]} = ?`;
+    // "missing" items already state their own "= N", so appending "= ?"
+    // would render "7 × ? = 56 = ?".
+    const suffix = item[4].kind === "missing" ? "" : " = ?";
+    $("country-name").textContent = `${item[1]}${suffix}`;
   };
 
   GAME.renderOption = function (item) {
@@ -954,7 +1146,11 @@ if (typeof GAME !== "undefined") {
 
 // Exposed for game.test.js only. The browser build never sets `module`.
 if (typeof module !== "undefined") {
-  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature };
+  module.exports = {
+    makeItem, TIER_TIME, pickMathDistractors, applyOp, equationSignature,
+    missingOperand, twoStepPlain, twoStepTrap, twoStepDouble, twoStepMissing,
+    evalTwoStep, evalLeftToRight,
+  };
 }
 
 GAME.buildBackground = function (layer) {
