@@ -315,14 +315,15 @@
 
   .new-best-banner {
     position: fixed; top: 16px; left: 50%; z-index: 30;
-    transform: translateX(-50%) translateY(-140%);
+    transform: translateX(-50%) translateY(-24px);
+    opacity: 0;
     background: linear-gradient(135deg, var(--gold), #ffb020); color: #3a2200;
     font-weight: 800; font-size: 14px; padding: 10px 20px; border-radius: 999px;
     box-shadow: 0 10px 30px -8px rgba(255,209,102,.6);
-    transition: transform .4s cubic-bezier(.2,.9,.3,1.2);
+    transition: transform .4s cubic-bezier(.2,.9,.3,1.2), opacity .3s ease;
     pointer-events: none; white-space: nowrap;
   }
-  .new-best-banner.show { transform: translateX(-50%) translateY(0); }
+  .new-best-banner.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
   .timerbar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-bottom: 24px; }
   .timerbar i {
