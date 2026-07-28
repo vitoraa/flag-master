@@ -374,14 +374,18 @@ function updateRatingCard(plays) {
 }
 
 let pendingRating = null;
+let feedbackSource = null;
 
 function renderFeedbackStars(rating) {
   $("feedback-modal-stars").innerHTML = Array.from({ length: 5 }, (_, i) =>
     `<button type="button" class="modal-star ${i < rating ? "filled" : ""}" data-rating="${i + 1}" aria-label="Rate ${i + 1} star${i === 0 ? "" : "s"}">★</button>`).join("");
 }
 
-function openFeedbackModal(rating) {
+// `source` distinguishes the end-screen rating card from the always-on
+// arcade-menu link, so PostHog can tell where feedback originates.
+function openFeedbackModal(rating, source) {
   pendingRating = rating;
+  feedbackSource = source;
   try { localStorage.setItem(RATING_GIVEN_KEY, "1"); } catch {}
   $("rating-card").style.display = "none";
   renderFeedbackStars(rating);
@@ -397,7 +401,8 @@ function closeFeedbackModal() {
 
 // Fire-and-forget, mirrors logPlay(): no loading state, the modal closes
 // synchronously and this resolves in the background.
-function sendFeedback(rating, text) {
+function sendFeedback(rating, text, source) {
+  track("feedback_submitted", { rating, source, has_text: !!text, mode: practiceMode ? "practice" : "standard" });
   if (!LEADERBOARD_URL) return;
   let savedName = "";
   try { savedName = localStorage.getItem(NAME_KEY) || ""; } catch {}
@@ -417,8 +422,9 @@ function sendFeedback(rating, text) {
 function sendFeedbackAndClose() {
   if (pendingRating === null) { closeFeedbackModal(); return; }
   const text = $("feedback-text").value.trim().slice(0, 500);
-  sendFeedback(pendingRating, text);
+  sendFeedback(pendingRating, text, feedbackSource);
   pendingRating = null;
+  feedbackSource = null;
   closeFeedbackModal();
 }
 
@@ -687,7 +693,7 @@ $("lb-name").addEventListener("keydown", e => { if (e.key === "Enter") submitSco
 $("rating-stars").addEventListener("click", e => {
   const btn = e.target.closest(".star-btn");
   if (!btn) return;
-  openFeedbackModal(Number(btn.dataset.rating));
+  openFeedbackModal(Number(btn.dataset.rating), "end_screen");
 });
 $("rating-stars").addEventListener("mouseover", e => {
   const btn = e.target.closest(".star-btn");
@@ -717,7 +723,7 @@ $("feedback-send").addEventListener("click", sendFeedbackAndClose);
 $("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
 $("arcade-feedback-link").addEventListener("click", () => {
   closeArcadeSheet();
-  openFeedbackModal(0);
+  openFeedbackModal(0, "menu");
 });
 
 /* ---------- theme ---------- */
