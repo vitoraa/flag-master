@@ -875,11 +875,18 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
 
 // Tier 7+: one operand is replaced by "?" and the result is given, so the
 // player has to invert the operation rather than evaluate it. `tail`, when
-// present, appends a second term (tier 10) — see twoStepMissing.
-function missingOperand(tier, nextId, tail = null) {
+// present, appends a second term (tier 10) — see twoStepMissing. `hard`
+// widens the operand ranges for tier 10, which otherwise reused tier 7's
+// numbers and felt too easy for the top of the ladder.
+function missingOperand(tier, nextId, tail = null, hard = false) {
   const op = ["+", "−", "×", "÷"][randInt(0, 3)];
   let a, b;
-  if (op === "×") { a = randInt(2, 12); b = randInt(2, 12); }
+  if (hard) {
+    if (op === "×") { a = randInt(4, 25); b = randInt(4, 20); }
+    else if (op === "÷") { b = randInt(4, 20); a = b * randInt(4, 25); }
+    else if (op === "+") { a = randInt(50, 300); b = randInt(50, 300); }
+    else { a = randInt(100, 400); b = randInt(2, a - 1); }
+  } else if (op === "×") { a = randInt(2, 12); b = randInt(2, 12); }
   else if (op === "÷") { b = randInt(2, 12); a = b * randInt(2, 12); }
   else if (op === "+") { a = randInt(10, 60); b = randInt(10, 60); }
   // Subtraction: pick the subtrahend strictly below the minuend so the
@@ -971,25 +978,28 @@ function twoStepTrap(tier, nextId) {
   return [id, `${a} ${outerOp} ${b} × ${c}`, tier, evalTwoStep(meta), meta];
 }
 
-// Tier 10: a × b ± c × d — two products to hold in your head at once.
+// Tier 10: a × b ± c × d — two products to hold in your head at once. Ranges
+// widened from the original 3-12/2-9 (products up to 108) so the top tier
+// takes real mental effort instead of reusing tier-8-sized arithmetic.
 function twoStepDouble(tier, nextId) {
   const id = `m${nextId()}`;
   const outerOp = Math.random() < 0.5 ? "+" : "−";
-  let a = randInt(3, 12), b = randInt(3, 12), c = randInt(2, 9), d = randInt(2, 9);
+  let a = randInt(6, 25), b = randInt(6, 20), c = randInt(4, 15), d = randInt(4, 15);
   if (outerOp === "−" && a * b <= c * d) {
     // Swap the pairs so the left product is the larger one; the result stays
     // positive without rejecting and regenerating.
     [a, b, c, d] = [c, d, a, b];
   }
-  if (outerOp === "−" && a * b === c * d) d = Math.max(2, d - 1);
+  if (outerOp === "−" && a * b === c * d) d = Math.max(4, d - 1);
   const meta = { kind: "twostep", shape: "both", outerOp, innerOp: "×", a, b, c, d };
   return [id, `${a} × ${b} ${outerOp} ${c} × ${d}`, tier, evalTwoStep(meta), meta];
 }
 
 // Tier 10: a missing operand buried in a two-step expression, e.g. 3 × ? + 7 = 31.
+// Uses missingOperand's `hard` ranges and a wider tail for the same reason.
 function twoStepMissing(tier, nextId) {
   const op = Math.random() < 0.5 ? "+" : "−";
-  return missingOperand(tier, nextId, { op, c: randInt(2, 20) });
+  return missingOperand(tier, nextId, { op, c: randInt(10, 60) }, true);
 }
 
 // Two equations count as "the same question" if they're the same operator
@@ -1034,7 +1044,7 @@ function makeItem(tier, nextId) {
 
 // Seconds on the clock per tier. A flat 10s made "3 + 7" and "7 + 6 × 4"
 // equally urgent — easy rounds were sleepy and hard ones unfair.
-const TIER_TIME = { 1: 6, 2: 6, 3: 8, 4: 8, 5: 10, 6: 10, 7: 11, 8: 13, 9: 13, 10: 15 };
+const TIER_TIME = { 1: 6, 2: 6, 3: 8, 4: 8, 5: 10, 6: 10, 7: 11, 8: 13, 9: 13, 10: 18 };
 
 function applyOp(op, a, b) {
   if (op === "+") return a + b;
