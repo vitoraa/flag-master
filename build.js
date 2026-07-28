@@ -35,6 +35,10 @@ for (const game of games.filter(g => g.enabled)) {
   const gameCss = fs.readFileSync(path.join(gameDir, "game.css"), "utf8");
   const gameJs = fs.readFileSync(path.join(gameDir, "game.js"), "utf8");
   const backgroundJs = fs.readFileSync(path.join(gameDir, "background.js"), "utf8");
+  // Optional per-game module. Only Math Master has one today; games without
+  // it build exactly as before.
+  const difficultyPath = path.join(gameDir, "difficulty.js");
+  const difficultyJs = fs.existsSync(difficultyPath) ? fs.readFileSync(difficultyPath, "utf8") : "";
 
   const prodHostCheck = game.id === "flag-master"
     ? `(location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/') && !location.pathname.startsWith('/flag-master/capital-master/')) || location.hostname === 'flag-master-game.netlify.app'`
@@ -47,15 +51,16 @@ for (const game of games.filter(g => g.enabled)) {
     .replace(/\{\{GAME_CSS\}\}/g, sharedCss + "\n" + gameCss)
     .replace(/\{\{TITLE_HTML\}\}/g, game.title)
     .replace(/\{\{TAGLINE\}\}/g, game.tagline)
-    .replace(/\{\{ITEM_COUNT\}\}/g, game.itemCount)
+    .replace(/\{\{ITEM_COUNT\}\}/g, game.itemCountLabel || game.itemCount)
     .replace(/\{\{ITEM_NOUN\}\}/g, game.itemNoun)
     .replace(/\{\{UNIT_SINGULAR\}\}/g, game.unitSingular)
     .replace(/\{\{UNIT_PLURAL\}\}/g, game.unitPlural)
     .replace(/\{\{PRACTICE_CFG_LABEL\}\}/g, game.practiceCfgLabel)
-    .replace(/\{\{TOTAL_ALL_DIFFICULTY\}\}/g, `All ${game.itemCount}`)
+    .replace(/\{\{TIMER_RULE_TEXT\}\}/g, game.timerRuleText || "<b>10 seconds</b> on the clock each round")
+    .replace(/\{\{TOTAL_ALL_DIFFICULTY\}\}/g, game.itemCountLabel || `All ${game.itemCount}`)
     .replace(
       "<!--GAME_SCRIPT-->",
-      `const GAMES = ${gamesJsonLiteral};\nconst GAME = GAMES.find(g => g.id === ${JSON.stringify(game.id)});\n${gameJs}\n${backgroundJs}\n${engineJs}\n${arcadeJs}`
+      `const GAMES = ${gamesJsonLiteral};\nconst GAME = GAMES.find(g => g.id === ${JSON.stringify(game.id)});\n${difficultyJs}\n${gameJs}\n${backgroundJs}\n${engineJs}\n${arcadeJs}`
     );
 
   const outPath = path.join(root, game.outputDir, "index.html");
