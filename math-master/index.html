@@ -768,16 +768,16 @@ function addSub(min, max, tier, nextId) {
   const a = randInt(min, max), b = randInt(min, max);
   const id = `m${nextId()}`;
   if (Math.random() < 0.5) {
-    return [id, `${a} + ${b}`, tier, a + b, { op: "+", a, b }];
+    return [id, `${a} + ${b}`, tier, a + b, { kind: "binary", op: "+", a, b }];
   }
   const hi = Math.max(a, b), lo = Math.min(a, b);
-  return [id, `${hi} − ${lo}`, tier, hi - lo, { op: "−", a: hi, b: lo }];
+  return [id, `${hi} − ${lo}`, tier, hi - lo, { kind: "binary", op: "−", a: hi, b: lo }];
 }
 
 function mul(aMin, aMax, bMin, bMax, tier, nextId) {
   const a = randInt(aMin, aMax), b = randInt(bMin, bMax);
   const id = `m${nextId()}`;
-  return [id, `${a} × ${b}`, tier, a * b, { op: "×", a, b }];
+  return [id, `${a} × ${b}`, tier, a * b, { kind: "binary", op: "×", a, b }];
 }
 
 function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
@@ -785,13 +785,21 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
   const quotient = randInt(quotMin, quotMax);
   const dividend = divisor * quotient;
   const id = `m${nextId()}`;
-  return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { op: "÷", a: dividend, b: divisor }];
+  return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { kind: "binary", op: "÷", a: dividend, b: divisor }];
 }
 
 // Two equations count as "the same question" if they're the same operator
 // on the same operands — for +/x, operand order doesn't matter (4x10 is
-// the same question as 10x4).
+// the same question as 10x4). Non-binary kinds have no commutativity to
+// fold, so they serialise every field that distinguishes them.
 function equationSignature(meta) {
+  if (meta.kind === "missing") {
+    const tail = meta.tail ? `:${meta.tail.op}:${meta.tail.c}` : "";
+    return `?${meta.slot}:${meta.op}:${meta.a}:${meta.b}${tail}`;
+  }
+  if (meta.kind === "twostep") {
+    return `2s:${meta.shape}:${meta.outerOp}:${meta.innerOp}:${meta.a}:${meta.b}:${meta.c}:${meta.d ?? ""}`;
+  }
   const { op, a, b } = meta;
   if (op === "+" || op === "×") {
     const lo = Math.min(a, b), hi = Math.max(a, b);

@@ -58,6 +58,23 @@ for (let i = 0; i < 500; i++) {
   }
 }
 
+// Every tier 1-6 item carries the binary discriminant.
+generateItems().forEach(([, expr, , , meta]) => {
+  assert.strictEqual(meta.kind, "binary", `${expr} should be tagged kind "binary"`);
+});
+
+// Signature still folds commutativity for + and x, and still does not for - and /.
+assert.strictEqual(
+  equationSignature({ kind: "binary", op: "×", a: 4, b: 10 }),
+  equationSignature({ kind: "binary", op: "×", a: 10, b: 4 }),
+  "multiplication signature must ignore operand order"
+);
+assert.notStrictEqual(
+  equationSignature({ kind: "binary", op: "÷", a: 12, b: 4 }),
+  equationSignature({ kind: "binary", op: "÷", a: 4, b: 12 }),
+  "division signature must respect operand order"
+);
+
 // Regression: ensure fallback loop terminates with correct === 0 (edge case)
 const edgeCase = [
   "edge0", "0 - 0", 1, 0, { op: "−", a: 0, b: 0 }
