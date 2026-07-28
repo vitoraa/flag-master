@@ -44,9 +44,10 @@ function generateItems() {
     3: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 3, nextId) : div(2, 12, 2, 12, 3, nextId),
     4: () => Math.random() < 0.5 ? mul(10, 99, 2, 12, 4, nextId) : div(2, 20, 10, 50, 4, nextId),
   };
-  // Fewer easy-tier items so the ramp to real difficulty happens sooner;
-  // itemCount stays 200 overall.
-  const PER_TIER = { 1: 30, 2: 40, 3: 60, 4: 70 };
+  // Fewer easy-tier items so the ramp to real difficulty happens sooner —
+  // a large easy-tier block frustrates stronger players into quitting
+  // before the game gets interesting. itemCount is 100 overall.
+  const PER_TIER = { 1: 10, 2: 20, 3: 30, 4: 40 };
   const items = [];
   for (let tier = 1; tier <= 4; tier++) {
     for (let i = 0; i < PER_TIER[tier]; i++) items.push(GENERATORS[tier]());

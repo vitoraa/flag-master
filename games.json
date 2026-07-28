@@ -97,7 +97,7 @@
     "crossPromoBody": "Try Flag Master — same streaks, new challenge",
     "crossPromoIcon": "flag",
     "arcadeGradient": "radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)",
-    "itemCount": 200,
+    "itemCount": 100,
     "itemNoun": "problems",
     "unitSingular": "problem",
     "unitPlural": "problems",
