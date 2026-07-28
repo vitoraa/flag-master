@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Flag Master — how many flags do you know?</title>
+<title>Math Master — how many problems do you know?</title>
 <script>
   !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.uid=t.uid||[],t.uid.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify createPersonProfile group resetGroups setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSurveyResponse".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-  const isProdHost = (location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/') && !location.pathname.startsWith('/flag-master/capital-master/')) || location.hostname === 'flag-master-game.netlify.app';
+  const isProdHost = location.hostname === 'vitoraa.github.io' && location.pathname.startsWith('/flag-master/math-master/');
   if (isProdHost) {
     posthog.init('phc_HmmUlFmsobnkDBi3HhWQdG4D5137kLdSyTomkppw9Ic', { api_host: 'https://eu.i.posthog.com', person_profiles: 'identified_only' });
   }
@@ -527,13 +527,11 @@
     .btn { padding: 14px 32px; }
   }
 
-#flag-bg .fl {
-  position: absolute; aspect-ratio: 3 / 2; border-radius: 8px; overflow: hidden;
-  box-shadow: 0 14px 34px -10px rgba(0,0,0,.7);
-  will-change: transform; filter: saturate(1.1);
+#flag-bg .mg {
+  position: absolute; font-weight: 700; color: var(--muted); white-space: nowrap;
+  will-change: transform; user-select: none; pointer-events: none;
   animation: drift var(--d) ease-in-out var(--delay) infinite alternate;
 }
-#flag-bg .fl img { width: 100%; height: 100%; object-fit: cover; display: block; }
 #flag-bg .veil {
   position: absolute; inset: 0;
   background:
@@ -550,33 +548,34 @@
   to   { transform: translate(var(--tx), var(--ty)) rotate(var(--r2)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #flag-bg .fl { animation: none; }
+  #flag-bg .mg { animation: none; }
+}
+:root[data-theme="light"] .hero .tag {
+  text-shadow: 0 0 12px var(--bg), 0 0 6px var(--bg), 0 1px 2px var(--bg);
 }
 
-.flag-btn {
-  border: 2px solid var(--line); border-radius: 16px; overflow: hidden;
-  background: var(--surface); cursor: pointer; padding: 0;
-  aspect-ratio: 4 / 2.7; position: relative;
+#prompt-flag { display: none; }
+
+.math-btn {
+  border: 2px solid var(--line); border-radius: 16px;
+  background: var(--surface); color: var(--text); cursor: pointer; padding: 22px 12px;
+  min-height: 84px; position: relative;
+  display: flex; align-items: center; justify-content: center;
   transition: transform .14s cubic-bezier(.2,.8,.2,1), border-color .15s, box-shadow .15s;
 }
-.flag-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.flag-btn::after {
-  content: ""; position: absolute; inset: 0; border-radius: 14px;
-  box-shadow: inset 0 0 40px rgba(0,0,0,.25); pointer-events: none;
-}
-.flag-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
-.flag-btn .mark {
+.math-btn .math-num { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
+.math-btn:not(:disabled):hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 12px 30px -10px rgba(108,140,255,.5); }
+.math-btn .mark {
   position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
   display: grid; place-items: center; opacity: 0; transform: scale(.5);
   transition: opacity .2s, transform .2s; z-index: 2;
 }
-.flag-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
-.flag-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
-.flag-btn.wrong { border-color: var(--bad); animation: shake .4s; }
-.flag-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
-.flag-btn:disabled { cursor: default; }
-.flag-btn.dim { opacity: .3; }
-:root[data-theme="light"] .flag-btn::after { box-shadow: inset 0 0 30px rgba(0,0,0,.12); }
+.math-btn.correct { border-color: var(--good); box-shadow: 0 0 0 1px var(--good), 0 12px 30px -8px rgba(47,224,160,.5); }
+.math-btn.correct .mark { opacity: 1; transform: scale(1); background: var(--good); color: #04241a; }
+.math-btn.wrong { border-color: var(--bad); animation: shake .4s; }
+.math-btn.wrong .mark { opacity: 1; transform: scale(1); background: var(--bad); color: #2a0710; }
+.math-btn:disabled { cursor: default; }
+.math-btn.dim { opacity: .3; }
 </style>
 </head>
 <body>
@@ -602,16 +601,16 @@
   <!-- START -->
   <section id="screen-start" class="screen active">
     <div class="hero">
-      <span class="badge"><span class="dot"></span>195 countries · one shot</span>
-      <h1>Flag&nbsp;Master</h1>
-      <p class="tag">How many flags of the world do you actually know? Prove it.</p>
+      <span class="badge"><span class="dot"></span>100 problems · one shot</span>
+      <h1>Math&nbsp;Master</h1>
+      <p class="tag">How fast can you crunch the numbers? Prove it.</p>
       <div class="personal-best" id="personal-best" style="display:none">
-        🏆 Your best: <b id="pb-flags">0</b> flags · <b id="pb-score">0</b> pts
+        🏆 Your best: <b id="pb-flags">0</b> problems · <b id="pb-score">0</b> pts
       </div>
       <div class="rules">
         <div class="rule">
           <span class="ic" id="ic-slot-1"></span>
-          <span class="txt">Spot the right flag out of <b>4 options</b></span>
+          <span class="txt">Spot the right problem out of <b>4 options</b></span>
         </div>
         <div class="rule">
           <span class="ic" id="ic-slot-2"></span>
@@ -660,10 +659,10 @@
           </div>
         </div>
         <div class="cfg-row">
-          <span class="cfg-label">Flags</span>
+          <span class="cfg-label">Problems</span>
           <div class="seg" data-cfg="difficulty">
             <button class="seg-btn active" data-value="easy" type="button">Easy only</button>
-            <button class="seg-btn" data-value="all" type="button">All 195</button>
+            <button class="seg-btn" data-value="all" type="button">All 100</button>
           </div>
         </div>
       </div>
@@ -728,8 +727,8 @@
       <div class="promo-card" id="cross-promo" style="display:none">
         <div class="promo-ic" id="promo-ic"></div>
         <div class="promo-body">
-          <div class="promo-h">Know your capitals too?</div>
-          <div class="promo-s">Try Capital Master — same streaks, new map</div>
+          <div class="promo-h">Know your flags too?</div>
+          <div class="promo-s">Try Flag Master — same streaks, new challenge</div>
         </div>
         <div class="promo-arrow">→</div>
       </div>
@@ -755,175 +754,236 @@
 
 <script>
 const GAMES = [{"id":"flag-master","enabled":true,"outputDir":".","url":"/","assetPrefix":"","icon":"🏁","title":"Flag&nbsp;Master","titlePlain":"Flag Master","tagline":"How many flags of the world do you actually know? Prove it.","storagePrefix":"flagmaster","leaderboardGame":"flags","analyticsId":"flags","gameUrl":"https://vitoraa.github.io/flag-master/","crossPromoUrl":"capital-master/","crossPromoTargetId":"capital-master","crossPromoHeading":"Know your capitals too?","crossPromoBody":"Try Capital Master — same streaks, new map","crossPromoIcon":"globe","arcadeGradient":"radial-gradient(circle at 30% 30%, #6c8cff, #3a4ab0 70%)","itemCount":195,"itemNoun":"countries","unitSingular":"flag","unitPlural":"flags","promptCounterLabel":"Flag","promptCounterLabelPt":"Bandeira","practiceCfgLabel":"Flags","initialTheme":"light","levels":{"1":"Warming up","2":"Getting tricky","3":"Flag nerd zone","4":"Very hard"},"levelsPt":{"1":"A aquecer","2":"A ficar difícil","3":"Fera das bandeiras","4":"Muito difícil"},"trackAnswerEvent":"flag_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"],"pt":["Lenda Mundial","Trabalhas na ONU?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Flag Master","Genuinely elite. Respect."],"pt":["Mestre das Bandeiras","Verdadeiramente de elite. Respeito."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."],"pt":["Globetrotter","Sabes mesmo orientar-te num mapa."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."],"pt":["Viajante","Bom instinto de geografia."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."],"pt":["Turista","Nada mau — o mundo é grande."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."],"pt":["Turista Perdido","Hora de rodar mais um pouco o globo."]}]},{"id":"capital-master","enabled":true,"outputDir":"capital-master","url":"capital-master/","assetPrefix":"../","icon":"🌍","title":"Capital&nbsp;Master","titlePlain":"Capital Master","tagline":"How many capital cities of the world do you actually know? Prove it.","storagePrefix":"capitalmaster","leaderboardGame":"capitals","analyticsId":"capital-master","gameUrl":"https://vitoraa.github.io/flag-master/capital-master/","crossPromoUrl":"../","crossPromoTargetId":"flags","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #2fe0a0, #12805e 70%)","itemCount":108,"itemNoun":"countries","unitSingular":"capital","unitPlural":"capitals","promptCounterLabel":"Country","practiceCfgLabel":"Countries","initialTheme":"dark","levels":{"1":"Warming up","2":"Getting tricky","3":"Capital nerd zone","4":"Very hard"},"trackAnswerEvent":"capital_answered","ranks":[{"min":60,"icon":"globe","emoji":"🌍","en":["World Legend","Do you work at the UN?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Capital Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Globetrotter","You know your way around a map."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Traveler","Solid geography instincts."]},{"min":8,"icon":"plane","emoji":"🧳","en":["Tourist","Not bad — the world is big."]},{"min":0,"icon":"compass","emoji":"🧭","en":["Lost Tourist","Time to spin the globe some more."]}]},{"id":"math-master","enabled":true,"outputDir":"math-master","url":"math-master/","assetPrefix":"../","icon":"➗","title":"Math&nbsp;Master","titlePlain":"Math Master","tagline":"How fast can you crunch the numbers? Prove it.","storagePrefix":"mathmaster","leaderboardGame":"math","analyticsId":"math-master","gameUrl":"https://vitoraa.github.io/flag-master/math-master/","crossPromoUrl":"../","crossPromoTargetId":"flag-master","crossPromoHeading":"Know your flags too?","crossPromoBody":"Try Flag Master — same streaks, new challenge","crossPromoIcon":"flag","arcadeGradient":"radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)","itemCount":100,"itemNoun":"problems","unitSingular":"problem","unitPlural":"problems","promptCounterLabel":"Problem","practiceCfgLabel":"Problems","initialTheme":"light","levels":{"1":"Warming up","2":"Times tables","3":"Leveling up","4":"Getting tricky","5":"Math nerd zone","6":"Very hard"},"trackAnswerEvent":"math_answered","ranks":[{"min":60,"icon":"globe","emoji":"🧮","en":["Math Legend","Are you secretly a calculator?"]},{"min":40,"icon":"crown","emoji":"🏆","en":["Math Master","Genuinely elite. Respect."]},{"min":25,"icon":"medal","emoji":"🥇","en":["Number Cruncher","You chew through equations."]},{"min":15,"icon":"medal","emoji":"🥈","en":["Quick Thinker","Solid mental math instincts."]},{"min":8,"icon":"plane","emoji":"🧠","en":["Warming Up","Not bad — keep at it."]},{"min":0,"icon":"compass","emoji":"🔢","en":["Rusty","Time to dust off the times tables."]}]}];
-const GAME = GAMES.find(g => g.id === "flag-master");
-// [code, name, tier]  tier 1 = famous, 2 = medium, 3 = hard, 4 = very hard
-GAME.items = [
-  ["us","United States",1],["br","Brazil",1],["fr","France",1],["de","Germany",1],
-  ["it","Italy",1],["es","Spain",1],["gb","United Kingdom",1],["jp","Japan",1],
-  ["cn","China",1],["ca","Canada",1],["mx","Mexico",1],["ar","Argentina",1],
-  ["pt","Portugal",1],["au","Australia",1],["in","India",1],["ru","Russia",1],
-  ["kr","South Korea",1],["nl","Netherlands",1],["ch","Switzerland",1],["se","Sweden",1],
-  ["no","Norway",1],["gr","Greece",1],["tr","Turkey",1],["eg","Egypt",1],
-  ["za","South Africa",1],["ie","Ireland",1],["dk","Denmark",1],["be","Belgium",1],
-  ["pl","Poland",2],["at","Austria",2],["fi","Finland",2],["ua","Ukraine",2],
-  ["cl","Chile",2],["co","Colombia",2],["pe","Peru",2],["uy","Uruguay",2],
-  ["ve","Venezuela",2],["cu","Cuba",2],["th","Thailand",2],["vn","Vietnam",2],
-  ["ph","Philippines",2],["id","Indonesia",2],["my","Malaysia",2],["sg","Singapore",2],
-  ["nz","New Zealand",2],["il","Israel",2],["sa","Saudi Arabia",2],["ae","United Arab Emirates",2],
-  ["ma","Morocco",2],["ng","Nigeria",2],["ke","Kenya",2],["cz","Czechia",2],
-  ["hu","Hungary",2],["ro","Romania",2],["hr","Croatia",2],["is","Iceland",2],
-  ["pk","Pakistan",2],["bd","Bangladesh",2],["ec","Ecuador",2],["bo","Bolivia",2],
-  ["py","Paraguay",2],["pa","Panama",2],["cr","Costa Rica",2],["jm","Jamaica",2],
-  ["qa","Qatar",2],["ir","Iran",2],["iq","Iraq",2],["dz","Algeria",2],
-  ["si","Slovenia",3],["sk","Slovakia",3],["rs","Serbia",3],["bg","Bulgaria",3],
-  ["lt","Lithuania",3],["lv","Latvia",3],["ee","Estonia",3],["md","Moldova",3],
-  ["al","Albania",3],["mk","North Macedonia",3],["ba","Bosnia and Herzegovina",3],["me","Montenegro",3],
-  ["lu","Luxembourg",3],["mt","Malta",3],["cy","Cyprus",3],["am","Armenia",3],
-  ["ge","Georgia",3],["az","Azerbaijan",3],["kz","Kazakhstan",3],["uz","Uzbekistan",3],
-  ["kg","Kyrgyzstan",3],["tj","Tajikistan",3],["tm","Turkmenistan",3],["mn","Mongolia",3],
-  ["np","Nepal",3],["lk","Sri Lanka",3],["mm","Myanmar",3],["kh","Cambodia",3],
-  ["la","Laos",3],["bt","Bhutan",3],["bn","Brunei",3],["om","Oman",3],
-  ["kw","Kuwait",3],["bh","Bahrain",3],["jo","Jordan",3],["lb","Lebanon",3],
-  ["tn","Tunisia",3],["ly","Libya",3],["sd","Sudan",3],["et","Ethiopia",3],
-  ["gh","Ghana",3],["ci","Ivory Coast",3],["sn","Senegal",3],["cm","Cameroon",3],
-  ["tz","Tanzania",3],["ug","Uganda",3],["zm","Zambia",3],["zw","Zimbabwe",3],
-  ["mz","Mozambique",3],["ao","Angola",3],["na","Namibia",3],["bw","Botswana",3],
-  ["mg","Madagascar",3],["mu","Mauritius",3],["fj","Fiji",3],["pg","Papua New Guinea",3],
-  ["gt","Guatemala",3],["hn","Honduras",3],["sv","El Salvador",3],["ni","Nicaragua",3],
-  ["do","Dominican Republic",3],["ht","Haiti",3],["tt","Trinidad and Tobago",3],["gy","Guyana",3],
-  ["sr","Suriname",3],["bz","Belize",3],["mv","Maldives",3],["mc","Monaco",3],
-  ["li","Liechtenstein",3],["ad","Andorra",3],["sm","San Marino",3],["va","Vatican City",3],
-  ["af","Afghanistan",4],["ag","Antigua and Barbuda",4],["bb","Barbados",4],["bf","Burkina Faso",4],
-  ["bi","Burundi",4],["bj","Benin",4],["bs","Bahamas",4],["by","Belarus",4],
-  ["cd","DR Congo",4],["cf","Central African Republic",4],["cg","Republic of the Congo",4],["cv","Cabo Verde",4],
-  ["dj","Djibouti",4],["dm","Dominica",4],["er","Eritrea",4],["fm","Micronesia",4],
-  ["ga","Gabon",4],["gd","Grenada",4],["gm","Gambia",4],["gn","Guinea",4],
-  ["gq","Equatorial Guinea",4],["gw","Guinea-Bissau",4],["ki","Kiribati",4],["km","Comoros",4],
-  ["kn","Saint Kitts and Nevis",4],["kp","North Korea",4],["lc","Saint Lucia",4],["lr","Liberia",4],
-  ["ls","Lesotho",4],["mh","Marshall Islands",4],["ml","Mali",4],["mr","Mauritania",4],
-  ["mw","Malawi",4],["ne","Niger",4],["nr","Nauru",4],["ps","Palestine",4],
-  ["pw","Palau",4],["rw","Rwanda",4],["sb","Solomon Islands",4],["sc","Seychelles",4],
-  ["sl","Sierra Leone",4],["so","Somalia",4],["ss","South Sudan",4],["st","Sao Tome and Principe",4],
-  ["sy","Syria",4],["sz","Eswatini",4],["td","Chad",4],["tg","Togo",4],
-  ["tl","Timor-Leste",4],["to","Tonga",4],["tv","Tuvalu",4],["vc","Saint Vincent and the Grenadines",4],
-  ["vu","Vanuatu",4],["ws","Samoa",4],["ye","Yemen",4],
-];
+const GAME = GAMES.find(g => g.id === "math-master");
+// Procedurally generated equation pool — unlike flags/capitals, math
+// problems are cheap to generate, so there's no hand-written data list.
+// Item shape: [id, exprText, tier, answer, meta]
+// meta = { op, a, b } describes the operands actually shown (for ÷,
+// a = dividend, b = divisor) so pickMathDistractors can simulate mistakes
+// without re-parsing the display string.
 
-// Portuguese A/B test: shown when the browser is set to pt-* AND the
-// "flag-master-pt-localization" PostHog feature flag resolves to "test".
-const COUNTRY_NAMES_PT = {
-  us: "Estados Unidos", br: "Brasil", fr: "França", de: "Alemanha",
-  it: "Itália", es: "Espanha", gb: "Reino Unido", jp: "Japão",
-  cn: "China", ca: "Canadá", mx: "México", ar: "Argentina",
-  pt: "Portugal", au: "Austrália", in: "Índia", ru: "Rússia",
-  kr: "Coreia do Sul", nl: "Países Baixos", ch: "Suíça", se: "Suécia",
-  no: "Noruega", gr: "Grécia", tr: "Turquia", eg: "Egito",
-  za: "África do Sul", ie: "Irlanda", dk: "Dinamarca", be: "Bélgica",
-  pl: "Polónia", at: "Áustria", fi: "Finlândia", ua: "Ucrânia",
-  cl: "Chile", co: "Colômbia", pe: "Peru", uy: "Uruguai",
-  ve: "Venezuela", cu: "Cuba", th: "Tailândia", vn: "Vietname",
-  ph: "Filipinas", id: "Indonésia", my: "Malásia", sg: "Singapura",
-  nz: "Nova Zelândia", il: "Israel", sa: "Arábia Saudita", ae: "Emirados Árabes Unidos",
-  ma: "Marrocos", ng: "Nigéria", ke: "Quénia", cz: "Chéquia",
-  hu: "Hungria", ro: "Roménia", hr: "Croácia", is: "Islândia",
-  pk: "Paquistão", bd: "Bangladeche", ec: "Equador", bo: "Bolívia",
-  py: "Paraguai", pa: "Panamá", cr: "Costa Rica", jm: "Jamaica",
-  qa: "Catar", ir: "Irão", iq: "Iraque", dz: "Argélia",
-  si: "Eslovénia", sk: "Eslováquia", rs: "Sérvia", bg: "Bulgária",
-  lt: "Lituânia", lv: "Letónia", ee: "Estónia", md: "Moldávia",
-  al: "Albânia", mk: "Macedónia do Norte", ba: "Bósnia e Herzegovina", me: "Montenegro",
-  lu: "Luxemburgo", mt: "Malta", cy: "Chipre", am: "Arménia",
-  ge: "Geórgia", az: "Azerbaijão", kz: "Cazaquistão", uz: "Usbequistão",
-  kg: "Quirguistão", tj: "Tajiquistão", tm: "Turquemenistão", mn: "Mongólia",
-  np: "Nepal", lk: "Sri Lanka", mm: "Mianmar", kh: "Camboja",
-  la: "Laos", bt: "Butão", bn: "Brunei", om: "Omã",
-  kw: "Kuwait", bh: "Barém", jo: "Jordânia", lb: "Líbano",
-  tn: "Tunísia", ly: "Líbia", sd: "Sudão", et: "Etiópia",
-  gh: "Gana", ci: "Costa do Marfim", sn: "Senegal", cm: "Camarões",
-  tz: "Tanzânia", ug: "Uganda", zm: "Zâmbia", zw: "Zimbabué",
-  mz: "Moçambique", ao: "Angola", na: "Namíbia", bw: "Botsuana",
-  mg: "Madagáscar", mu: "Maurícia", fj: "Fiji", pg: "Papua-Nova Guiné",
-  gt: "Guatemala", hn: "Honduras", sv: "El Salvador", ni: "Nicarágua",
-  do: "República Dominicana", ht: "Haiti", tt: "Trindade e Tobago", gy: "Guiana",
-  sr: "Suriname", bz: "Belize", mv: "Maldivas", mc: "Mónaco",
-  li: "Liechtenstein", ad: "Andorra", sm: "São Marino", va: "Cidade do Vaticano",
-  af: "Afeganistão", ag: "Antígua e Barbuda", bb: "Barbados", bf: "Burquina Faso",
-  bi: "Burundi", bj: "Benim", bs: "Baamas", by: "Bielorrússia",
-  cd: "RD Congo", cf: "República Centro-Africana", cg: "República do Congo", cv: "Cabo Verde",
-  dj: "Jibuti", dm: "Dominica", er: "Eritreia", fm: "Micronésia",
-  ga: "Gabão", gd: "Granada", gm: "Gâmbia", gn: "Guiné",
-  gq: "Guiné Equatorial", gw: "Guiné-Bissau", ki: "Quiribáti", km: "Comores",
-  kn: "São Cristóvão e Neves", kp: "Coreia do Norte", lc: "Santa Lúcia", lr: "Libéria",
-  ls: "Lesoto", mh: "Ilhas Marshall", ml: "Mali", mr: "Mauritânia",
-  mw: "Malaui", ne: "Níger", nr: "Nauru", ps: "Palestina",
-  pw: "Palau", rw: "Ruanda", sb: "Ilhas Salomão", sc: "Seicheles",
-  sl: "Serra Leoa", so: "Somália", ss: "Sudão do Sul", st: "São Tomé e Príncipe",
-  sy: "Síria", sz: "Essuatíni", td: "Chade", tg: "Togo",
-  tl: "Timor-Leste", to: "Tonga", tv: "Tuvalu", vc: "São Vicente e Granadinas",
-  vu: "Vanuatu", ws: "Samoa", ye: "Iémen",
-};
+function randInt(min, max) { return Math.floor(min + Math.random() * (max - min + 1)); }
 
-function countryName(c) {
-  return (locale === "pt" && COUNTRY_NAMES_PT[c[0]]) ? COUNTRY_NAMES_PT[c[0]] : c[1];
+function addSub(min, max, tier, nextId) {
+  const a = randInt(min, max), b = randInt(min, max);
+  const id = `m${nextId()}`;
+  if (Math.random() < 0.5) {
+    return [id, `${a} + ${b}`, tier, a + b, { op: "+", a, b }];
+  }
+  const hi = Math.max(a, b), lo = Math.min(a, b);
+  return [id, `${hi} − ${lo}`, tier, hi - lo, { op: "−", a: hi, b: lo }];
 }
 
-// unitSingular/unitPlural/promptCounterLabel/promptCounterLabelPt/practiceCfgLabel/
-// initialTheme/levels/levelsPt/trackAnswerEvent/ranks all come from games.json —
-// this file only defines data (COUNTRIES/COUNTRY_NAMES_PT above) and hooks below.
+function mul(aMin, aMax, bMin, bMax, tier, nextId) {
+  const a = randInt(aMin, aMax), b = randInt(bMin, bMax);
+  const id = `m${nextId()}`;
+  return [id, `${a} × ${b}`, tier, a * b, { op: "×", a, b }];
+}
 
-GAME.detectLocale = function (setLocale) {
-  try {
-    if (navigator.language && navigator.language.toLowerCase().startsWith("pt")) {
-      posthog.onFeatureFlags(() => {
-        try {
-          if (posthog.getFeatureFlag("flag-master-pt-localization") === "test") setLocale("pt");
-        } catch {}
-      });
+function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
+  const divisor = randInt(divMin, divMax);
+  const quotient = randInt(quotMin, quotMax);
+  const dividend = divisor * quotient;
+  const id = `m${nextId()}`;
+  return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { op: "÷", a: dividend, b: divisor }];
+}
+
+// Two equations count as "the same question" if they're the same operator
+// on the same operands — for +/x, operand order doesn't matter (4x10 is
+// the same question as 10x4).
+function equationSignature(meta) {
+  const { op, a, b } = meta;
+  if (op === "+" || op === "×") {
+    const lo = Math.min(a, b), hi = Math.max(a, b);
+    return `${op}:${lo}:${hi}`;
+  }
+  return `${op}:${a}:${b}`;
+}
+
+function generateItems() {
+  let counter = 0;
+  const nextId = () => counter++;
+  // 6 tiers instead of 4 — each step up is a smaller increment, so the
+  // ramp feels gradual instead of jumping straight from plain addition
+  // to two-digit multiplication in the same block.
+  const GENERATORS = {
+    1: () => addSub(1, 20, 1, nextId),
+    2: () => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
+    3: () => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
+    4: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
+    5: () => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
+    6: () => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
+  };
+  // Fewer easy-tier items so the ramp to real difficulty happens sooner —
+  // a large easy-tier block frustrates stronger players into quitting
+  // before the game gets interesting. itemCount is 100 overall.
+  const PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
+  const items = [];
+  // Retry on a repeated question (e.g. two "4 x 10"s in the same pool) so
+  // players never see the exact same equation twice in one playthrough.
+  // Capped so a tier whose operand range is too small to fill without
+  // repeats can't loop forever — falls back to accepting the repeat.
+  const MAX_ATTEMPTS = 30;
+  const usedSignatures = new Set();
+  for (let tier = 1; tier <= 6; tier++) {
+    for (let i = 0; i < PER_TIER[tier]; i++) {
+      let item, attempts = 0;
+      do {
+        item = GENERATORS[tier]();
+        attempts++;
+      } while (usedSignatures.has(equationSignature(item[4])) && attempts < MAX_ATTEMPTS);
+      usedSignatures.add(equationSignature(item[4]));
+      items.push(item);
     }
-  } catch {}
-};
+  }
+  return items;
+}
 
-GAME.renderPrompt = function (item) {
-  $("country-name").textContent = countryName(item);
-};
+function applyOp(op, a, b) {
+  if (op === "+") return a + b;
+  if (op === "−") return a - b;
+  if (op === "×") return a * b;
+  if (op === "÷") return b === 0 ? a : a / b;
+  return a;
+}
 
-GAME.renderOption = function (item) {
-  return `<button class="flag-btn" data-key="${item[0]}" aria-label="Guess ${countryName(item)}">
-     <img src="${flagUrl(item[0])}" alt="" draggable="false">
-     <span class="mark"></span>
-   </button>`;
-};
+function offByOperandVariants(op, a, b) {
+  const out = [];
+  [-1, 1].forEach(d => {
+    out.push(applyOp(op, a + d, b));
+    if (b + d !== 0) out.push(applyOp(op, a, b + d));
+  });
+  return out;
+}
 
-GAME.optionKey = function (item) { return item[0]; };
+function operationSlipVariants(op, a, b) {
+  return ["+", "−", "×"].filter(o => o !== op).map(o => applyOp(o, a, b));
+}
 
-GAME.wrongAnswerText = function (item, clickedKey) {
-  const clicked = COUNTRIES.find(c => c[0] === clickedKey);
-  const clickedName = clicked ? countryName(clicked) : clickedKey;
-  return locale === "pt" ? `A resposta era ${clickedName}` : `That flag is ${clickedName}`;
-};
+function smallOffsetVariants(tier, correct) {
+  const scale = tier <= 2 ? 3 : Math.max(3, Math.round(correct * 0.1));
+  return [correct - scale, correct + scale, correct - 2 * scale, correct + 2 * scale];
+}
+
+function shuffleArr(a) {
+  const out = a.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// A distractor sharing the correct answer's last digit (e.g. 56 vs 66)
+// stops players from shortcutting to the right option by computing only
+// the ones digit and picking whichever option is the only one that matches.
+function sameLastDigitVariants(correct) {
+  return [10, -10, 20, -20].map(d => correct + d);
+}
+
+// Custom pickDistractors: unlike flags/capitals (where any other pool item
+// is a plausible wrong answer), a random other equation's answer could be
+// wildly off or collide with the correct value. Instead this simulates
+// specific mistakes: off-by-one-operand, wrong operator, small offset.
+function pickMathDistractors(answer) {
+  const tier = answer[2], correct = answer[3], meta = answer[4];
+  const used = new Set([correct]);
+  const picks = [];
+
+  // Guarantee at least one same-last-digit distractor from tier 3 up —
+  // tiers 1-2's answers are small enough that this isn't worth forcing.
+  if (tier >= 3) {
+    for (const c of sameLastDigitVariants(correct)) {
+      if (c > 0 && !used.has(c)) { used.add(c); picks.push(c); break; }
+    }
+  }
+
+  const candidates = shuffleArr([
+    ...offByOperandVariants(meta.op, meta.a, meta.b),
+    ...operationSlipVariants(meta.op, meta.a, meta.b),
+    ...smallOffsetVariants(tier, correct),
+  ]);
+  for (const c of candidates) {
+    if (picks.length >= 3) break;
+    const n = Math.round(c);
+    if (n <= 0 || used.has(n)) continue;
+    used.add(n);
+    picks.push(n);
+  }
+  let step = 1, attempt = 0;
+  while (picks.length < 3) {
+    const n = correct + step * (attempt % 2 === 0 ? 1 : -1);
+    step++;
+    attempt++;
+    if (n > 0 && !used.has(n)) { used.add(n); picks.push(n); }
+  }
+  return picks.map(n => ({ 3: n }));
+}
+
+if (typeof GAME !== "undefined") {
+  GAME.items = generateItems();
+
+  GAME.renderPrompt = function (item) {
+    $("prompt-flag").style.display = "none";
+    $("country-name").textContent = `${item[1]} = ?`;
+  };
+
+  GAME.renderOption = function (item) {
+    return `<button class="math-btn" data-key="${item[3]}" aria-label="Answer ${item[3]}">
+       <span class="math-num">${item[3]}</span>
+       <span class="mark"></span>
+     </button>`;
+  };
+
+  GAME.optionKey = function (item) { return String(item[3]); };
+
+  GAME.wrongAnswerText = function (item, clickedKey) {
+    return `The answer was ${item[3]}`;
+  };
+
+  GAME.pickDistractors = pickMathDistractors;
+}
+
+// Exposed for game.test.js only. The browser build never sets `module`.
+if (typeof module !== "undefined") {
+  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature };
+}
 
 GAME.buildBackground = function (layer) {
-  const rnd = (min, max) => min + Math.random() * (max - min);
-  const pool = shuffle(COUNTRIES.filter(c => c[2] <= 2).map(c => c[0]));
-  const cols = 6, rows = 6;
-  let i = 0;
+  const OPS = ["+", "−", "×", "÷"];
+  const randDigit = () => Math.floor(1 + Math.random() * 9);
+  // Every tile is a short decorative equation (e.g. "4 × 7"), not a lone
+  // digit or operator, so the background reads as math problems.
+  function randomTile() {
+    return `${randDigit()} ${OPS[Math.floor(Math.random() * OPS.length)]} ${randDigit()}`;
+  }
+  // --muted reads much fainter against the light theme's near-white
+  // background than against the dark theme's near-black one at the same
+  // alpha, so light mode needs a noticeably higher opacity floor/ceiling
+  // to actually be visible.
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  const opacityRange = isLight ? [0.28, 0.48] : [0.12, 0.28];
+  // Skip a fixed fraction of grid cells so density is tunable without
+  // reshaping the grid itself (0 = fill every cell, full density).
+  const SKIP_RATE = 0;
+  const cols = 9, rows = 8;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const code = pool[i % pool.length]; i++;
+      if (Math.random() < SKIP_RATE) continue;
+      const text = randomTile();
       const el = document.createElement("div");
-      el.className = "fl";
-      const w = rnd(72, 128);
-      el.style.width = w + "px";
-      el.style.left = (c / cols * 100 + rnd(-4, 4)) + "%";
-      el.style.top  = (r / rows * 100 + rnd(-4, 4)) + "%";
-      el.style.opacity = rnd(0.55, 0.95).toFixed(2);
+      el.className = "mg";
+      el.textContent = text;
+      el.style.fontSize = rnd(18, 32) + "px";
+      el.style.left = (c / cols * 100 + rnd(-3, 3)) + "%";
+      el.style.top  = (r / rows * 100 + rnd(-3, 3)) + "%";
+      el.style.opacity = rnd(opacityRange[0], opacityRange[1]).toFixed(2);
       el.style.setProperty("--tx", rnd(-46, 46).toFixed(0) + "px");
       el.style.setProperty("--ty", rnd(-46, 46).toFixed(0) + "px");
       el.style.setProperty("--r1", rnd(-9, 9).toFixed(1) + "deg");
       el.style.setProperty("--r2", rnd(-9, 9).toFixed(1) + "deg");
       el.style.setProperty("--d", rnd(4.5, 9).toFixed(1) + "s");
       el.style.setProperty("--delay", (-rnd(0, 9)).toFixed(1) + "s");
-      el.innerHTML = `<img src="${flagUrl(code)}" alt="" draggable="false" loading="lazy">`;
       layer.appendChild(el);
     }
   }

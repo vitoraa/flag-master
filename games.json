@@ -79,10 +79,40 @@
   },
   {
     "id": "math-master",
-    "enabled": false,
+    "enabled": true,
+    "outputDir": "math-master",
+    "url": "math-master/",
+    "assetPrefix": "../",
     "icon": "➗",
     "title": "Math&nbsp;Master",
     "titlePlain": "Math Master",
-    "tagline": "Coming soon"
+    "tagline": "How fast can you crunch the numbers? Prove it.",
+    "storagePrefix": "mathmaster",
+    "leaderboardGame": "math",
+    "analyticsId": "math-master",
+    "gameUrl": "https://vitoraa.github.io/flag-master/math-master/",
+    "crossPromoUrl": "../",
+    "crossPromoTargetId": "flag-master",
+    "crossPromoHeading": "Know your flags too?",
+    "crossPromoBody": "Try Flag Master — same streaks, new challenge",
+    "crossPromoIcon": "flag",
+    "arcadeGradient": "radial-gradient(circle at 30% 30%, #ffb86b, #b3541e 70%)",
+    "itemCount": 100,
+    "itemNoun": "problems",
+    "unitSingular": "problem",
+    "unitPlural": "problems",
+    "promptCounterLabel": "Problem",
+    "practiceCfgLabel": "Problems",
+    "initialTheme": "light",
+    "levels": { "1": "Warming up", "2": "Times tables", "3": "Leveling up", "4": "Getting tricky", "5": "Math nerd zone", "6": "Very hard" },
+    "trackAnswerEvent": "math_answered",
+    "ranks": [
+      { "min": 60, "icon": "globe", "emoji": "🧮", "en": ["Math Legend", "Are you secretly a calculator?"] },
+      { "min": 40, "icon": "crown", "emoji": "🏆", "en": ["Math Master", "Genuinely elite. Respect."] },
+      { "min": 25, "icon": "medal", "emoji": "🥇", "en": ["Number Cruncher", "You chew through equations."] },
+      { "min": 15, "icon": "medal", "emoji": "🥈", "en": ["Quick Thinker", "Solid mental math instincts."] },
+      { "min": 8, "icon": "plane", "emoji": "🧠", "en": ["Warming Up", "Not bad — keep at it."] },
+      { "min": 0, "icon": "compass", "emoji": "🔢", "en": ["Rusty", "Time to dust off the times tables."] }
+    ]
   }
 ]
