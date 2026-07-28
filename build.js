@@ -19,8 +19,7 @@ const gamesJsonLiteral = JSON.stringify(games).replace(/</g, "\\u003c");
 const REQUIRED_FIELDS = [
   "id", "outputDir", "url", "assetPrefix", "icon", "title", "titlePlain", "tagline",
   "storagePrefix", "leaderboardGame", "analyticsId", "gameUrl",
-  "crossPromoUrl", "crossPromoTargetId", "crossPromoHeading", "crossPromoBody",
-  "crossPromoIcon", "arcadeGradient",
+  "crossPromos", "arcadeGradient",
   "itemCount", "itemNoun", "unitSingular", "unitPlural",
   "promptCounterLabel", "practiceCfgLabel", "initialTheme",
   "levels", "trackAnswerEvent", "ranks",
@@ -54,8 +53,6 @@ for (const game of games.filter(g => g.enabled)) {
     .replace(/\{\{UNIT_PLURAL\}\}/g, game.unitPlural)
     .replace(/\{\{PRACTICE_CFG_LABEL\}\}/g, game.practiceCfgLabel)
     .replace(/\{\{TOTAL_ALL_DIFFICULTY\}\}/g, `All ${game.itemCount}`)
-    .replace(/\{\{CROSS_PROMO_HEADING\}\}/g, game.crossPromoHeading)
-    .replace(/\{\{CROSS_PROMO_BODY\}\}/g, game.crossPromoBody)
     .replace(
       "<!--GAME_SCRIPT-->",
       `const GAMES = ${gamesJsonLiteral};\nconst GAME = GAMES.find(g => g.id === ${JSON.stringify(game.id)});\n${gameJs}\n${backgroundJs}\n${engineJs}\n${arcadeJs}`

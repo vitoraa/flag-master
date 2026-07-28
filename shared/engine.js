@@ -30,7 +30,9 @@ const BEST_KEY = `${GAME.storagePrefix}-best`;
 const GAME_URL = GAME.gameUrl;
 const PLAYS_KEY = `${GAME.storagePrefix}-games-played`;
 const RATING_GIVEN_KEY = `${GAME.storagePrefix}-rating-given`;
-const CROSS_PROMO_URL = GAME.crossPromoUrl;
+const CROSS_PROMO = GAME.crossPromos[Math.floor(Math.random() * GAME.crossPromos.length)];
+const CROSS_PROMO_TARGET = GAMES.find(g => g.id === CROSS_PROMO.targetId);
+const CROSS_PROMO_URL = relativeUrl(GAME, CROSS_PROMO_TARGET);
 const THEME_KEY = `${GAME.storagePrefix}-theme`;
 const COUNTRIES = GAME.items;
 
@@ -682,7 +684,9 @@ $("ic-slot-4").innerHTML = ICON.trend;
 $("streak-flame").innerHTML = ICON.flame;
 $("ic-share").innerHTML = ICON.share;
 $("ic-again").innerHTML = ICON.replay;
-$("promo-ic").innerHTML = ICON[GAME.crossPromoIcon];
+$("promo-ic").innerHTML = ICON[CROSS_PROMO.icon];
+$("promo-h").textContent = CROSS_PROMO.heading;
+$("promo-s").textContent = CROSS_PROMO.body;
 $("ic-check").innerHTML = ICON.check;
 $("quit-btn").innerHTML = ICON.close;
 $("quit-btn").addEventListener("click", quitToStart);
@@ -775,7 +779,7 @@ document.querySelectorAll(".seg").forEach(seg => {
 });
 $("btn-again").addEventListener("click", () => { ensureScoreSaved(); startGame(); });
 $("cross-promo").addEventListener("click", () => {
-  track("cross_promo_clicked", { from: GAME.analyticsId, to: GAME.crossPromoTargetId });
+  track("cross_promo_clicked", { from: GAME.analyticsId, to: CROSS_PROMO_TARGET.analyticsId });
   location.href = CROSS_PROMO_URL;
 });
 $("btn-share").addEventListener("click", async () => {
