@@ -49,12 +49,105 @@ function missingOperand(tier, nextId, tail = null) {
   const inner = applyOp(op, a, b);
   // A subtracting tail must not drive the stated total to zero or below —
   // a non-positive total reads as broken and breaks the distractor rules.
-  const tailC = tail && tail.op === "−" ? Math.min(tail.c, inner - 1) : (tail ? tail.c : 0);
-  const usedTail = tail ? { op: tail.op, c: Math.max(1, tailC) } : null;
+  // When the inner value is too small to subtract from at all, fall back to
+  // addition instead of clamping to a degenerate c.
+  let usedTail = null;
+  if (tail) {
+    if (tail.op === "−" && inner - 1 >= 1) {
+      usedTail = { op: "−", c: Math.min(tail.c, inner - 1) };
+    } else if (tail.op === "−") {
+      usedTail = { op: "+", c: tail.c };
+    } else {
+      usedTail = { op: tail.op, c: tail.c };
+    }
+  }
   const total = usedTail ? applyOp(usedTail.op, inner, usedTail.c) : inner;
   const left = slot === "a" ? `? ${op} ${b}` : `${a} ${op} ?`;
   const text = usedTail ? `${left} ${usedTail.op} ${usedTail.c} = ${total}` : `${left} = ${total}`;
   return [`m${nextId()}`, text, tier, answer, { kind: "missing", op, a, b, slot, tail: usedTail }];
+}
+
+// A two-step expression's correct value, honouring operator precedence.
+// `shape` says where the tightly-binding operation sits:
+//   "left"  -> (a innerOp b) outerOp c        e.g. (12 − 5) × 8, 60 ÷ 4 + 9
+//   "right" -> a outerOp (b innerOp c)        e.g. 7 + 6 × 4
+//   "both"  -> (a × b) outerOp (c × d)        e.g. 9 × 7 − 4 × 8
+function evalTwoStep(meta) {
+  const { shape, outerOp, innerOp, a, b, c, d } = meta;
+  if (shape === "left") return applyOp(outerOp, applyOp(innerOp, a, b), c);
+  if (shape === "right") return applyOp(outerOp, a, applyOp(innerOp, b, c));
+  return applyOp(outerOp, applyOp("×", a, b), applyOp("×", c, d));
+}
+
+// What a player gets by evaluating strictly left to right and ignoring
+// precedence. For "left"-shaped expressions this equals the correct value
+// (tier 8 is deliberately trap-free); for the others it is the mistake the
+// tier is designed to punish, and is forced into the option set.
+function evalLeftToRight(meta) {
+  const { shape, outerOp, innerOp, a, b, c, d } = meta;
+  if (shape === "left") return applyOp(outerOp, applyOp(innerOp, a, b), c);
+  if (shape === "right") return applyOp(innerOp, applyOp(outerOp, a, b), c);
+  return applyOp("×", applyOp(outerOp, applyOp("×", a, b), c), d);
+}
+
+// Tier 8: two steps, but written so left-to-right reading is already correct —
+// either the first step is parenthesised, or it is a division written first.
+function twoStepPlain(tier, nextId) {
+  const id = `m${nextId()}`;
+  if (Math.random() < 0.5) {
+    const innerOp = Math.random() < 0.5 ? "+" : "−";
+    const b = randInt(2, 9);
+    // For subtraction keep a strictly above b so the inner value stays positive.
+    const a = innerOp === "−" ? randInt(b + 2, 20) : randInt(2, 20);
+    const c = randInt(2, 9);
+    const meta = { kind: "twostep", shape: "left", outerOp: "×", innerOp, a, b, c };
+    return [id, `(${a} ${innerOp} ${b}) × ${c}`, tier, evalTwoStep(meta), meta];
+  }
+  const b = randInt(2, 9);
+  const quotient = randInt(4, 12);
+  const a = b * quotient;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  // Keep the final value positive: subtract strictly less than the quotient.
+  const c = outerOp === "−" ? randInt(1, quotient - 1) : randInt(2, 20);
+  const meta = { kind: "twostep", shape: "left", outerOp, innerOp: "÷", a, b, c };
+  return [id, `${a} ÷ ${b} ${outerOp} ${c}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 9: a ± b × c. Multiplication binds tighter than the leading ±, so
+// reading left to right gives (a ± b) × c — always a different number, since
+// the two agree only when c === 1 and c is never 1 here.
+function twoStepTrap(tier, nextId) {
+  const id = `m${nextId()}`;
+  const b = randInt(2, 9), c = randInt(2, 9);
+  const product = b * c;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  // For subtraction keep a above the product (correct value positive) and
+  // above b (so the left-to-right trap value is positive too, making it a
+  // usable distractor).
+  const a = outerOp === "−" ? randInt(product + 1, product + 40) : randInt(2, 40);
+  const meta = { kind: "twostep", shape: "right", outerOp, innerOp: "×", a, b, c };
+  return [id, `${a} ${outerOp} ${b} × ${c}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 10: a × b ± c × d — two products to hold in your head at once.
+function twoStepDouble(tier, nextId) {
+  const id = `m${nextId()}`;
+  const outerOp = Math.random() < 0.5 ? "+" : "−";
+  let a = randInt(3, 12), b = randInt(3, 12), c = randInt(2, 9), d = randInt(2, 9);
+  if (outerOp === "−" && a * b <= c * d) {
+    // Swap the pairs so the left product is the larger one; the result stays
+    // positive without rejecting and regenerating.
+    [a, b, c, d] = [c, d, a, b];
+  }
+  if (outerOp === "−" && a * b === c * d) d = Math.max(2, d - 1);
+  const meta = { kind: "twostep", shape: "both", outerOp, innerOp: "×", a, b, c, d };
+  return [id, `${a} × ${b} ${outerOp} ${c} × ${d}`, tier, evalTwoStep(meta), meta];
+}
+
+// Tier 10: a missing operand buried in a two-step expression, e.g. 3 × ? + 7 = 31.
+function twoStepMissing(tier, nextId) {
+  const op = Math.random() < 0.5 ? "+" : "−";
+  return missingOperand(tier, nextId, { op, c: randInt(2, 20) });
 }
 
 // Two equations count as "the same question" if they're the same operator
@@ -223,5 +316,9 @@ if (typeof GAME !== "undefined") {
 
 // Exposed for game.test.js only. The browser build never sets `module`.
 if (typeof module !== "undefined") {
-  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature, missingOperand };
+  module.exports = {
+    generateItems, pickMathDistractors, applyOp, equationSignature,
+    missingOperand, twoStepPlain, twoStepTrap, twoStepDouble, twoStepMissing,
+    evalTwoStep, evalLeftToRight,
+  };
 }

@@ -1,5 +1,9 @@
 const assert = require("assert");
-const { generateItems, pickMathDistractors, applyOp, equationSignature, missingOperand } = require("./game.js");
+const {
+  generateItems, pickMathDistractors, applyOp, equationSignature,
+  missingOperand, twoStepPlain, twoStepTrap, twoStepDouble, twoStepMissing,
+  evalTwoStep, evalLeftToRight,
+} = require("./game.js");
 
 const items = generateItems();
 assert.strictEqual(items.length, 100, "pool should contain 100 items");
@@ -99,6 +103,68 @@ assert.notStrictEqual(
     const visible = meta.slot === "a" ? meta.b : meta.a;
     assert.ok(expr.includes(String(visible)), `${expr} must show the visible operand ${visible}`);
   }
+}
+
+// --- Tiers 8-10: two-step expressions ---
+{
+  const nextId = (() => { let n = 0; return () => n++; })();
+
+  // Tier 8: correct evaluation equals plain left-to-right — no trap.
+  for (let i = 0; i < 2000; i++) {
+    const [, expr, tier, answer, meta] = twoStepPlain(8, nextId);
+    assert.strictEqual(tier, 8);
+    assert.strictEqual(meta.kind, "twostep");
+    assert.strictEqual(meta.shape, "left");
+    assert.ok(Number.isInteger(answer) && answer > 0, `${expr} must have a positive integer answer, got ${answer}`);
+    assert.strictEqual(answer, evalTwoStep(meta), `${expr}: answer must match evalTwoStep`);
+    assert.strictEqual(evalLeftToRight(meta), answer, `${expr}: tier 8 must have no precedence trap`);
+  }
+
+  // Tier 9: the left-to-right value must ALWAYS differ from the correct value.
+  // That difference is the entire point of the tier.
+  for (let i = 0; i < 2000; i++) {
+    const [, expr, tier, answer, meta] = twoStepTrap(9, nextId);
+    assert.strictEqual(tier, 9);
+    assert.strictEqual(meta.shape, "right");
+    assert.strictEqual(meta.innerOp, "×", "the trap comes from x binding tighter");
+    assert.ok(Number.isInteger(answer) && answer > 0, `${expr} must have a positive integer answer, got ${answer}`);
+    assert.strictEqual(answer, evalTwoStep(meta), `${expr}: answer must match evalTwoStep`);
+    const trap = evalLeftToRight(meta);
+    assert.notStrictEqual(trap, answer, `${expr}: tier 9 must have a distinct left-to-right trap value`);
+    assert.ok(trap > 0, `${expr}: trap value must be positive to be usable as a distractor, got ${trap}`);
+  }
+
+  // Tier 10a: three-term, two products.
+  for (let i = 0; i < 2000; i++) {
+    const [, expr, tier, answer, meta] = twoStepDouble(10, nextId);
+    assert.strictEqual(tier, 10);
+    assert.strictEqual(meta.shape, "both");
+    assert.ok(Number.isInteger(meta.d) && meta.d > 0, `${expr} must define a fourth operand`);
+    assert.ok(Number.isInteger(answer) && answer > 0, `${expr} must have a positive integer answer, got ${answer}`);
+    assert.strictEqual(answer, evalTwoStep(meta), `${expr}: answer must match evalTwoStep`);
+  }
+
+  // Tier 10b: missing operand inside a two-step expression.
+  for (let i = 0; i < 2000; i++) {
+    const [, expr, tier, answer, meta] = twoStepMissing(10, nextId);
+    assert.strictEqual(tier, 10);
+    assert.strictEqual(meta.kind, "missing");
+    assert.ok(meta.tail && ["+", "−"].includes(meta.tail.op), `${expr} must carry a +/- tail`);
+    assert.ok(Number.isInteger(answer) && answer > 0, `${expr} must have a positive integer answer, got ${answer}`);
+    assert.strictEqual(answer, meta.slot === "a" ? meta.a : meta.b);
+    const total = applyOp(meta.tail.op, applyOp(meta.op, meta.a, meta.b), meta.tail.c);
+    assert.ok(total > 0, `${expr}: stated total must be positive, got ${total}`);
+    assert.ok(expr.endsWith(`= ${total}`), `${expr} must state the total ${total}`);
+  }
+
+  // Signatures distinguish the shapes rather than colliding.
+  const sigs = new Set();
+  for (let i = 0; i < 200; i++) {
+    sigs.add(equationSignature(twoStepPlain(8, nextId)[4]));
+    sigs.add(equationSignature(twoStepTrap(9, nextId)[4]));
+    sigs.add(equationSignature(twoStepDouble(10, nextId)[4]));
+  }
+  assert.ok(sigs.size > 100, `two-step signatures must be varied, got ${sigs.size} distinct`);
 }
 
 // Regression: ensure fallback loop terminates with correct === 0 (edge case)
