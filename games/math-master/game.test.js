@@ -3,9 +3,10 @@ const { generateItems, pickMathDistractors, applyOp } = require("./game.js");
 
 const items = generateItems();
 assert.strictEqual(items.length, 200, "pool should contain 200 items");
+const EXPECTED_PER_TIER = { 1: 30, 2: 40, 3: 60, 4: 70 };
 for (let tier = 1; tier <= 4; tier++) {
   const count = items.filter(it => it[2] === tier).length;
-  assert.strictEqual(count, 50, `tier ${tier} should have 50 items, got ${count}`);
+  assert.strictEqual(count, EXPECTED_PER_TIER[tier], `tier ${tier} should have ${EXPECTED_PER_TIER[tier]} items, got ${count}`);
 }
 
 items.forEach(([id, expr, tier, answer, meta]) => {

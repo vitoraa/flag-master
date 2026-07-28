@@ -750,16 +750,22 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
 function generateItems() {
   let counter = 0;
   const nextId = () => counter++;
+  // Full single-digit multiplication tables (2-9 x 2-9) live in tier 1
+  // alongside add/sub — otherwise tier 1 stays trivial for too long and
+  // the real step-up (two-digit operands, then division) doesn't arrive
+  // until far too many rounds in.
   const GENERATORS = {
-    1: () => Math.random() < 0.7 ? addSub(1, 20, 1, nextId) : mul(2, 5, 2, 5, 1, nextId),
-    2: () => Math.random() < 0.6 ? addSub(10, 50, 2, nextId) : mul(2, 9, 2, 9, 2, nextId),
+    1: () => Math.random() < 0.5 ? addSub(1, 20, 1, nextId) : mul(2, 9, 2, 9, 1, nextId),
+    2: () => Math.random() < 0.5 ? addSub(10, 50, 2, nextId) : mul(2, 9, 10, 20, 2, nextId),
     3: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 3, nextId) : div(2, 12, 2, 12, 3, nextId),
     4: () => Math.random() < 0.5 ? mul(10, 99, 2, 12, 4, nextId) : div(2, 20, 10, 50, 4, nextId),
   };
-  const PER_TIER = 50;
+  // Fewer easy-tier items so the ramp to real difficulty happens sooner;
+  // itemCount stays 200 overall.
+  const PER_TIER = { 1: 30, 2: 40, 3: 60, 4: 70 };
   const items = [];
   for (let tier = 1; tier <= 4; tier++) {
-    for (let i = 0; i < PER_TIER; i++) items.push(GENERATORS[tier]());
+    for (let i = 0; i < PER_TIER[tier]; i++) items.push(GENERATORS[tier]());
   }
   return items;
 }
