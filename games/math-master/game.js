@@ -46,26 +46,21 @@ function equationSignature(meta) {
 function generateItems() {
   let counter = 0;
   const nextId = () => counter++;
-  // Full single-digit multiplication tables (2-9 x 2-9) and easy clean
-  // division (e.g. 8 ÷ 4) live in tier 1 alongside add/sub — otherwise
-  // tier 1 stays trivial for too long and the real step-up (two-digit
-  // operands, then harder division) doesn't arrive until far too many
-  // rounds in.
+  // 6 tiers instead of 4 — each step up is a smaller increment, so the
+  // ramp feels gradual instead of jumping straight from plain addition
+  // to two-digit multiplication in the same block.
   const GENERATORS = {
-    1: () => {
-      const r = Math.random();
-      if (r < 1 / 3) return addSub(1, 20, 1, nextId);
-      if (r < 2 / 3) return mul(2, 9, 2, 10, 1, nextId);
-      return div(2, 9, 2, 9, 1, nextId);
-    },
-    2: () => Math.random() < 0.5 ? addSub(10, 50, 2, nextId) : mul(2, 9, 10, 20, 2, nextId),
-    3: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 3, nextId) : div(2, 12, 2, 12, 3, nextId),
-    4: () => Math.random() < 0.5 ? mul(10, 99, 2, 12, 4, nextId) : div(2, 20, 10, 50, 4, nextId),
+    1: () => addSub(1, 20, 1, nextId),
+    2: () => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
+    3: () => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
+    4: () => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
+    5: () => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
+    6: () => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
   };
   // Fewer easy-tier items so the ramp to real difficulty happens sooner —
   // a large easy-tier block frustrates stronger players into quitting
   // before the game gets interesting. itemCount is 100 overall.
-  const PER_TIER = { 1: 10, 2: 20, 3: 30, 4: 40 };
+  const PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
   const items = [];
   // Retry on a repeated question (e.g. two "4 x 10"s in the same pool) so
   // players never see the exact same equation twice in one playthrough.
@@ -73,7 +68,7 @@ function generateItems() {
   // repeats can't loop forever — falls back to accepting the repeat.
   const MAX_ATTEMPTS = 30;
   const usedSignatures = new Set();
-  for (let tier = 1; tier <= 4; tier++) {
+  for (let tier = 1; tier <= 6; tier++) {
     for (let i = 0; i < PER_TIER[tier]; i++) {
       let item, attempts = 0;
       do {
@@ -138,9 +133,9 @@ function pickMathDistractors(answer) {
   const used = new Set([correct]);
   const picks = [];
 
-  // Guarantee at least one same-last-digit distractor from tier 2 up —
-  // tier 1's answers are small enough that this isn't worth forcing.
-  if (tier >= 2) {
+  // Guarantee at least one same-last-digit distractor from tier 3 up —
+  // tiers 1-2's answers are small enough that this isn't worth forcing.
+  if (tier >= 3) {
     for (const c of sameLastDigitVariants(correct)) {
       if (c > 0 && !used.has(c)) { used.add(c); picks.push(c); break; }
     }

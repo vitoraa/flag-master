@@ -53,11 +53,10 @@ function buildQueue() {
   if (practiceMode && practiceCfg.difficulty === "easy") {
     return shuffle(COUNTRIES.filter(c => c[2] === 1));
   }
-  const t1 = shuffle(COUNTRIES.filter(c => c[2] === 1));
-  const t2 = shuffle(COUNTRIES.filter(c => c[2] === 2));
-  const t3 = shuffle(COUNTRIES.filter(c => c[2] === 3));
-  const t4 = shuffle(COUNTRIES.filter(c => c[2] === 4));
-  return [...t1, ...t2, ...t3, ...t4];
+  // Tier count comes from GAME.levels (not hardcoded to 4), so a game can
+  // define more, finer-grained tiers for a gentler difficulty ramp.
+  const tiers = Object.keys(LEVELS).map(Number).sort((a, b) => a - b);
+  return tiers.flatMap(tier => shuffle(COUNTRIES.filter(c => c[2] === tier)));
 }
 
 function getPersonalBest() {

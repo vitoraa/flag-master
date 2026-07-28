@@ -3,8 +3,8 @@ const { generateItems, pickMathDistractors, applyOp, equationSignature } = requi
 
 const items = generateItems();
 assert.strictEqual(items.length, 100, "pool should contain 100 items");
-const EXPECTED_PER_TIER = { 1: 10, 2: 20, 3: 30, 4: 40 };
-for (let tier = 1; tier <= 4; tier++) {
+const EXPECTED_PER_TIER = { 1: 8, 2: 10, 3: 15, 4: 20, 5: 22, 6: 25 };
+for (let tier = 1; tier <= 6; tier++) {
   const count = items.filter(it => it[2] === tier).length;
   assert.strictEqual(count, EXPECTED_PER_TIER[tier], `tier ${tier} should have ${EXPECTED_PER_TIER[tier]} items, got ${count}`);
 }
@@ -46,10 +46,10 @@ for (let i = 0; i < 500; i++) {
     assert.notStrictEqual(v, answer[3], "distractor must not equal the correct answer");
     assert.ok(v > 0, "distractor must be a positive number");
   });
-  // Regression: tier 2+ must include at least one distractor sharing the
+  // Regression: tier 3+ must include at least one distractor sharing the
   // correct answer's last digit, so players can't shortcut by only
   // computing the ones digit.
-  if (answer[2] >= 2) {
+  if (answer[2] >= 3) {
     const correctLastDigit = answer[3] % 10;
     assert.ok(
       values.some(v => v % 10 === correctLastDigit),

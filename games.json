@@ -104,7 +104,7 @@
     "promptCounterLabel": "Problem",
     "practiceCfgLabel": "Problems",
     "initialTheme": "light",
-    "levels": { "1": "Warming up", "2": "Getting tricky", "3": "Math nerd zone", "4": "Very hard" },
+    "levels": { "1": "Warming up", "2": "Times tables", "3": "Leveling up", "4": "Getting tricky", "5": "Math nerd zone", "6": "Very hard" },
     "trackAnswerEvent": "math_answered",
     "ranks": [
       { "min": 60, "icon": "globe", "emoji": "🧮", "en": ["Math Legend", "Are you secretly a calculator?"] },
