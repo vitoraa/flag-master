@@ -383,7 +383,7 @@ let pendingRating = null;
 
 function renderFeedbackStars(rating) {
   $("feedback-modal-stars").innerHTML = Array.from({ length: 5 }, (_, i) =>
-    `<span class="modal-star ${i < rating ? "filled" : ""}">★</span>`).join("");
+    `<button type="button" class="modal-star ${i < rating ? "filled" : ""}" data-rating="${i + 1}" aria-label="Rate ${i + 1} star${i === 0 ? "" : "s"}">★</button>`).join("");
 }
 
 function openFeedbackModal(rating) {
@@ -709,6 +709,20 @@ $("rating-dismiss").addEventListener("click", () => {
   try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
   $("rating-card").style.display = "none";
 });
+$("feedback-modal-stars").addEventListener("click", e => {
+  const btn = e.target.closest(".modal-star");
+  if (!btn) return;
+  pendingRating = Number(btn.dataset.rating);
+  renderFeedbackStars(pendingRating);
+});
+$("feedback-modal-stars").addEventListener("mouseover", e => {
+  const btn = e.target.closest(".modal-star");
+  if (!btn) return;
+  const rating = Number(btn.dataset.rating);
+  $("feedback-modal-stars").querySelectorAll(".modal-star").forEach(b =>
+    b.classList.toggle("filled", Number(b.dataset.rating) <= rating));
+});
+$("feedback-modal-stars").addEventListener("mouseleave", () => renderFeedbackStars(pendingRating));
 $("feedback-send").addEventListener("click", sendFeedbackAndClose);
 $("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
 
