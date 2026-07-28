@@ -922,9 +922,13 @@ GAME.buildBackground = function (layer) {
   // to actually be visible.
   const isLight = document.documentElement.getAttribute("data-theme") === "light";
   const opacityRange = isLight ? [0.28, 0.48] : [0.12, 0.28];
+  // Skip a fixed fraction of grid cells so density is tunable without
+  // reshaping the grid itself (currently 15% less dense than a full grid).
+  const SKIP_RATE = 0.15;
   const cols = 9, rows = 8;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
+      if (Math.random() < SKIP_RATE) continue;
       const text = randomTile();
       const el = document.createElement("div");
       el.className = "mg";
