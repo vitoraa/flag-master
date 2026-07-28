@@ -30,7 +30,6 @@ const BEST_KEY = `${GAME.storagePrefix}-best`;
 const GAME_URL = GAME.gameUrl;
 const PLAYS_KEY = `${GAME.storagePrefix}-games-played`;
 const RATING_GIVEN_KEY = `${GAME.storagePrefix}-rating-given`;
-const RATING_DISMISSED_KEY = `${GAME.storagePrefix}-rating-dismissed`;
 const CROSS_PROMO_URL = GAME.crossPromoUrl;
 const THEME_KEY = `${GAME.storagePrefix}-theme`;
 const COUNTRIES = GAME.items;
@@ -369,12 +368,9 @@ function updateCrossPromo(plays) {
 }
 
 function updateRatingCard(plays) {
-  let given = false, dismissed = false;
-  try {
-    given = localStorage.getItem(RATING_GIVEN_KEY) === "1";
-    dismissed = localStorage.getItem(RATING_DISMISSED_KEY) === "1";
-  } catch {}
-  $("rating-card").style.display = (plays >= 4 && !given && !dismissed) ? "" : "none";
+  let given = false;
+  try { given = localStorage.getItem(RATING_GIVEN_KEY) === "1"; } catch {}
+  $("rating-card").style.display = (plays >= 4 && !given) ? "" : "none";
 }
 
 let pendingRating = null;
@@ -702,10 +698,6 @@ $("rating-stars").addEventListener("mouseover", e => {
 });
 $("rating-stars").addEventListener("mouseleave", () => {
   $("rating-stars").querySelectorAll(".star-btn").forEach(b => b.classList.remove("hovered"));
-});
-$("rating-dismiss").addEventListener("click", () => {
-  try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
-  $("rating-card").style.display = "none";
 });
 $("feedback-modal-stars").addEventListener("click", e => {
   const btn = e.target.closest(".modal-star");
