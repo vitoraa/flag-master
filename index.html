@@ -117,6 +117,12 @@
   .arcade-card .arcade-go { flex: none; font-size: 16px; color: var(--accent-2); }
   .arcade-card + .arcade-card { margin-top: 10px; }
   .arcade-card.arcade-card-disabled { opacity: .55; cursor: default; pointer-events: none; }
+  .arcade-feedback-link {
+    display: block; width: 100%; margin-top: 16px; padding: 4px 0;
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    color: var(--muted); font-size: 13px; text-align: center; text-decoration: underline;
+  }
+  .arcade-feedback-link:hover { color: var(--text); }
   @media (min-width: 640px) {
     .arcade-sheet {
       left: 50%; right: auto; bottom: auto; top: 50%;
@@ -581,6 +587,7 @@
   <div class="arcade-grip"></div>
   <div class="arcade-sheet-title">More games</div>
   <div id="arcade-sheet-cards"></div>
+  <button class="arcade-feedback-link" id="arcade-feedback-link" type="button">💬 Send feedback</button>
 </div>
 <div id="feedback-backdrop" class="arcade-backdrop"></div>
 <div id="feedback-sheet" class="arcade-sheet feedback-sheet">
@@ -1297,7 +1304,7 @@ function updateCrossPromo(plays) {
 function updateRatingCard(plays) {
   let given = false;
   try { given = localStorage.getItem(RATING_GIVEN_KEY) === "1"; } catch {}
-  $("rating-card").style.display = (plays >= 4 && !given) ? "" : "none";
+  $("rating-card").style.display = (plays >= 2 && !given) ? "" : "none";
 }
 
 let pendingRating = null;
@@ -1642,6 +1649,10 @@ $("feedback-modal-stars").addEventListener("mouseover", e => {
 $("feedback-modal-stars").addEventListener("mouseleave", () => renderFeedbackStars(pendingRating));
 $("feedback-send").addEventListener("click", sendFeedbackAndClose);
 $("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
+$("arcade-feedback-link").addEventListener("click", () => {
+  closeArcadeSheet();
+  openFeedbackModal(0);
+});
 
 /* ---------- theme ---------- */
 function applyTheme(t) {

@@ -104,6 +104,12 @@
   .arcade-card .arcade-go { flex: none; font-size: 16px; color: var(--accent-2); }
   .arcade-card + .arcade-card { margin-top: 10px; }
   .arcade-card.arcade-card-disabled { opacity: .55; cursor: default; pointer-events: none; }
+  .arcade-feedback-link {
+    display: block; width: 100%; margin-top: 16px; padding: 4px 0;
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    color: var(--muted); font-size: 13px; text-align: center; text-decoration: underline;
+  }
+  .arcade-feedback-link:hover { color: var(--text); }
   @media (min-width: 640px) {
     .arcade-sheet {
       left: 50%; right: auto; bottom: auto; top: 50%;

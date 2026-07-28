@@ -370,7 +370,7 @@ function updateCrossPromo(plays) {
 function updateRatingCard(plays) {
   let given = false;
   try { given = localStorage.getItem(RATING_GIVEN_KEY) === "1"; } catch {}
-  $("rating-card").style.display = (plays >= 4 && !given) ? "" : "none";
+  $("rating-card").style.display = (plays >= 2 && !given) ? "" : "none";
 }
 
 let pendingRating = null;
@@ -715,6 +715,10 @@ $("feedback-modal-stars").addEventListener("mouseover", e => {
 $("feedback-modal-stars").addEventListener("mouseleave", () => renderFeedbackStars(pendingRating));
 $("feedback-send").addEventListener("click", sendFeedbackAndClose);
 $("feedback-backdrop").addEventListener("click", sendFeedbackAndClose);
+$("arcade-feedback-link").addEventListener("click", () => {
+  closeArcadeSheet();
+  openFeedbackModal(0);
+});
 
 /* ---------- theme ---------- */
 function applyTheme(t) {
