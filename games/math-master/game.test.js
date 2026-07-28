@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { generateItems, pickMathDistractors, applyOp, equationSignature } = require("./game.js");
+const { generateItems, pickMathDistractors, applyOp, equationSignature, missingOperand } = require("./game.js");
 
 const items = generateItems();
 assert.strictEqual(items.length, 100, "pool should contain 100 items");
@@ -74,6 +74,32 @@ assert.notStrictEqual(
   equationSignature({ kind: "binary", op: "÷", a: 4, b: 12 }),
   "division signature must respect operand order"
 );
+
+// --- Tier 7: missing operand ---
+{
+  const nextId = (() => { let n = 0; return () => n++; })();
+  for (let i = 0; i < 2000; i++) {
+    const [id, expr, tier, answer, meta] = missingOperand(7, nextId);
+    assert.strictEqual(tier, 7);
+    assert.strictEqual(meta.kind, "missing");
+    assert.strictEqual(meta.tail, null, "tier 7 items have no tail");
+    assert.ok(["a", "b"].includes(meta.slot), `slot must be "a" or "b", got ${meta.slot}`);
+    assert.ok(Number.isInteger(answer) && answer > 0, `${expr} must have a positive integer answer, got ${answer}`);
+
+    // The answer is the hidden operand.
+    assert.strictEqual(answer, meta.slot === "a" ? meta.a : meta.b, `${expr}: answer must be the hidden operand`);
+
+    // Substituting the answer back into the expression makes it true.
+    const result = applyOp(meta.op, meta.a, meta.b);
+    assert.ok(Number.isInteger(result) && result > 0, `${expr}: stated result must be a positive integer, got ${result}`);
+    assert.ok(expr.endsWith(`= ${result}`), `${expr} must state the result ${result}`);
+    assert.ok(expr.includes("?"), `${expr} must contain a "?" placeholder`);
+
+    // The visible operand appears in the text; the hidden one does not stand in for "?".
+    const visible = meta.slot === "a" ? meta.b : meta.a;
+    assert.ok(expr.includes(String(visible)), `${expr} must show the visible operand ${visible}`);
+  }
+}
 
 // Regression: ensure fallback loop terminates with correct === 0 (edge case)
 const edgeCase = [

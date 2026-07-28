@@ -31,6 +31,32 @@ function div(divMin, divMax, quotMin, quotMax, tier, nextId) {
   return [id, `${dividend} ÷ ${divisor}`, tier, quotient, { kind: "binary", op: "÷", a: dividend, b: divisor }];
 }
 
+// Tier 7+: one operand is replaced by "?" and the result is given, so the
+// player has to invert the operation rather than evaluate it. `tail`, when
+// present, appends a second term (tier 10) — see twoStepMissing.
+function missingOperand(tier, nextId, tail = null) {
+  const op = ["+", "−", "×", "÷"][randInt(0, 3)];
+  let a, b;
+  if (op === "×") { a = randInt(2, 12); b = randInt(2, 12); }
+  else if (op === "÷") { b = randInt(2, 12); a = b * randInt(2, 12); }
+  else if (op === "+") { a = randInt(10, 60); b = randInt(10, 60); }
+  // Subtraction: pick the subtrahend strictly below the minuend so the
+  // stated result is always positive.
+  else { a = randInt(30, 99); b = randInt(2, a - 1); }
+
+  const slot = Math.random() < 0.5 ? "a" : "b";
+  const answer = slot === "a" ? a : b;
+  const inner = applyOp(op, a, b);
+  // A subtracting tail must not drive the stated total to zero or below —
+  // a non-positive total reads as broken and breaks the distractor rules.
+  const tailC = tail && tail.op === "−" ? Math.min(tail.c, inner - 1) : (tail ? tail.c : 0);
+  const usedTail = tail ? { op: tail.op, c: Math.max(1, tailC) } : null;
+  const total = usedTail ? applyOp(usedTail.op, inner, usedTail.c) : inner;
+  const left = slot === "a" ? `? ${op} ${b}` : `${a} ${op} ?`;
+  const text = usedTail ? `${left} ${usedTail.op} ${usedTail.c} = ${total}` : `${left} = ${total}`;
+  return [`m${nextId()}`, text, tier, answer, { kind: "missing", op, a, b, slot, tail: usedTail }];
+}
+
 // Two equations count as "the same question" if they're the same operator
 // on the same operands — for +/x, operand order doesn't matter (4x10 is
 // the same question as 10x4). Non-binary kinds have no commutativity to
@@ -197,5 +223,5 @@ if (typeof GAME !== "undefined") {
 
 // Exposed for game.test.js only. The browser build never sets `module`.
 if (typeof module !== "undefined") {
-  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature };
+  module.exports = { generateItems, pickMathDistractors, applyOp, equationSignature, missingOperand };
 }
