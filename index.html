@@ -481,7 +481,7 @@
     border: 0; background: none; cursor: pointer; font-size: 26px; line-height: 1;
     color: var(--line); padding: 2px; transition: transform .15s, color .15s;
   }
-  .star-btn:hover { color: var(--gold); transform: translateY(-2px); }
+  .star-btn.hovered { color: var(--gold); transform: translateY(-2px); }
 
   .feedback-sheet { text-align: center; }
   .feedback-modal-stars {
@@ -1638,6 +1638,16 @@ $("rating-stars").addEventListener("click", e => {
   const btn = e.target.closest(".star-btn");
   if (!btn) return;
   openFeedbackModal(Number(btn.dataset.rating));
+});
+$("rating-stars").addEventListener("mouseover", e => {
+  const btn = e.target.closest(".star-btn");
+  if (!btn) return;
+  const rating = Number(btn.dataset.rating);
+  $("rating-stars").querySelectorAll(".star-btn").forEach(b =>
+    b.classList.toggle("hovered", Number(b.dataset.rating) <= rating));
+});
+$("rating-stars").addEventListener("mouseleave", () => {
+  $("rating-stars").querySelectorAll(".star-btn").forEach(b => b.classList.remove("hovered"));
 });
 $("rating-dismiss").addEventListener("click", () => {
   try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}

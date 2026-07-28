@@ -468,7 +468,7 @@
     border: 0; background: none; cursor: pointer; font-size: 26px; line-height: 1;
     color: var(--line); padding: 2px; transition: transform .15s, color .15s;
   }
-  .star-btn:hover { color: var(--gold); transform: translateY(-2px); }
+  .star-btn.hovered { color: var(--gold); transform: translateY(-2px); }
 
   .feedback-sheet { text-align: center; }
   .feedback-modal-stars {

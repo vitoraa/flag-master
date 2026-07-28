@@ -695,6 +695,16 @@ $("rating-stars").addEventListener("click", e => {
   if (!btn) return;
   openFeedbackModal(Number(btn.dataset.rating));
 });
+$("rating-stars").addEventListener("mouseover", e => {
+  const btn = e.target.closest(".star-btn");
+  if (!btn) return;
+  const rating = Number(btn.dataset.rating);
+  $("rating-stars").querySelectorAll(".star-btn").forEach(b =>
+    b.classList.toggle("hovered", Number(b.dataset.rating) <= rating));
+});
+$("rating-stars").addEventListener("mouseleave", () => {
+  $("rating-stars").querySelectorAll(".star-btn").forEach(b => b.classList.remove("hovered"));
+});
 $("rating-dismiss").addEventListener("click", () => {
   try { localStorage.setItem(RATING_DISMISSED_KEY, "1"); } catch {}
   $("rating-card").style.display = "none";
