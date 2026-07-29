@@ -1030,7 +1030,10 @@ const GENERATORS = {
   1: (nextId) => addSub(1, 20, 1, nextId),
   2: (nextId) => Math.random() < 0.5 ? mul(2, 9, 2, 10, 2, nextId) : div(2, 9, 2, 9, 2, nextId),
   3: (nextId) => Math.random() < 0.5 ? addSub(15, 50, 3, nextId) : mul(2, 9, 11, 15, 3, nextId),
-  4: (nextId) => Math.random() < 0.5 ? mul(2, 12, 2, 12, 4, nextId) : div(2, 12, 2, 12, 4, nextId),
+  // Second operand pushed to 11-20 (mul) / quotient 11-20 (div) so tier 4
+  // never lands inside tier 2's fully-overlapping 2-9 x 2-10 window — a
+  // roll like "5 x 9" was valid at tier 4 but indistinguishable from tier 2.
+  4: (nextId) => Math.random() < 0.5 ? mul(2, 12, 11, 20, 4, nextId) : div(2, 12, 11, 20, 4, nextId),
   5: (nextId) => Math.random() < 0.5 ? mul(13, 50, 2, 12, 5, nextId) : div(2, 15, 10, 30, 5, nextId),
   6: (nextId) => Math.random() < 0.5 ? mul(13, 99, 2, 12, 6, nextId) : div(2, 20, 10, 50, 6, nextId),
   7: (nextId) => missingOperand(7, nextId),
